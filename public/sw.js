@@ -1,30 +1,36 @@
-const CACHE_NAME = "biotree-cache-v1";
+const STATIC_CACHE = "static-v1";
+const OFFLINE_URL = "/offline";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(["/offline"]);
-    })
+    caches.open(STATIC_CACHE).then((cache) => cache.addAll([OFFLINE_URL, "/"]))
   );
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-      );
-    })
-  );
-  self.clients.claim();
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.mode === "navigate") {
+  const { request } = event;
+  if (request.method !== "GET") return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(fetch(request).catch(() => caches.match(OFFLINE_URL)));
+    return;
+  }
+
+  if (new URL(request.url).origin === self.location.origin) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match("/offline");
+      caches.match(request).then((cached) => {
+        const network = fetch(request)
+          .then((res) => {
+            caches.open(STATIC_CACHE).then((c) => c.put(request, res.clone()));
+            return res;
+          })
+          .catch(() => cached);
+        return cached || network;
       })
     );
   }
