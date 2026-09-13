@@ -6,6 +6,12 @@
  * See docs/EXTERNAL_SERVICES.md for setup steps.
  */
 
+if (process.env.NODE_ENV === "production" && process.env.USE_MOCKS !== "true") {
+  throw new Error(
+    "In-memory rate limiter is not production-safe. Configure Upstash before deploying to production.",
+  );
+}
+
 export interface IRateLimiter {
   /** Returns true if the request is allowed, false if rate limited. */
   check(key: string, limit: number, windowMs: number): Promise<boolean>;
