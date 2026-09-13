@@ -130,3 +130,11 @@ Listed for awareness, not actively planned until Phase F is done.
 - [ ] Founder setup page + audit log (spec'd in admin.md)
 - [ ] AI agent workforce (sticky note in ai-agents.md)
 - [ ] Real push notifications, real analytics, coupon codes, follow-source tracking
+
+## Pre-Launch Security Hardening
+
+- [ ] Rate limiting on auth endpoints (login, signup, password reset)
+- [ ] CSRF tokens on state-changing POST routes
+- [ ] Plan for rotating the Supabase service-role key on a schedule
+- [ ] Content-Security-Policy header (start in report-only mode)
+- [ ] Wire Upstash for production rate limiting (replace in-memory)

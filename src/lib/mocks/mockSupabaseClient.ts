@@ -1,19 +1,22 @@
-/** TODO: Add purpose docstring. */
 /**
- * mockSupabaseClient.ts
- *
- * A fluent fake Supabase client that runs entirely off the in-memory
- * `mockDataStore`. It implements exactly the query / auth / storage / rpc
- * surface the BioTree codebase uses — no more, no less.
- *
- * Design rules (from project strategy):
- *  • No general-purpose SQL parser. Join resolution is handled by a small,
- *    table-keyed registry of hardcoded mappers (REFINEMENT 2).
- *  • The returned object is cast to `SupabaseClient` once at the boundary,
- *    keeping the import sites (`createClient()` / `createServiceClient()`)
- *    unchanged. No `any` casts inside business logic; only the SDK's own
- *    `data` payload uses `any` because the real SDK exposes `any` there.
- *  • The store lives on `globalThis` so HMR reloads never wipe it.
+ * Purpose: In-memory Supabase client used when USE_MOCKS=true.
+ *          Mirrors the real client's API surface for local development.
+ */
+
+// mockSupabaseClient.ts
+//
+// A fluent fake Supabase client that runs entirely off the in-memory
+// `mockDataStore`. It implements exactly the query / auth / storage / rpc
+// surface the BioTree codebase uses — no more, no less.
+//
+// Design rules (from project strategy):
+//  • No general-purpose SQL parser. Join resolution is handled by a small,
+//    table-keyed registry of hardcoded mappers (REFINEMENT 2).
+//  • The returned object is cast to `SupabaseClient` once at the boundary,
+//    keeping the import sites (`createClient()` / `createServiceClient()`)
+//    unchanged. No `any` casts inside business logic; only the SDK's own
+//    `data` payload uses `any` because the real SDK exposes `any` there.
+//  • The store lives on `globalThis` so HMR reloads never wipe it.
  *
  * PRODUCTION-NOTE: Real Supabase provides:
  *   - Row-Level Security (RLS) — mock bypasses this; real needs policies
