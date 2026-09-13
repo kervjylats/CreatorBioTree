@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       .insert({
         blocker_key: me.key,
         blocked_key: target,
-        blocked_party: validation.data.other_party ?? "creator",
+        blocked_party: (me.party === "creator" ? "fan" : "creator") as "fan" | "creator",
         created_at: new Date().toISOString(),
       });
     return NextResponse.json({ success: true });
