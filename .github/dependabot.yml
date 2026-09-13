@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Indian/Mauritius"
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    labels:
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # Auto-merge only patch and minor updates (optional)
+    # You can enable this later once you trust the process

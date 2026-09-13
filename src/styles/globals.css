@@ -1,0 +1,224 @@
+@import "tailwindcss";
+
+/* ─── Design tokens ──────────────────────────────────────────────────────────
+   Single source of truth for the PLATFORM palette (dashboard, login, admin,
+   landing, search, offline). Fan shells are NOT themed here — creators design
+   their own via branding.ts (resolveBranding → MyAppTheme) applied as inline
+   styles on /[username].
+   The @theme block maps abstract tokens (--color-*) to concrete stops
+   (--background, --primary, ...) defined on :root below.                 */
+:root {
+  --background:        #F7F5F0;
+  --foreground:        #3D3A35;
+  --border:            #E8E4DB;
+  --input:             #E8E4DB;
+  --ring:              #5A6A4A;
+  --primary:           #5A6A4A;
+  --primary-foreground:#FFFFFF;
+  --secondary:         #A67C52;
+  --secondary-foreground:#FFFFFF;
+  --muted:             #9A9488;
+  --muted-foreground:  #9A9488;
+  --accent:            #E8E4DB;
+  --accent-foreground: #3D3A35;
+  --destructive:       #B3402E;
+  --popover:           #FFFFFF;
+  --popover-foreground:#3D3A35;
+  --card:              #FFFFFF;
+  --card-foreground:   #3D3A35;
+}
+
+@theme inline {
+  --color-background:        var(--background);
+  --color-foreground:        var(--foreground);
+  --color-border:            var(--border);
+  --color-input:             var(--input);
+  --color-ring:              var(--ring);
+  --color-primary:           var(--primary);
+  --color-primary-foreground:var(--primary-foreground);
+  --color-secondary:         var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:             var(--muted);
+  --color-muted-foreground:  var(--muted-foreground);
+  --color-accent:            var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive:       var(--destructive);
+  --color-popover:           var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card:              var(--card);
+  --color-card-foreground:   var(--card-foreground);
+  --radius-card:      1.5rem;
+  --radius-item:      1rem;
+  --shadow-card:      0 1px 3px rgba(0,0,0,0.08);
+  --text-display:     clamp(2rem, 5vw, 3.5rem);
+  --text-h1:          clamp(1.5rem, 4vw, 2.5rem);
+  --text-h2:          clamp(1.25rem, 3vw, 1.75rem);
+  --text-body:        clamp(0.875rem, 2vw, 1rem);
+  --text-small:       clamp(0.75rem, 1.5vw, 0.875rem);
+  --text-caption:     0.6875rem;
+  --text-micro:       0.625rem;
+}
+
+/* ─── Box-model reset ────────────────────────────────────────────────────────
+   Apply border-box sizing to every element exactly once.
+   NOTE: `max-width: 100%` is intentionally NOT applied to `*` — doing so
+   breaks flex/grid children whose intrinsic width exceeds their container
+   (e.g. wide tables, canvas elements, absolutely-positioned overlays).
+   Media elements get their own constrained max-width below.               */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  /* Prevent the 300 ms tap delay on mobile WebKit without disabling zoom */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Document ───────────────────────────────────────────────────────────────
+   All font-smoothing, size-adjust, and scroll behaviour in one block.     */
+html {
+  /* Prevent iOS from auto-scaling fonts on orientation change */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust:    100%;
+  text-size-adjust:         100%;
+
+  /* Sub-pixel antialiasing on supported platforms */
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Hardware-accelerated smooth scrolling for in-page anchor links */
+  scroll-behavior: smooth;
+
+  /* Disable double-tap zoom (keeps pinch-to-zoom intact) */
+  touch-action: manipulation;
+}
+
+/* ─── Body ───────────────────────────────────────────────────────────────────
+   Single consolidated block — was previously declared three times.        */
+body {
+  margin:     0;
+  padding:    0;
+  min-height: 100vh;
+
+  /* Respect iPhone notch and Android status-bar insets */
+  padding-top:    env(safe-area-inset-top,    0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left:   env(safe-area-inset-left,   0px);
+  padding-right:  env(safe-area-inset-right,  0px);
+
+  background-color: var(--color-background, #F7F5F0);
+  color:            var(--color-foreground,  #3D3A35);
+
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* ─── Media defaults ─────────────────────────────────────────────────────────
+   Constrain replaced elements to their container width and remove the
+   default inline gap under images.                                        */
+img,
+picture,
+video,
+canvas,
+svg {
+  display:   block;
+  max-width: 100%;
+  height:    auto;
+}
+
+/* ─── Interactive elements ───────────────────────────────────────────────────
+   Reset browser UA styles for form controls and make them inherit the
+   document's font stack.                                                   */
+input,
+button,
+textarea,
+select {
+  font:           inherit;
+  letter-spacing: inherit;
+  word-spacing:   inherit;
+  -moz-appearance:    none;
+  -webkit-appearance: none;
+  appearance:         none;
+  border:  none;
+  outline: none;
+}
+
+button {
+  cursor:           pointer;
+  touch-action:     manipulation;
+  user-select:      none;
+  -webkit-user-select: none;
+}
+
+/* ─── Links ──────────────────────────────────────────────────────────────────
+   Strip browser defaults; components add their own decoration.            */
+a {
+  text-decoration: none;
+  color:           inherit;
+  touch-action:    manipulation;
+}
+
+/* ─── Focus ──────────────────────────────────────────────────────────────────
+   Visible keyboard focus ring that respects the accent colour, but only
+   shown for keyboard (not mouse/touch) navigation.                        */
+:focus-visible {
+  outline:        2px solid var(--color-primary, #5A6A4A);
+  outline-offset: 2px;
+  border-radius:  2px;
+}
+
+/* ─── Selection ──────────────────────────────────────────────────────────────*/
+::selection {
+  background-color: var(--color-primary, #5A6A4A);
+  color:            #ffffff;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────────
+   Thin, unobtrusive scrollbar on Chromium-based browsers.                 */
+::-webkit-scrollbar         { width: 6px; height: 6px; }
+::-webkit-scrollbar-track   { background: transparent; }
+::-webkit-scrollbar-thumb   {
+  background:    var(--color-muted, #9A9488);
+  border-radius: 10px;
+}
+
+/* ─── Safe-area utility classes ──────────────────────────────────────────────
+   Apply on elements that need to respect iPhone notch / home-indicator
+   insets directly (e.g. fixed toolbars, bottom navigation).               */
+.safe-top    { padding-top:    env(safe-area-inset-top,    0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-left   { padding-left:   env(safe-area-inset-left,   0px); }
+.safe-right  { padding-right:  env(safe-area-inset-right,  0px); }
+
+/* ─── Layout utilities ───────────────────────────────────────────────────────*/
+.min-h-screen-safe {
+  min-height: 100vh;
+  /* dvh respects the retractable browser chrome on mobile */
+  min-height: 100dvh;
+}
+
+/* Minimum 44 × 44 px tap target per Apple HIG and Material guidelines */
+.touch-target {
+  min-height: 44px;
+  min-width:  44px;
+}
+
+/* ─── Responsive typography classes ─────────────────────────────────────────────
+   These use clamp() so text shrinks on phones and grows on desktops
+   without needing breakpoints. Use like: class="text-display"            */
+.text-display { font-size: var(--text-display); }
+.text-h1      { font-size: var(--text-h1); }
+.text-h2      { font-size: var(--text-h2); }
+.text-body    { font-size: var(--text-body); }
+.text-small   { font-size: var(--text-small); }
+.text-caption { font-size: var(--text-caption); }
+.text-micro   { font-size: var(--text-micro); }
+
+/* ─── Layout container ─────────────────────────────────────────────────────────
+   Centres content with automatic horizontal padding.
+   Max-width caps at 1200px, shrinks on small screens.                    */
+.content-grid {
+  max-width: min(1200px, 100% - 2rem);
+  margin-inline: auto;
+  padding-inline: 1rem;
+}

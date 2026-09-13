@@ -1,0 +1,47 @@
+{
+  "name": "creatorbiotree",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:cf": "npx @cloudflare/next-on-pages",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "seed": "node -e \"console.log('Seed: Run supabase/seed.sql in Supabase SQL Editor or use `npx supabase db push`')\""
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.6.0",
+    "@supabase/ssr": "^0.10.0",
+    "@supabase/supabase-js": "^2.101.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.27.0",
+    "next": "^16.2.1",
+    "next-themes": "^0.4.6",
+    "react": "19.2.4",
+    "react-colorful": "^5.7.0",
+    "react-dom": "19.2.4",
+    "resend": "^6.10.0",
+    "sharp": "^0.35.3",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0",
+    "uuid": "^13.0.0",
+    "web-push": "^3.6.7",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.37",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
+    "@types/web-push": "^3.6.4",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "16.2.1",
+    "supabase": "^2.95.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
