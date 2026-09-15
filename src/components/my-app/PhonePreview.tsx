@@ -49,7 +49,7 @@ export function PhonePreview({ data, editMode, onEdit }: PhonePreviewProps) {
   };
 
   return (
-    <div className="w-full max-w-lg">
+    <div className="w-full max-w-[340px] sm:max-w-md lg:max-w-lg">
       {/* Phone frame — the transform makes inner `fixed` elements (bottom nav)
           anchor to the frame instead of the viewport. */}
       <div
@@ -57,7 +57,7 @@ export function PhonePreview({ data, editMode, onEdit }: PhonePreviewProps) {
         style={{ transform: "translateZ(0)" }}
       >
         <div
-          className="relative flex h-[700px] flex-col overflow-y-auto"
+          className="relative flex h-[560px] flex-col overflow-y-auto sm:h-[640px] lg:h-[700px]"
           onTouchStart={(e) => {
             touchX.current = e.touches[0].clientX;
           }}
