@@ -1,3 +1,4 @@
+/** TODO: Add purpose docstring. */
 /**
  * FollowBox.tsx — the email-only Follow gate (fan-shell.md Part 1 Layer 1b).
  * An email in this box creates a no-password fan_accounts row + fan_session
