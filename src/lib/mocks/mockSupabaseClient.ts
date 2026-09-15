@@ -17,19 +17,18 @@
 //    unchanged. No `any` casts inside business logic; only the SDK's own
 //    `data` payload uses `any` because the real SDK exposes `any` there.
 //  • The store lives on `globalThis` so HMR reloads never wipe it.
- *
- * PRODUCTION-NOTE: Real Supabase provides:
- *   - Row-Level Security (RLS) — mock bypasses this; real needs policies
- *   - Auth email verification flows (password reset, etc.)
- *   - Storage CDN with signed URLs and transformations
- *   - Real-time subscriptions (WebSocket-based)
- *   - SQL functions and triggers for complex queries
- *   - Proper UUID validation (mock accepts non-UUID IDs when USE_MOCKS=true)
- *   - GraphQL via pg_graphql extension
- * The mock's query surface (from, select, eq, order, etc.) and return shape
- * ({ data, error }) must be replicated exactly. RLS policies should mirror
- * the access patterns hardcoded here (e.g., owner-only updates, public reads).
- */
+//
+// PRODUCTION-NOTE: Real Supabase provides:
+//   - Row-Level Security (RLS) — mock bypasses this; real needs policies
+//   - Auth email verification flows (password reset, etc.)
+//   - Storage CDN with signed URLs and transformations
+//   - Real-time subscriptions (WebSocket-based)
+//   - SQL functions and triggers for complex queries
+//   - Proper UUID validation (mock accepts non-UUID IDs when USE_MOCKS=true)
+//   - GraphQL via pg_graphql extension
+// The mock's query surface (from, select, eq, order, etc.) and return shape
+// ({ data, error }) must be replicated exactly. RLS policies should mirror
+// the access patterns hardcoded here (e.g., owner-only updates, public reads).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getTable, setTable, type TableName } from "./mockDataStore";
