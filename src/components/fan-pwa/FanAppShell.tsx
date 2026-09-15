@@ -47,38 +47,40 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
 
   return (
     <div
-      className="flex min-h-screen w-full flex-col"
+      className="flex min-h-screen-safe w-full flex-col"
       style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
     >
       {/* Top bar */}
       <header
-        className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 backdrop-blur-md"
+        className="sticky top-0 z-40 px-4 py-3 backdrop-blur-md"
         style={{ backgroundColor: branding.backgroundColor + "DD" }}
       >
-        <span className="text-sm font-bold" style={{ color: branding.textColor }}>
-          {branding.appName}
-        </span>
-        <div className="flex items-center gap-2">
-          <ChatIcon
-            otherKey={creatorId}
-            otherParty="creator"
-            name={branding.displayName}
-            accentColor={branding.accentColor}
-          />
-          <button
-            type="button"
-            aria-label={notify ? "Mute notifications" : "Turn on notifications"}
-            onClick={() => {
-              const next = !notify;
-              setNotify(next);
-              window.localStorage.setItem(`fan_notify_${creatorId}`, next ? "1" : "0");
-              toast(next ? "Notifications on" : "Notifications muted");
-            }}
-            className={`${buttonShape(branding)} p-2`}
-            style={{ color: notify ? branding.accentColor : branding.textColor + "88" }}
-          >
-            {notify ? <Bell size={18} /> : <BellOff size={18} />}
-          </button>
+        <div className="mx-auto flex w-full max-w-lg items-center justify-between">
+          <span className="text-sm font-bold" style={{ color: branding.textColor }}>
+            {branding.appName}
+          </span>
+          <div className="flex items-center gap-2">
+            <ChatIcon
+              otherKey={creatorId}
+              otherParty="creator"
+              name={branding.displayName}
+              accentColor={branding.accentColor}
+            />
+            <button
+              type="button"
+              aria-label={notify ? "Mute notifications" : "Turn on notifications"}
+              onClick={() => {
+                const next = !notify;
+                setNotify(next);
+                window.localStorage.setItem(`fan_notify_${creatorId}`, next ? "1" : "0");
+                toast(next ? "Notifications on" : "Notifications muted");
+              }}
+              className={`${buttonShape(branding)} p-2`}
+              style={{ color: notify ? branding.accentColor : branding.textColor + "88" }}
+            >
+              {notify ? <Bell size={18} /> : <BellOff size={18} />}
+            </button>
+          </div>
         </div>
       </header>
 

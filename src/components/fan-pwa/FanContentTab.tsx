@@ -22,39 +22,41 @@ export function FanContentTab({ data, editMode, onEdit }: FanContentTabProps) {
 
   return (
     <div>
-      {/* Guest / Fan view toggle */}
-      <div className="flex gap-1 px-4 pt-3">
-        <button
-          type="button"
-          onClick={() => setView("guest")}
-          className={`rounded-full px-3 py-1 text-caption font-semibold ${
-            view === "guest"
-              ? "bg-foreground text-background"
-              : "border border-input text-muted-foreground"
-          }`}
-        >
-          Guest view
-        </button>
-        <button
-          type="button"
-          onClick={() => setView("fan")}
-          className={`rounded-full px-3 py-1 text-caption font-semibold ${
-            view === "fan"
-              ? "bg-foreground text-background"
-              : "border border-input text-muted-foreground"
-          }`}
-        >
-          Fan view
-        </button>
-      </div>
+      <div className="mx-auto w-full max-w-lg">
+        {/* Guest / Fan view toggle */}
+        <div className="flex gap-1 px-4 pt-3">
+          <button
+            type="button"
+            onClick={() => setView("guest")}
+            className={`rounded-full px-3 py-1 text-caption font-semibold ${
+              view === "guest"
+                ? "bg-foreground text-background"
+                : "border border-input text-muted-foreground"
+            }`}
+          >
+            Guest view
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("fan")}
+            className={`rounded-full px-3 py-1 text-caption font-semibold ${
+              view === "fan"
+                ? "bg-foreground text-background"
+                : "border border-input text-muted-foreground"
+            }`}
+          >
+            Fan view
+          </button>
+        </div>
 
-      <GuestPageContent
-        data={data}
-        editMode={editMode}
-        onEdit={onEdit}
-        showFollowGate={view === "guest"}
-        hideHeader={view === "fan"}
-      />
+        <GuestPageContent
+          data={data}
+          editMode={editMode}
+          onEdit={onEdit}
+          showFollowGate={view === "guest"}
+          hideHeader={view === "fan"}
+        />
+      </div>
     </div>
   );
 }

@@ -25,7 +25,7 @@ export function PartnerPageContent({
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen-safe"
       style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
     >
       {/* Header */}
@@ -49,6 +49,7 @@ export function PartnerPageContent({
         </div>
       </div>
 
+      <div className="mx-auto w-full max-w-lg">
       {/* Partner identity */}
       <div className="px-4 pt-6 pb-4">
         <div className="flex items-center gap-3">
@@ -151,6 +152,7 @@ export function PartnerPageContent({
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 }

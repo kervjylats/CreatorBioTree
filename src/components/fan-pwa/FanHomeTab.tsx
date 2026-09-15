@@ -78,6 +78,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
       className="min-h-full w-full"
       style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
     >
+      <div className="mx-auto w-full max-w-lg">
       {/* Header — banner, avatar, name, bio */}
       <CreatorHeader branding={branding} bio={data.bio} editMode={editMode} onEdit={onEdit} />
 
@@ -289,6 +290,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
       )}
 
       <div className="pb-24" />
+      </div>
     </div>
   );
 }

@@ -78,6 +78,7 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
 
   return (
     <div className="min-h-full w-full" style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}>
+      <div className="mx-auto w-full max-w-lg">
       <div className="px-4 pt-6 pb-2">
         <h1 className="text-2xl font-extrabold" style={{ color: branding.textColor }}>
           Settings
@@ -236,6 +237,7 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
           )}
         </div>
       </section>
+      </div>
     </div>
   );
 }
