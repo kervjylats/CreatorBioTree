@@ -22,7 +22,7 @@ export function PreviewStateToggle({ state, onChange, hasChanges, deploying, onD
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <div className="flex rounded-full border border-input p-0.5">
         {(["draft", "live"] as const).map((s) => (
           <button

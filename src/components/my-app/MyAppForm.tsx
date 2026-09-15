@@ -87,8 +87,8 @@ export function MyAppForm({ initialTab }: MyAppFormProps) {
         />
       </header>
 
-      {/* Mobile segmented control — visible only below lg: */}
-      <div className="sticky top-[52px] z-30 flex border-b border-border bg-background/95 px-4 py-2 backdrop-blur lg:hidden">
+      {/* Segmented control — visible below md: (tablet+ gets the 3-column layout) */}
+      <div className="sticky top-[52px] z-30 flex border-b border-border bg-background/95 px-4 py-2 backdrop-blur md:hidden">
         <div className="mx-auto flex gap-1 rounded-full border border-border bg-muted p-0.5">
           <button
             type="button"
@@ -111,19 +111,19 @@ export function MyAppForm({ initialTab }: MyAppFormProps) {
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center gap-6 px-4 py-6 lg:flex-row lg:items-start lg:justify-center">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center gap-6 px-4 py-6 md:flex-row md:items-start md:justify-center lg:px-6">
         {/* App Identity Card — standalone, left of phone */}
-        <div className={`w-56 shrink-0 ${mobileTab !== "editor" ? "hidden lg:block" : "w-full max-w-md lg:w-56"}`}>
+        <div className={`shrink-0 ${mobileTab !== "editor" ? "hidden md:block" : "w-full max-w-sm md:w-56"}`}>
           <AppIdentityCard draft={draft} patch={patch} username={previewData.username} />
         </div>
 
         {/* Phone — center */}
-        <div className={`${mobileTab === "preview" ? "mx-auto" : "hidden lg:block"} shrink-0`}>
+        <div className={`${mobileTab === "preview" ? "mx-auto" : "hidden md:block"} shrink-0`}>
           <PhonePreview data={previewData} editMode onEdit={setEditTarget} />
         </div>
 
         {/* Editor sheet — right */}
-        <div className={`${mobileTab !== "editor" ? "hidden lg:block" : "w-full max-w-md lg:max-w-md"} flex-1`}>
+        <div className={`${mobileTab !== "editor" ? "hidden md:block" : "w-full max-w-sm md:max-w-md lg:max-w-xl"} flex-1`}>
           <div className="sticky top-20 rounded-3xl border border-border bg-card p-4 shadow-sm">
             <div className="flex gap-1 overflow-x-auto pb-1">
               {TABS.map((t) => (
