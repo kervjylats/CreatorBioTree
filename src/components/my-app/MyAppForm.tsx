@@ -112,8 +112,8 @@ export function MyAppForm({ initialTab }: MyAppFormProps) {
       </div>
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center gap-6 px-4 py-6 md:flex-row md:items-start md:justify-center lg:px-6">
-        {/* App Identity Card — desktop only (left column at lg:) */}
-        <div className={`shrink-0 ${mobileTab !== "editor" ? "hidden" : "hidden lg:block lg:w-56"}`}>
+        {/* App Identity Card — wide desktop only (left column at xl:) */}
+        <div className={`shrink-0 ${mobileTab !== "editor" ? "hidden" : "hidden xl:block xl:w-56"}`}>
           <AppIdentityCard draft={draft} patch={patch} username={previewData.username} />
         </div>
 
