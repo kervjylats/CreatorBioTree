@@ -161,7 +161,7 @@ export function OnboardingForm({ inviteCode, rootDomain }: OnboardingFormProps) 
   };
 
   return (
-    <div className="text-left">
+    <div data-tl="OnboardingForm" className="text-left">
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           label="Link Address"

@@ -56,7 +56,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
+    <div data-tl="ItemEditor" className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
       <div
         className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-card p-6 shadow-2xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}

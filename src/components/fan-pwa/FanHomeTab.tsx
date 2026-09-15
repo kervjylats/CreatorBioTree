@@ -76,6 +76,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
   return (
     <div
       className="min-h-full w-full"
+      data-tl="FanHomeTab"
       style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
     >
       <div className="mx-auto w-full max-w-lg">

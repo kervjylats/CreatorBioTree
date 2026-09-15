@@ -94,7 +94,7 @@ export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuth
   };
 
   return (
-    <article className={`overflow-hidden ${cardRadius(branding)}`} style={{ backgroundColor: branding.cardColor }}>
+    <article data-tl="ItemCards" className={`overflow-hidden ${cardRadius(branding)}`} style={{ backgroundColor: branding.cardColor }}>
       {cover ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={cover} alt="" className="h-40 w-full object-cover" />

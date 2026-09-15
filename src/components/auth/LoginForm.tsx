@@ -120,7 +120,7 @@ export function LoginForm({ next }: LoginFormProps) {
   };
 
   return (
-    <div className="text-left">
+    <div data-tl="LoginForm" className="text-left">
       <form onSubmit={handleLogin} className="space-y-5">
         <Input
           label="Email Address"

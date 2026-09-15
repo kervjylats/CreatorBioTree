@@ -38,6 +38,7 @@ export function FollowBox({ creatorUsername, branding, alreadyFollowing, viewOnl
   if (viewOnly) {
     return (
       <div
+        data-tl="FollowBox"
         className={`flex items-center gap-1 font-semibold ${
           inline ? "text-[11px]" : compact ? "text-xs" : "text-sm"
         }`}
@@ -51,6 +52,7 @@ export function FollowBox({ creatorUsername, branding, alreadyFollowing, viewOnl
   if (followed) {
     return (
       <div
+        data-tl="FollowBox"
         className={`${buttonShape(branding)} flex items-center gap-1 font-semibold ${
           inline
             ? "px-2 py-1 text-[11px]"
@@ -92,6 +94,7 @@ export function FollowBox({ creatorUsername, branding, alreadyFollowing, viewOnl
 
   return (
     <form
+      data-tl="FollowBox"
       onSubmit={handleSubmit}
       className={`flex gap-1.5 ${
         inline

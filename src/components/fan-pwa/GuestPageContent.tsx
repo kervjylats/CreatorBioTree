@@ -113,6 +113,7 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
     <div
       className="min-h-full w-full"
       data-mock-edit-kind="background"
+      data-tl="GuestPageContent"
       style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
     >
       <div className="mx-auto w-full max-w-lg">

@@ -111,7 +111,7 @@ export function DesignTab({ draft, patch }: DesignTabProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div data-tl="DesignTab" className="space-y-4">
       {/* 1. Colors — one picker, four tabs */}
       <div>
         <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Colors</label>

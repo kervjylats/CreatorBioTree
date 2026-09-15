@@ -47,6 +47,7 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
 
   return (
     <div
+      data-tl="FanAppShell"
       className="flex min-h-screen-safe w-full flex-col"
       style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
     >

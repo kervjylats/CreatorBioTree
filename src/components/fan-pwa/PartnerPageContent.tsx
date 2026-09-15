@@ -25,6 +25,7 @@ export function PartnerPageContent({
 
   return (
     <div
+      data-tl="PartnerPageContent"
       className="min-h-screen-safe"
       style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
     >

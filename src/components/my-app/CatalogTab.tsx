@@ -82,7 +82,7 @@ export function CatalogTab({ items, onItemsChange }: CatalogTabProps) {
   };
 
   return (
-    <div className="space-y-3">
+    <div data-tl="CatalogTab" className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-foreground">Catalog ({items.length})</h3>
         <button

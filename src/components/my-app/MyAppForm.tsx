@@ -71,7 +71,7 @@ export function MyAppForm({ initialTab }: MyAppFormProps) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div data-tl="MyAppForm" className="flex min-h-screen flex-col bg-background">
       {/* Top bar */}
       <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/90 px-4 py-3 backdrop-blur">
         <div className="flex items-center gap-3">

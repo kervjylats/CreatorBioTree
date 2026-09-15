@@ -48,7 +48,7 @@ export function CreatorHeader({ branding, bio, editMode, onEdit, actions }: Crea
   const textOnAccent = contrastText(branding.accentColor);
 
   return (
-    <header>
+    <header data-tl="CreatorHeader">
       {/* ─── SECTION 1: Banner card — centered, equal left/right padding ─── */}
       <div className="px-4 pt-3">
         <div
