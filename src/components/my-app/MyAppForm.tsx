@@ -112,18 +112,18 @@ export function MyAppForm({ initialTab }: MyAppFormProps) {
       </div>
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center gap-6 px-4 py-6 md:flex-row md:items-start md:justify-center lg:px-6">
-        {/* App Identity Card — standalone, left of phone */}
-        <div className={`shrink-0 ${mobileTab !== "editor" ? "hidden md:block" : "w-full max-w-sm md:w-56"}`}>
+        {/* App Identity Card — desktop only (left column at lg:) */}
+        <div className={`shrink-0 ${mobileTab !== "editor" ? "hidden" : "hidden lg:block lg:w-56"}`}>
           <AppIdentityCard draft={draft} patch={patch} username={previewData.username} />
         </div>
 
-        {/* Phone — center */}
+        {/* Phone — tablet+ center, mobile via segmented control */}
         <div className={`${mobileTab === "preview" ? "mx-auto" : "hidden md:block"} shrink-0`}>
           <PhonePreview data={previewData} editMode onEdit={setEditTarget} />
         </div>
 
-        {/* Editor sheet — right */}
-        <div className={`${mobileTab !== "editor" ? "hidden md:block" : "w-full max-w-sm md:max-w-md lg:max-w-xl"} flex-1`}>
+        {/* Editor sheet — tablet+ right, mobile via segmented control */}
+        <div className={`${mobileTab !== "editor" ? "hidden md:block" : "w-full md:flex-1 lg:max-w-xl"} flex-1`}>
           <div className="sticky top-20 rounded-3xl border border-border bg-card p-4 shadow-sm">
             <div className="flex gap-1 overflow-x-auto pb-1">
               {TABS.map((t) => (

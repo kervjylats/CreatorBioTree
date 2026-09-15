@@ -49,7 +49,7 @@ export function PhonePreview({ data, editMode, onEdit }: PhonePreviewProps) {
   };
 
   return (
-    <div className="w-full max-w-[340px] sm:max-w-md lg:max-w-lg">
+    <div className="w-full max-w-[340px] md:max-w-[280px] lg:max-w-lg">
       {/* Phone frame — the transform makes inner `fixed` elements (bottom nav)
           anchor to the frame instead of the viewport. */}
       <div
