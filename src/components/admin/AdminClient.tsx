@@ -41,7 +41,7 @@ export function AdminClient() {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <h1 className="text-2xl font-bold text-foreground">Admin</h1>
       <Tabs defaultValue="overview">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="creators">Creators</TabsTrigger>
           <TabsTrigger value="accounts">Staff Accounts</TabsTrigger>

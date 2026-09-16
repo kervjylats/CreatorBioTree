@@ -174,7 +174,7 @@ export function LoginForm({ next }: LoginFormProps) {
                   type="button"
                   disabled={loading}
                   onClick={() => handleSocial(social.email)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground hover:bg-muted disabled:opacity-50 disabled:pointer-events-none"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground hover:bg-muted disabled:opacity-50 disabled:pointer-events-none"
                   aria-label={`Continue with ${social.label}`}
                 >
                   <SocialIcon platform={social.key} />

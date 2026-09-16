@@ -26,6 +26,7 @@
   --popover-foreground:#3D3A35;
   --card:              #FFFFFF;
   --card-foreground:   #3D3A35;
+  --shell-width:       512px;
 }
 
 @theme inline {

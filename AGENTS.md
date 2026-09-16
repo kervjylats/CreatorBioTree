@@ -43,7 +43,7 @@ A platform where creators build and publish their own installable PWA apps for f
 | "Where is X in the code?" / "What does the codebase look like?" | `docs/CODEBASE.md` |
 | "How do I migrate mock → production?" | `docs/HOW_IT_WORKS.md` → "Migration Recipe" + `docs/EXTERNAL_SERVICES.md` (the external-service map) |
 | "What's the wiring order / what sheet am I on?" | `WIRING_PLAN.md` (repo root — 23 sheets, Phase F execution map) |
-| "What's in the old-code archive?" / "What's dead, what to adopt?" | `CODEBASE_AUDIT.md` (read-the-verdicts) + `CODEBASE_INVENTORY.md` (full file map + counts) |
+| "What's in the old-code archive?" / "What's dead, what to adopt?" | `docs/archive/` (archived docs) + `docs/BACKLOG.md` (open feedback items) |
 
 ---
 
@@ -75,6 +75,17 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 ---
 
 ## Impromptu Fix Log
+
+### 2026-09-14 — Platform-Wide Responsive + Adaptive Design Pass
+
+**Full responsive overhaul across all surfaces. Spec written, 6 phases executed. Gates green: typecheck 0 · lint 0.**
+
+- **Phase 0 — Spec + docs cleanup:** Wrote `src/wiredLater/features/responsive.md` (breakpoint scale, shell patterns, sizing tokens, touch targets, overlay alignment). Fixed 8 stale doc lines across HOW_IT_WORKS.md (sidebar exists, 4 stat cards, Community wired, admin wired, 29 tables), AGENTS.md (dark palette claim removed), EXTERNAL_SERVICES.md (@dnd-kit claim), ROADMAP.md (Phase F marked done). Archived 4 dead docs (BUILD_PLAN.md, CODEBASE_AUDIT.md, CODEBASE_INVENTORY.md, mytesting.md) to `docs/archive/`. Created `docs/BACKLOG.md` with 5 items harvested from manual testing feedback.
+- **Phase 1 — Foundations + universal fixes:** Added `--shell-width: 512px` CSS token. Fixed safe-area padding on FanAppShell header (notched phones) and DashboardSidebar mobile top bar. Fixed AuthCard responsive padding (`p-6 sm:p-10`). Fixed admin tab overflow (`flex-wrap`). Fixed FanListTable overflow + sticky headers + typo (`gapx-4` → `gap-4`). Fixed PhonePreview squeeze (removed `md:max-w-[280px]`). Fixed primary button touch targets (`min-h-[44px]` in `buttonClass`). Fixed FanAppShell bottom padding (`pb-20 lg:pb-8`).
+- **Phase 2 — Fan shell adaptive frame:** FanBottomNav hides at `lg:` (`lg:hidden`). Top nav links appear in FanAppShell header at `lg:` (4 tab buttons with active accent highlight). PhonePreview gained device preview toggle: Phone (390px) / Tablet (820px) / Desktop (1280px). Desktop preview shows real top nav instead of bottom nav.
+- **Phase 3 — Creator dashboard:** DashboardSidebar rewritten — phones get a bottom bar (Overview/Network/My App/Settings + More → drawer overlay). Desktop keeps the sidebar at `md:`. NetworkPage grid: added `md:grid-cols-[1fr_300px]` intermediate step between 1-col and 3-col. FanListTable: `overflow-x-auto`, sticky thead, `flex-wrap` on filter buttons.
+- **Phase 4 — Admin shell:** Created `src/app/(admin)/admin/layout.tsx` with auth guard + DashboardSidebar (admin sees sidebar at `md:`, bottom bar at `<md`). Login social buttons: touch target fixed (`h-10` → `h-11`).
+- **Phase 5 — Landing page built:** Full responsive landing page from old-code pattern using platform tokens: nav, hero, how-it-works (3-col), features (2-col), comparison table, footer. Responsive at `sm:` breakpoint. All colors via Tailwind tokens (no hardcoded hex).
 
 ### 2026-08-31 — Pre-Production Audit: 18 Routes Production-Hardened + NetworkPage Wired + Dead Code Cleaned
 
@@ -292,15 +303,13 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 
 **Conventions locked:** component stubs `export function X() { return null }` (following fan-pwa pattern) · screen stubs empty `<main>` + metadata · route stubs `501 Not implemented` via `NextResponse` — every stub has a purpose docstring; wiring sheets REPLACE bodies, keep docstrings.
 
-### 2026-08-08 — globals.css Foundation Fix (missing tokens + dark palette)
+### 2026-08-08 — globals.css Foundation Fix (missing tokens)
 
 Foundation review fix (`src/styles/globals.css` + 2 docstrings, gates green):
 
 - **Missing tokens were a REAL bug:** shadcn ui components use `ring`, `input`, `destructive`, `popover(+foreground)`, `accent(+foreground)`, `primary-foreground`, `secondary-foreground`, `muted-foreground`, `card-foreground` — NONE existed in globals.css, so destructive buttons had no red, focus rings and input borders were invisible, select popovers had no background. Now defined.
-- **Token architecture changed** to the shadcn-v4 pattern: `@theme inline` maps `--color-*` → `var(--background/primary/...)`; the concrete stops live in `:root` (light palette, unchanged colors) + a re-tuned **dark palette under `@media (prefers-color-scheme: dark)`** (earthy: `#17150F` bg, `#8A9E6E` primary). Platform only — fan shells still get creator branding via inline styles, never these tokens.
+- **Token architecture changed** to the shadcn-v4 pattern: `@theme inline` maps `--color-*` → `var(--background/primary/...)`; the concrete stops live in `:root` (light palette). Platform only — fan shells still get creator branding via inline styles, never these tokens.
 - **Docstrings:** `src/app/layout.tsx` + `src/lib/utils.ts` placeholders → real purpose docstrings.
-- **Caution:** ~100 `TODO: Add purpose docstring` placeholders remain (mostly `src/old-code/`, which is excluded from compile/lint; the rest pre-existed and pass the presence-check gate). Real docstrings for live files = future cleanup, not part of this fix.
-- The `dark:` classes in components/ui + the `themeColor` dark media query in layout.tsx now actually work.
 
 ### 2026-08-08 — Fan-Auth Review Fixes (5 bugs fixed, gates green)
 

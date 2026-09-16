@@ -3,6 +3,9 @@
  * REAL fan components against draft data, swipeable Home → Content → Connect →
  * Settings with a mock FanBottomNav. In editMode every element is a
  * tap-to-edit target (onEdit → ElementPopover in MyAppForm).
+ *
+ * Device preview toggle: Phone (390px) / Tablet (820px) / Desktop (1280px).
+ * Desktop shows the real top nav instead of bottom nav.
  */
 "use client";
 
@@ -15,6 +18,7 @@ import { FanContentTab } from "@/components/fan-pwa/FanContentTab";
 import { FanConnectTab } from "@/components/fan-pwa/FanConnectTab";
 import { FanSettingsTab } from "@/components/fan-pwa/FanSettingsTab";
 import { FanBottomNav } from "@/components/fan-pwa/FanBottomNav";
+import { Smartphone, Tablet, Monitor } from "lucide-react";
 
 interface PhonePreviewProps {
   data: FanShellData;
@@ -24,9 +28,41 @@ interface PhonePreviewProps {
 
 const SURFACES: FanViewId[] = ["home", "content", "connect", "settings"];
 
+type DeviceMode = "phone" | "tablet" | "desktop";
+
+const DEVICE_WIDTHS: Record<DeviceMode, number> = {
+  phone: 390,
+  tablet: 820,
+  desktop: 1280,
+};
+
+const DEVICE_HEIGHTS: Record<DeviceMode, number> = {
+  phone: 640,
+  tablet: 820,
+  desktop: 720,
+};
+
+const DEVICE_ICONS: Record<DeviceMode, typeof Smartphone> = {
+  phone: Smartphone,
+  tablet: Tablet,
+  desktop: Monitor,
+};
+
+const DEVICE_LABELS: Record<DeviceMode, string> = {
+  phone: "Phone",
+  tablet: "Tablet",
+  desktop: "Desktop",
+};
+
 export function PhonePreview({ data, editMode, onEdit }: PhonePreviewProps) {
   const [tab, setTab] = useState<FanViewId>("home");
+  const [device, setDevice] = useState<DeviceMode>("phone");
   const touchX = useRef<number | null>(null);
+  const { branding } = data;
+
+  const isDesktop = device === "desktop";
+  const frameWidth = DEVICE_WIDTHS[device];
+  const frameHeight = DEVICE_HEIGHTS[device];
 
   const surface: ReactNode = (() => {
     switch (tab) {
@@ -48,16 +84,53 @@ export function PhonePreview({ data, editMode, onEdit }: PhonePreviewProps) {
     if (next >= 0 && next < SURFACES.length) setTab(SURFACES[next]);
   };
 
+  const handleTabChange = (t: FanViewId) => {
+    if (t !== tab) setTab(t);
+  };
+
+  const navigate = (t: FanViewId) => {
+    if (t !== tab) setTab(t);
+  };
+
   return (
-    <div data-tl="PhonePreview" className="w-full max-w-[340px] md:max-w-[280px] lg:max-w-lg">
-      {/* Phone frame — the transform makes inner `fixed` elements (bottom nav)
-          anchor to the frame instead of the viewport. */}
+    <div data-tl="PhonePreview" className="w-full max-w-lg">
+      {/* Device toggle */}
+      <div className="mb-3 flex items-center justify-center gap-1">
+        {(["phone", "tablet", "desktop"] as DeviceMode[]).map((mode) => {
+          const Icon = DEVICE_ICONS[mode];
+          const active = device === mode;
+          return (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setDevice(mode)}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+            >
+              <Icon size={14} />
+              {DEVICE_LABELS[mode]}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Frame — scaled to fit editor column */}
       <div
-        className="overflow-hidden rounded-[2rem] border-8 border-foreground/85 bg-background shadow-2xl"
-        style={{ transform: "translateZ(0)" }}
+        className="mx-auto overflow-hidden rounded-[2rem] border-8 border-foreground/85 bg-background shadow-2xl"
+        style={{
+          width: frameWidth,
+          height: frameHeight,
+          maxWidth: "100%",
+          transform: frameWidth > 400 ? `scale(min(1, ${(400) / frameWidth}))` : undefined,
+          transformOrigin: "top center",
+        }}
       >
         <div
-          className="relative flex h-[560px] flex-col overflow-y-auto sm:h-[640px] lg:h-[700px]"
+          className="relative flex flex-col overflow-y-auto"
+          style={{ height: frameHeight }}
           onTouchStart={(e) => {
             touchX.current = e.touches[0].clientX;
           }}
@@ -68,15 +141,58 @@ export function PhonePreview({ data, editMode, onEdit }: PhonePreviewProps) {
             }
           }}
         >
-          <div className="pointer-events-none sticky top-0 z-50 mx-auto mt-1 h-5 w-24 rounded-full bg-black/80" />
+          {/* Dynamic island notch — phone only */}
+          {device === "phone" && (
+            <div className="pointer-events-none sticky top-0 z-50 mx-auto mt-1 h-5 w-24 rounded-full bg-black/80" />
+          )}
+
+          {/* Desktop top nav — replaces bottom nav */}
+          {isDesktop && (
+            <header
+              className="safe-top px-4 py-3 backdrop-blur-md"
+              style={{ backgroundColor: branding.backgroundColor + "DD" }}
+            >
+              <div className="mx-auto flex w-full items-center justify-between">
+                <span className="text-sm font-bold" style={{ color: branding.textColor }}>
+                  {branding.appName}
+                </span>
+                <nav className="flex gap-1">
+                  {SURFACES.map((t) => {
+                    const active = tab === t;
+                    const label = t.charAt(0).toUpperCase() + t.slice(1);
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => navigate(t)}
+                        className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+                        style={{
+                          color: active ? branding.accentColor : branding.textColor + "88",
+                          backgroundColor: active ? branding.accentColor + "15" : "transparent",
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+            </header>
+          )}
+
           <div className="flex-1">{surface}</div>
-          <FanBottomNav
-            activeTab={tab}
-            branding={data.branding}
-            onTabChange={setTab}
-          />
+
+          {/* Bottom nav — phone + tablet only */}
+          {!isDesktop && (
+            <FanBottomNav
+              activeTab={tab}
+              branding={branding}
+              onTabChange={handleTabChange}
+            />
+          )}
         </div>
       </div>
+
       <p className="mt-2 text-center text-caption text-muted-foreground">
         {editMode ? "Tap anything to edit it — changes are global." : "Swipe or tap to flip between fan surfaces."}
       </p>

@@ -38,7 +38,7 @@ A basic marketing page with hero section, "How it works" steps, feature comparis
 
 ### 4.1 Sidebar
 
-**No sidebar exists yet.** Dashboard pages are reached by URL (`/dashboard/my-app`, `/dashboard/overview`, `/dashboard/network`, `/dashboard/settings`, `/dashboard/messages`, `/admin`). A floating 💬 **chat inbox bubble** (the messaging engine) sits bottom-right on every `/dashboard/*` page.
+**Sidebar (≥`md`):** visible on tablet/desktop. On phones, a bottom bar (Overview/Network/My App/Settings + More → drawer) replaces the sidebar. A floating 💬 **chat inbox bubble** (the messaging engine) sits bottom-right on every `/dashboard/*` page.
 
 The planned sidebar (when the dashboard shell is wired) is:
 
@@ -55,7 +55,7 @@ The planned sidebar (when the dashboard shell is wired) is:
 
 ### 4.2 Overview (`/dashboard/overview`)
 
-**WIRED (Sheet 10, 2026-08-30).** 5 stat cards (Page views, App installs, Content items, Fans, Revenue), activity timeline, setup checklist, quick actions (Edit My App, View my page, Install my fan app), share page button + QR code card + fan CSV export (includes total spent). Spec: `screens/creator-dashboard/overview/overview.md`.
+**WIRED (Sheet 10, 2026-08-30).** 4 stat cards (Page views, Content items, Fans, Revenue), activity timeline, setup checklist, quick actions (Edit My App, View my page, Install my fan app), share page button + QR code card + fan CSV export (includes total spent). Spec: `screens/creator-dashboard/overview/overview.md`.
 
 ### 4.3 My App (`/dashboard/my-app`)
 
@@ -120,7 +120,7 @@ Four bottom tabs (all wired):
 |---|---|---|
 | **Home** | `FanHomeTab` | Wired — activity hub: Spotlight, New from creator, Updates from partners you follow, Your activity, Upcoming |
 | **Content** | `FanContentTab` | Wired — storefront 3-layer + three gates + purchased badges |
-| **Connect** | `FanConnectTab` | Wired — Artist Links + Follow box; partner billboard + community sections hidden when empty (Sheet 20 deferred) |
+| **Connect** | `FanConnectTab` | Wired — Artist Links + Follow box; partner billboard + community sections hidden when empty (Sheet 20 done) |
 | **Settings** | `FanSettingsTab` | Wired — account hub: identity (email), receipts, notify toggle, install, sign out |
 
 Full spec in `screens/fan-shell/fan-shell.md` (account model, gates, tabs, guest layout, auth).
@@ -168,7 +168,7 @@ Free WhatsApp-style chat engine (spec: `features/messaging.md`). **Creators:** f
 - Conversations (newest-first), threads, unread badges (6s polling in mock), edit/delete with tombstones, file attachments (≤8MB via `/api/chat/upload`)
 - **Requests folder** + "Allow anyone" toggle (per-party privacy, TT/Reddit-style); **block** in both directions
 - **Groups:** creators create; announcements-only mode (only the host posts)
-- **Community (Part 3)** — chat channels/clubhouse — NOT built yet
+- **Community (Part 3)** — wired (2026-08-30): creator clubhouse with chat channels, roles (Member/VIP/Partner), join rules (open/fans-only/invite-only)
 - Real-time: polling in mock, Supabase Realtime planned in prod
 
 ---
@@ -226,7 +226,7 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 | **Onboarding** | Link Address availability + permanence dialog, display name, register route |
 | **Forgot-password** | Creator + fan routes, anonymous, no account enumeration |
 | **Fan auth** | Email + password only (no magic link — founder decision 2026-08-08), session cookie (per-creator accounts), Follower (email-only) → Fan (password) upgrade |
-| **Admin RBAC system** | `admin_accounts` table, 4 roles, permission checks (`canPerform`) — code live, UI not wired |
+| **Admin RBAC system** | `admin_accounts` table, 4 roles, permission checks (`canPerform`) — fully wired (Sheet 8, 2026-08-30) |
 | **My App editor** | Full-screen preview, Identity/Design/Catalog/Artist Links, 16 item types + device uploads, auto-save, draft/live/deploy, tap-to-edit |
 | **Fan shell** | Guest 3-layer page, 4-tab fan app, item cards for all 16 types, gates, receipts, install trio, update toast |
 | **Messaging engine** | 12 `/api/chat/*` routes + ChatShell (floating inbox, requests, groups, announcements, block, attachments) |
@@ -237,7 +237,7 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 | **Fan session resilience** | Data tied to email — survives cookie clear / device change |
 | **Mock system** | Full in-memory DB, auth, payments, AI, email, RPC mocks |
 
-**Not wired yet:** landing page, AI Copilot — all spec'd in `src/wiredLater/`.
+**Not wired yet:** landing page — spec'd in `src/wiredLater/screens/public/landing.md`.
 
 ---
 
@@ -334,7 +334,7 @@ Every mock file has `// PRODUCTION-NOTE:` comments marking what the real service
 
 | Layer | Covered? | How |
 |---|---|---|
-| **Database (all CRUD)** | ✅ Full | In-memory mock store with all tables (30). No seeds — create test data via the UI. |
+| **Database (all CRUD)** | ✅ Full | In-memory mock store with all tables (29). No seeds — create test data via the UI. |
 | **Auth (creator login)** | ✅ Full | Any email+password works. Sets `mock_auth_uid` cookie. |
 | **Auth (fan session)** | ✅ Full | Fan registers → gets `fan_session` cookie (365-day expiry). |
 | **File uploads** | ✅ Full | Written to `public/mock-uploads/`, servable from `/mock-uploads/`. |
@@ -424,7 +424,7 @@ These have full specs in `src/wiredLater/`:
 | **Walkthrough overlay** | Beacon-style first-visit tour of My App **+ Figma-style contextual tips/coach-marks** — part of the post-launch polish pass, batches with landing, onboarding, and AI features |
 | **Platform updates feed** | "What's new at CreatorBioTree" — small strip in dashboard Overview + small link in fan Settings; built with the landing page (deferred); no competitor does in-app platform news (they all use blogs/email) |
 | **Deal Maker** | Commission agreements between partners (network.md) |
-| **Community (Part 3)** | Creator clubhouse — chat channels on the messaging engine (messaging.md Part 3) |
+| **Community (Part 3)** | ✅ DONE | Creator clubhouse — chat channels on the messaging engine (messaging.md Part 3) — wired 2026-08-30 |
 | **External brand affiliates** | Self-serve brand deals marketplace — v2 |
 | **Per-tab theming** | Premium upsell — individual colors per fan tab |
 

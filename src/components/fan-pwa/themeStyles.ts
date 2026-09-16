@@ -59,7 +59,7 @@ export interface BrandedButton {
 export function buttonClass(branding: CreatorBranding, extra = ""): BrandedButton {
   const outline = branding.buttonStyle === "outline";
   const shape = buttonShape(branding);
-  const cls = `inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold ${shape}`;
+  const cls = `inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 text-sm font-semibold min-h-[44px] ${shape}`;
   return {
     className: extra ? `${cls} ${extra}` : cls,
     style: outline

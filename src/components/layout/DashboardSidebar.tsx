@@ -1,8 +1,10 @@
 /**
- * DashboardSidebar — left-rail navigation for the creator dashboard.
+ * DashboardSidebar — left-rail navigation for the creator desktop/tablet.
  * Renders 4 tab nav (Overview, Network, My App, Settings), persistent
  * actions (Messages with unread badge, Install app, View page), Admin
- * Panel for admin users, and sign-out. Mobile hamburger overlay variant.
+ * Panel for admin users, and sign-out.
+ *
+ * On phones (<md), replaced by a bottom bar with 4 main tabs + More menu.
  */
 "use client";
 
@@ -21,6 +23,8 @@ import {
   Download,
   ExternalLink,
   LogOut,
+  MoreHorizontal,
+  X,
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -50,7 +54,7 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const unread = useUnreadBadge();
   const { triggerInstall } = usePWAInstall({ creatorId: creator.id });
 
@@ -192,38 +196,112 @@ export function DashboardSidebar({
         {sidebarContent}
       </aside>
 
-      {/* Mobile top bar */}
-      <div className="fixed left-0 right-0 top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
-        <span className="text-sm font-semibold text-foreground">
-          {creator.display_name || creator.username || "Creator"}
-        </span>
+      {/* Mobile bottom bar */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 safe-bottom flex border-t border-border bg-card md:hidden">
+        {NAV_ITEMS.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={handleNavClick}
+              className={`flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-medium transition-colors ${
+                active
+                  ? "text-primary"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <item.icon size={20} strokeWidth={active ? 2.5 : 2} />
+              {item.label}
+            </Link>
+          );
+        })}
         <button
           type="button"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
+          onClick={() => setMoreOpen(true)}
+          className="flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-medium text-muted-foreground"
         >
-          {mobileOpen ? "✕" : "☰"}
+          <MoreHorizontal size={20} strokeWidth={2} />
+          More
         </button>
-      </div>
+      </nav>
 
-      {/* Mobile sidebar overlay */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-20 md:hidden">
+      {/* More drawer overlay */}
+      {moreOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
           <div
             className="absolute inset-0 bg-black/30"
-            onClick={() => setMobileOpen(false)}
+            onClick={() => setMoreOpen(false)}
           />
-          <aside className="absolute left-0 top-0 h-full w-60 bg-card shadow-xl">
-            <div className="h-14 border-b border-border" />
-            <div className="h-[calc(100%-3.5rem)] overflow-y-auto">
-              {sidebarContent}
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-card shadow-2xl safe-bottom">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <span className="text-sm font-semibold text-foreground">More</span>
+              <button
+                type="button"
+                onClick={() => setMoreOpen(false)}
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent"
+              >
+                <X size={18} />
+              </button>
             </div>
-          </aside>
+            <div className="max-h-[60vh] overflow-y-auto p-2">
+              <Link
+                href="/dashboard/messages"
+                onClick={() => { handleNavClick(); setMoreOpen(false); }}
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent"
+              >
+                <MessageCircle size={18} />
+                Messages
+                {unread > 0 && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                    {unread > 99 ? "99+" : unread}
+                  </span>
+                )}
+              </Link>
+              <button
+                type="button"
+                onClick={() => { triggerInstall(); setMoreOpen(false); }}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent"
+              >
+                <Download size={18} />
+                Install my fan app
+              </button>
+              <a
+                href={`/${creator.username}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent"
+              >
+                <ExternalLink size={18} />
+                View my page
+              </a>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => { handleNavClick(); setMoreOpen(false); }}
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent"
+                >
+                  <Shield size={18} />
+                  Admin Panel
+                </Link>
+              )}
+              <div className="my-1 border-t border-border" />
+              <p className="px-3 py-2 text-xs text-muted-foreground">{userEmail}</p>
+              <button
+                type="button"
+                onClick={() => { handleSignOut(); setMoreOpen(false); }}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-destructive hover:bg-destructive/10"
+              >
+                <LogOut size={18} />
+                Sign out
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Mobile top spacing */}
-      <div className="h-14 shrink-0 md:hidden" />
+      {/* Mobile bottom spacing */}
+      <div className="h-16 shrink-0 md:hidden" />
     </>
   );
 }

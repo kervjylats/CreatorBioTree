@@ -96,11 +96,11 @@ Walk every screen with the user, back up old code, write design-intent specs. Th
 - [x] `SCREEN_INVENTORY.md` deleted (superseded by screens.md)
 - [x] Competitor research (Linktree, Stan Store, Beacon) informed catalog + AI vision
 
-## Phase F 🔵 Wiring Pass (NEXT)
+## Phase F ✅ Wiring Pass (COMPLETE 2026-08-30/31)
 
 Rebuild every screen from its spec (`wiredLater/`, .md only). Old code is reference-only in `src/old-code/` — copy patterns, never wire from it directly.
 
-> **The execution map is `WIRING_PLAN.md` at the repo root** — 23 connection-map sheets in order (foundation → screens → features → fan shell). Wire one sheet at a time, run the 3 checks after each.
+> **The execution map was `WIRING_PLAN.md` at the repo root** — 23 connection-map sheets in order (foundation → screens → features → fan shell). All sheets executed. Historical.
 
 - [x] **Foundation prep (2026-08-07):** adopted `api-utils`/`api-error`/`requireAuth` → `src/lib/` (G6) · renamed `Playground*` → `MyApp*` types + added messaging/team/affiliate/relationships types · added 9 brand presets to `branding.ts` · added 14 mock tables · deleted 5 dead files · added 5 missing rate limits + pageview migrated to the shared limiter
 - [x] **Sheet 6 (2026-08-10) — Login:** AuthCard + LoginForm (mock auto-signup fallback, mock social buttons, root-cause error copy, `?next=`) + `/api/creator/check-username` relaxed to anonymous

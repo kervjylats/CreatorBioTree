@@ -45,7 +45,7 @@ These are free open-source libs that remove hand-writing UI logic:
 |---|---|---|
 | Toast/toast notifications | `sonner` | Already installed + wired in root layout |
 | Icons | `lucide-react` | Already installed |
-| Drag & drop | `@dnd-kit` | Already installed — My App catalog reorder |
+| Drag & drop | `@dnd-kit` | Not installed — remove if no longer needed; was used for catalog reorder |
 | Form state | `react-hook-form` | Not installed yet — only if My App forms get complex |
 | Date handling | `date-fns` | Not installed — SQL/ISO strings may be enough |
 

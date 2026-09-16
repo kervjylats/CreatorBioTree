@@ -91,7 +91,7 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gapx-4 py-2.5">
+      <div className="flex flex-wrap items-center gap-4 py-2.5">
         {filters.map((f) => (
           <Button
             key={f.key}
@@ -114,10 +114,10 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
         onChange={(e) => setSearch(e.target.value)}
         className="max-w-xs"
       />
-      <div className="rounded-xl border">
+      <div className="overflow-x-auto rounded-xl border">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/50 text-left">
+            <tr className="sticky top-0 border-b bg-muted/50 text-left">
               <th className="px-4 py-2.5">Email</th>
               <th className="px-4 py-2.5">Joined</th>
               <th className="px-4 py-2.5">Referred</th>

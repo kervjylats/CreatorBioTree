@@ -53,7 +53,7 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
     >
       {/* Top bar */}
       <header
-        className="sticky top-0 z-40 px-4 py-3 backdrop-blur-md"
+        className="sticky top-0 z-40 safe-top px-4 py-3 backdrop-blur-md"
         style={{ backgroundColor: branding.backgroundColor + "DD" }}
       >
         <div className="mx-auto flex w-full max-w-lg items-center justify-between">
@@ -83,6 +83,32 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
             </button>
           </div>
         </div>
+
+        {/* Desktop top nav — hidden on phone/tablet, visible at lg */}
+        <nav className="mx-auto mt-2 hidden max-w-lg gap-1 lg:flex">
+          {(["home", "content", "connect", "settings"] as const).map((tab) => {
+            const active = activeTab === tab;
+            const label = tab.charAt(0).toUpperCase() + tab.slice(1);
+            return (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => {
+                  if (tab === activeTab) return;
+                  if (tab === "home") router.push(`/${branding.creatorUsername}/home`);
+                  else router.push(`/${branding.creatorUsername}/${tab}`);
+                }}
+                className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+                style={{
+                  color: active ? branding.accentColor : branding.textColor + "88",
+                  backgroundColor: active ? branding.accentColor + "15" : "transparent",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </nav>
       </header>
 
       {/* PWA install layer — each piece decides its own visibility */}
@@ -90,7 +116,7 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
       <InstallBanner branding={branding} />
       <IOSInstallGuide branding={branding} />
 
-      <main className="flex-1 pb-16">{children}</main>
+      <main className="flex-1 pb-20 lg:pb-8">{children}</main>
 
       <UpdateToast branding={branding} />
       <PageViewTracker creatorId={creatorId} />

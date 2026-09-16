@@ -22,7 +22,7 @@ const TABS: { id: FanViewId; label: string; Icon: typeof Home }[] = [
 export function FanBottomNav({ activeTab, onTabChange, branding }: FanBottomNavProps) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-lg border-t pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-lg border-t pb-[env(safe-area-inset-bottom)] lg:hidden"
       style={{ backgroundColor: branding.cardColor, borderColor: branding.textColor + "1A" }}
     >
       {TABS.map(({ id, label, Icon }) => {
