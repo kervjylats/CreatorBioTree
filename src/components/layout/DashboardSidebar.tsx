@@ -188,12 +188,12 @@ export function DashboardSidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden w-60 shrink-0 border-r border-border bg-card lg:flex lg:flex-col">
+      <aside className="hidden w-60 shrink-0 border-r border-border bg-card md:flex md:flex-col">
         {sidebarContent}
       </aside>
 
       {/* Mobile top bar */}
-      <div className="fixed left-0 right-0 top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card px-4 lg:hidden">
+      <div className="fixed left-0 right-0 top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
         <span className="text-sm font-semibold text-foreground">
           {creator.display_name || creator.username || "Creator"}
         </span>
@@ -208,7 +208,7 @@ export function DashboardSidebar({
 
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-20 lg:hidden">
+        <div className="fixed inset-0 z-20 md:hidden">
           <div
             className="absolute inset-0 bg-black/30"
             onClick={() => setMobileOpen(false)}
@@ -223,7 +223,7 @@ export function DashboardSidebar({
       )}
 
       {/* Mobile top spacing */}
-      <div className="h-14 shrink-0 lg:hidden" />
+      <div className="h-14 shrink-0 md:hidden" />
     </>
   );
 }
