@@ -1,8 +1,8 @@
 /**
  * DashboardSidebar — left-rail navigation for the creator desktop/tablet.
  * Renders 4 tab nav (Overview, Network, My App, Settings), persistent
- * actions (Messages with unread badge, Install app, View page), Admin
- * Panel for admin users, and sign-out.
+ * actions (Install app, View page), Admin Panel for admin users, and sign-out.
+ * Messages are accessed via the floating ChatInboxPopover — not here.
  *
  * On phones (<md), replaced by a bottom bar with 4 main tabs + More menu.
  */
@@ -11,7 +11,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useUnreadBadge } from "@/components/chat/ChatShell";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import {
   LayoutDashboard,
@@ -19,7 +18,6 @@ import {
   Smartphone,
   Settings,
   Shield,
-  MessageCircle,
   Download,
   ExternalLink,
   LogOut,
@@ -55,7 +53,6 @@ export function DashboardSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
-  const unread = useUnreadBadge();
   const { triggerInstall } = usePWAInstall({ creatorId: creator.id });
 
   const isActive = (href: string) =>
@@ -134,24 +131,6 @@ export function DashboardSidebar({
 
       {/* Persistent actions */}
       <div className="space-y-0.5 border-t border-border px-3 py-2">
-        <Link
-          href="/dashboard/messages"
-          onClick={handleNavClick}
-          className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-            pathname.startsWith("/dashboard/messages")
-              ? "bg-accent text-accent-foreground"
-              : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-          }`}
-        >
-          <MessageCircle size={18} />
-          Messages
-          {unread > 0 && (
-            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-micro font-bold text-white">
-              {unread > 99 ? "99+" : unread}
-            </span>
-          )}
-        </Link>
-
         <button
           type="button"
           onClick={() => { triggerInstall(); onNavigate?.(); }}
@@ -245,19 +224,6 @@ export function DashboardSidebar({
               </button>
             </div>
             <div className="max-h-[60vh] overflow-y-auto p-2">
-              <Link
-                href="/dashboard/messages"
-                onClick={() => { handleNavClick(); setMoreOpen(false); }}
-                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent"
-              >
-                <MessageCircle size={18} />
-                Messages
-                {unread > 0 && (
-                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                    {unread > 99 ? "99+" : unread}
-                  </span>
-                )}
-              </Link>
               <button
                 type="button"
                 onClick={() => { triggerInstall(); setMoreOpen(false); }}
