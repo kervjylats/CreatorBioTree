@@ -1,12 +1,14 @@
 /**
- * DangerZone — destructive account actions: data export and account deletion.
+ * DangerZone — account actions: sign out, data export, and account deletion.
  * Export logs to console; delete shows a confirmation dialog then logs to console.
+ * Sign out clears mock cookies and redirects to /login.
  */
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AlertTriangle, Download, Trash2 } from "lucide-react";
+import { AlertTriangle, Download, LogOut, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +20,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function DangerZone() {
+  const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const handleSignOut = () => {
+    document.cookie = "mock_auth_uid=; path=/; max-age=0";
+    document.cookie = "mock_auth_email=; path=/; max-age=0";
+    router.push("/login");
+    router.refresh();
+  };
 
   const handleExport = () => {
     toast.success("Data export started — check console");
@@ -41,6 +51,18 @@ export function DangerZone() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-foreground">Sign out</p>
+              <p className="text-xs text-muted-foreground">
+                Sign out of your account on this device
+              </p>
+            </div>
+            <Button size="sm" variant="outline" onClick={handleSignOut}>
+              <LogOut size={14} />
+              Sign out
+            </Button>
+          </div>
           <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
             <div>
               <p className="text-sm font-medium text-foreground">Export data</p>
