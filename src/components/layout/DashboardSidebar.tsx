@@ -1,8 +1,8 @@
 /**
  * DashboardSidebar — left-rail navigation for the creator desktop/tablet.
- * Renders 4 tab nav (Overview, Network, My App, Settings), persistent
- * actions (Install app, View page), Admin Panel for admin users, and sign-out.
- * Messages are accessed via the floating ChatInboxPopover — not here.
+ * Renders 4 tab nav (Overview, Network, My App, Settings), Admin Panel
+ * for admin users, and sign-out.
+ * Messages via floating ChatInboxPopover; View page + Install in Settings.
  *
  * On phones (<md), replaced by a bottom bar with 4 main tabs + More menu.
  */
@@ -11,15 +11,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { usePWAInstall } from "@/hooks/usePWAInstall";
 import {
   LayoutDashboard,
   Globe,
   Smartphone,
   Settings,
   Shield,
-  Download,
-  ExternalLink,
   LogOut,
   MoreHorizontal,
   X,
@@ -53,7 +50,6 @@ export function DashboardSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
-  const { triggerInstall } = usePWAInstall({ creatorId: creator.id });
 
   const isActive = (href: string) =>
     href === "/dashboard/overview"
@@ -129,28 +125,6 @@ export function DashboardSidebar({
         )}
       </nav>
 
-      {/* Persistent actions */}
-      <div className="space-y-0.5 border-t border-border px-3 py-2">
-        <button
-          type="button"
-          onClick={() => { triggerInstall(); onNavigate?.(); }}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-        >
-          <Download size={18} />
-          Install my fan app
-        </button>
-
-        <a
-          href={`/${creator.username}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-        >
-          <ExternalLink size={18} />
-          View my page
-        </a>
-      </div>
-
       {/* Footer */}
       <div className="space-y-1 border-t border-border px-3 py-3">
         <p className="truncate px-3 text-xs text-muted-foreground">
@@ -224,23 +198,6 @@ export function DashboardSidebar({
               </button>
             </div>
             <div className="max-h-[60vh] overflow-y-auto p-2">
-              <button
-                type="button"
-                onClick={() => { triggerInstall(); setMoreOpen(false); }}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent"
-              >
-                <Download size={18} />
-                Install my fan app
-              </button>
-              <a
-                href={`/${creator.username}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent"
-              >
-                <ExternalLink size={18} />
-                View my page
-              </a>
               {isAdmin && (
                 <Link
                   href="/admin"
