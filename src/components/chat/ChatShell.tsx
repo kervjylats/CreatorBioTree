@@ -1,6 +1,6 @@
 /**
  * ChatShell.tsx — the complete messaging engine (messaging.md Parts 1/2/4):
- * useChat + useUnreadBadge polling hooks, the floating ChatInboxPopover,
+ * useChat polling hook, the floating ChatInboxPopover,
  * the full ChatShell screen (list + requests + privacy toggle + groups),
  * ChatThread (1-on-1 + groups with announcements mode), MessageList /
  * MessageBubble / MessageComposer / AttachmentPreview, the per-name ChatIcon
@@ -104,7 +104,10 @@ function initials(name: string): string {
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
-/** Conversation list + unread total, polling every 6s (mock; realtime in prod — messaging.md Part 6). */
+/** Polling interval — 30s in mock mode; Supabase Realtime replaces this in prod (messaging.md Part 6). */
+const POLL_MS = 30_000;
+
+/** Conversation list + unread total, polling every 30s (mock; realtime in prod — messaging.md Part 6). */
 export function useChat(): {
   conversations: ChatConversation[];
   unread: number;
@@ -135,30 +138,15 @@ export function useChat(): {
 
   useEffect(() => {
     void refresh();
-    const t = setInterval(() => void refresh(), 6000);
-    return () => clearInterval(t);
+    const t = setInterval(() => {
+      if (!document.hidden) void refresh();
+    }, POLL_MS);
+    const onVis = () => { if (!document.hidden) void refresh(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", onVis); };
   }, [refresh]);
 
   return { conversations, unread, myParty, loading, refresh };
-}
-
-/** Unread total only — for the floating icon badge (messaging.md Part 1). */
-export function useUnreadBadge(): number {
-  const [unread, setUnread] = useState(0);
-  useEffect(() => {
-    const poll = async () => {
-      try {
-        const r = await chatApi<{ unread: number }>("/api/chat/unread");
-        setUnread(r.unread);
-      } catch {
-        // ignore
-      }
-    };
-    void poll();
-    const t = setInterval(() => void poll(), 6000);
-    return () => clearInterval(t);
-  }, []);
-  return unread;
 }
 
 // ─── Conversation list row ───────────────────────────────────────────────────
@@ -464,8 +452,12 @@ export function ChatThread({ conversationId, onBack, onOpenFull, compact, accent
 
   useEffect(() => {
     void load();
-    const t = setInterval(() => void load(), 6000);
-    return () => clearInterval(t);
+    const t = setInterval(() => {
+      if (!document.hidden) void load();
+    }, POLL_MS);
+    const onVis = () => { if (!document.hidden) void load(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", onVis); };
   }, [load]);
 
   // Mark read whenever new messages arrive.
