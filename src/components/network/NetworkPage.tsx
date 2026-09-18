@@ -204,7 +204,7 @@ export function NetworkPage() {
       </div>
 
       <div
-        className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_300px] lg:grid-cols-[250px_1fr_300px]"
+        className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_1fr_300px]"
       >
         {/* LEFT RAIL — My Billboard + Affiliates */}
         <aside className="space-y-6">

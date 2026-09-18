@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { ChevronDown, ChevronRight, Copy, Check, Loader2 } from "lucide-react";
 
 export interface BillboardSettings {
@@ -41,7 +42,7 @@ function Section({ title, badge, defaultOpen = false, children }: {
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-input">
+    <Card className="border-input">
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -58,7 +59,7 @@ function Section({ title, badge, defaultOpen = false, children }: {
         </span>
       </button>
       {open && <div className="border-t border-input px-3 py-3">{children}</div>}
-    </div>
+    </Card>
   );
 }
 

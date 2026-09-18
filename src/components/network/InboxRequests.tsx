@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 interface RequestRow {
   id: string;
@@ -84,9 +85,9 @@ export function InboxRequests({ onAccepted }: InboxRequestsProps) {
         const p = r.partner_info;
         if (!p) return null;
         return (
-          <div
+          <Card
             key={r.id}
-            className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
+            className="flex items-center gap-3 p-3"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-xs font-bold text-foreground overflow-hidden">
               {p.avatar_url ? (
@@ -127,7 +128,7 @@ export function InboxRequests({ onAccepted }: InboxRequestsProps) {
                 </Button>
               </div>
             )}
-          </div>
+          </Card>
         );
       })}
     </div>

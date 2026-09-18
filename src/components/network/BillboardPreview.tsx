@@ -7,6 +7,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 interface BillboardPreviewProps {
   displayName: string;
@@ -37,7 +38,7 @@ export function BillboardPreview({
     .join("");
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+    <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
           My Billboard
@@ -112,6 +113,6 @@ export function BillboardPreview({
           Add a tagline, tags, or collab style to personalize your billboard.
         </p>
       )}
-    </div>
+    </Card>
   );
 }
