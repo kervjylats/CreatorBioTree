@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       .eq("id", fan.id);
 
     const response = NextResponse.json({ fan_id: fan.id });
-    await setFanSession(response, fan.id, creator_id, supabase);
+    await setFanSession(response, fan.id, creator_id, supabase, request.cookies);
     return response;
   } catch (err) {
     console.error("[fan/login]", err);

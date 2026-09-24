@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Circle, Settings, Palette, Package, Share2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
 interface ChecklistState {
   hasProfile: boolean;
@@ -36,7 +37,7 @@ export function SetupChecklist() {
           hasDesign: !!creator?.custom_theme,
         });
       })
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load checklist"); })
       .finally(() => setLoading(false));
   }, []);
 

@@ -1,21 +1,22 @@
-/** NetworkPage — 3-section anchored layout (network.md Layout B): left rail (My Billboard + Affiliates), center detail, right rail (My Peeps). */
+/**
+ * NetworkPage — hub for the creator Network (network.md Layout): LEFT rail
+ * (Billboard + Affiliates), CENTER = Discover grid (search creators + Connect /
+ * Visit). My Peeps + collabs/fans/staff live in their own sub-screens via the
+ * floating MyPeeps dock. Mock + real ready.
+ */
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
-import { CollabList } from "./CollabList";
-import { CollabDetail } from "./CollabDetail";
 import { BillboardPreview } from "./BillboardPreview";
 import { BillboardEditor, type BillboardSettings } from "./BillboardEditor";
-import { InboxRequests } from "./InboxRequests";
-import { MyPeeps } from "@/components/relationships/MyPeeps";
-import { FanListTable } from "@/components/relationships/FanListTable";
-import { FanProfileDrawer } from "@/components/relationships/FanProfileDrawer";
 import { AffiliateDiscover } from "@/components/affiliates/AffiliateDiscover";
 import { EarningsSummary } from "@/components/affiliates/EarningsSummary";
-import { PartnerInviteCard } from "@/components/partnership/PartnerInviteCard";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 interface SearchResult {
   id: string;
@@ -40,22 +41,15 @@ const EMPTY_BILLBOARD: BillboardSettings = {
 };
 
 export function NetworkPage() {
-  const [selectedCollab, setSelectedCollab] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [peepRow, setPeepRow] = useState<"partners" | "fans" | "staff" | null>(null);
-  const [selectedFanId, setSelectedFanId] = useState<string | null>(null);
-  const [fanDrawerOpen, setFanDrawerOpen] = useState(false);
+  const [billboard, setBillboard] = useState<BillboardSettings>(EMPTY_BILLBOARD);
+  const [billboardLoading, setBillboardLoading] = useState(true);
+  const [billboardSaving, setBillboardSaving] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [connectState, setConnectState] = useState<Record<string, string>>({});
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  // Billboard state — loaded from API, shared between preview and editor
-  const [billboard, setBillboard] = useState<BillboardSettings>(EMPTY_BILLBOARD);
-  const [billboardLoading, setBillboardLoading] = useState(true);
-  const [billboardSaving, setBillboardSaving] = useState(false);
 
   useEffect(() => {
     fetch("/api/creator/partners/billboard")
@@ -74,7 +68,7 @@ export function NetworkPage() {
           media_kit_message: d.media_kit_message ?? "",
         })
       )
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load billboard"); })
       .finally(() => setBillboardLoading(false));
   }, []);
 
@@ -126,11 +120,30 @@ export function NetworkPage() {
     });
   }, [billboard.is_discoverable]);
 
+  const handleConnect = useCallback(async (creator: SearchResult) => {
+    if (connectState[creator.id] === "loading") return;
+    setConnectState((prev) => ({ ...prev, [creator.id]: "loading" }));
+    try {
+      const res = await fetch("/api/creator/partners/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partner_id: creator.id }),
+      });
+      const data = await res.json();
+      if (res.ok || data.error === "Request already pending") {
+        setConnectState((prev) => ({ ...prev, [creator.id]: "requested" }));
+      } else {
+        setConnectState((prev) => ({ ...prev, [creator.id]: "connected" }));
+      }
+    } catch {
+      setConnectState((prev) => ({ ...prev, [creator.id]: "error" }));
+    }
+  }, [connectState]);
+
   const doSearch = useCallback((q: string) => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (!q.trim()) {
       setSearchResults([]);
-      setSearchOpen(false);
       return;
     }
     timerRef.current = setTimeout(async () => {
@@ -139,7 +152,6 @@ export function NetworkPage() {
         const res = await fetch(`/api/search/creators?q=${encodeURIComponent(q.trim())}`);
         const data = await res.json();
         setSearchResults(data.results ?? []);
-        setSearchOpen(true);
       } catch {
         setSearchResults([]);
       } finally {
@@ -157,57 +169,9 @@ export function NetworkPage() {
         </p>
       </div>
 
-      {/* Search bar */}
-      <div className="relative mb-6 max-w-xl">
-        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => { setSearchQuery(e.target.value); doSearch(e.target.value); }}
-          onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
-          placeholder="Search creators by name or username..."
-          className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none focus:border-foreground"
-        />
-        {searchLoading && (
-          <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />
-        )}
-        {searchOpen && searchResults.length > 0 && (
-          <div className="absolute z-50 mt-1 w-full rounded-xl border border-border bg-card shadow-lg">
-            {searchResults.map((c) => (
-              <Link
-                key={c.id}
-                href={`/${c.username}`}
-                className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/30 first:rounded-t-xl last:rounded-b-xl"
-              >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-xs font-bold text-foreground overflow-hidden">
-                  {c.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.avatar_url} alt={c.display_name} className="h-full w-full object-cover" />
-                  ) : (
-                    c.display_name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
-                  )}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <span className="text-sm font-bold text-foreground">{c.display_name}</span>
-                  <span className="ml-1.5 text-xs text-muted-foreground">@{c.username}</span>
-                </div>
-                <span className="text-xs text-primary font-medium">Visit</span>
-              </Link>
-            ))}
-          </div>
-        )}
-        {searchOpen && searchResults.length === 0 && !searchLoading && (
-          <div className="absolute z-50 mt-1 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-lg">
-            No creators match &ldquo;{searchQuery}&rdquo;
-          </div>
-        )}
-      </div>
-
-      <div
-        className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_1fr_300px]"
-      >
-        {/* LEFT RAIL — My Billboard + Affiliates */}
-        <aside className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_1fr]">
+        {/* LEFT RAIL — Billboard + Affiliates */}
+        <aside className="order-2 space-y-6 lg:order-1">
           {billboardLoading ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 size={16} className="animate-spin text-muted-foreground" />
@@ -234,52 +198,99 @@ export function NetworkPage() {
           <EarningsSummary />
         </aside>
 
-        {/* CENTER — CollabList or CollabDetail */}
-        <section className="min-h-[50vh]">
-          {selectedCollab ? (
-            <CollabDetail
-              partnershipId={selectedCollab}
-              onBack={() => setSelectedCollab(null)}
+        {/* CENTER — Discover grid */}
+        <section className="order-1 lg:order-2">
+          <div className="relative mb-4">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); doSearch(e.target.value); }}
+              placeholder="Search creators by name or username..."
+              className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none focus:border-foreground"
             />
+            {searchLoading && (
+              <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />
+            )}
+          </div>
+
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            Discover
+          </h2>
+
+          {searchQuery.trim() === "" ? (
+            <div className="rounded-xl border border-dashed border-border p-10 text-center">
+              <p className="text-sm font-medium text-foreground">Find creators to collab with</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Search by name or link address, then send a Connect request.
+              </p>
+            </div>
+          ) : searchResults.length === 0 && !searchLoading ? (
+            <div className="rounded-xl border border-dashed border-border p-10 text-center">
+              <p className="text-sm text-muted-foreground">
+                No creators match &ldquo;{searchQuery}&rdquo;
+              </p>
+            </div>
           ) : (
-            <CollabList
-              key={refreshKey}
-              onSelect={setSelectedCollab}
-              selectedId={selectedCollab}
-            />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {searchResults.map((c) => {
+                const state = connectState[c.id] ?? "";
+                return (
+                  <div
+                    key={c.id}
+                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:bg-accent/30"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-xs font-bold text-foreground overflow-hidden">
+                      {c.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.avatar_url} alt={c.display_name} className="h-full w-full object-cover" />
+                      ) : (
+                        c.display_name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate text-sm font-bold text-foreground">{c.display_name}</span>
+                        {c.is_featured && (
+                          <Badge variant="secondary" className="text-micro">Featured</Badge>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground">@{c.username}</span>
+                      {c.tagline && (
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground/70">{c.tagline}</p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 flex-col gap-1.5">
+                      <Button
+                        size="sm"
+                        variant={state === "connected" ? "outline" : "default"}
+                        disabled={["loading", "requested", "connected"].includes(state)}
+                        onClick={() => handleConnect(c)}
+                      >
+                        {state === "loading"
+                          ? "…"
+                          : state === "requested"
+                            ? "Requested"
+                            : state === "connected"
+                              ? "Connected"
+                              : "Connect"}
+                      </Button>
+                      <Link
+                        href={`/${c.username}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1 text-xs font-medium text-primary"
+                      >
+                        Visit <ExternalLink size={12} />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </section>
-
-        {/* RIGHT RAIL — My Peeps + Partner Invite */}
-        <aside className="space-y-6">
-          <InboxRequests
-            key={refreshKey}
-            onAccepted={() => setRefreshKey((k) => k + 1)}
-          />
-
-          <MyPeeps
-            onSelectRow={(row) => setPeepRow(peepRow === row ? null : row)}
-            activeRow={peepRow}
-          />
-
-          {peepRow === "fans" && (
-            <FanListTable
-              onSelectFan={(fanId) => {
-                setSelectedFanId(fanId);
-                setFanDrawerOpen(true);
-              }}
-            />
-          )}
-
-          {peepRow === "partners" && <PartnerInviteCard />}
-        </aside>
       </div>
-
-      <FanProfileDrawer
-        fanId={selectedFanId}
-        open={fanDrawerOpen}
-        onOpenChange={setFanDrawerOpen}
-      />
     </div>
   );
 }

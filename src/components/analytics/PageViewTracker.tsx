@@ -1,4 +1,8 @@
-/** PageViewTracker — fire-and-forget pageview ping (analytics; never blocks rendering). */
+/**
+ * PageViewTracker — fire-and-forget pageview ping (analytics; never blocks
+ * rendering). Mounted on the fan shell frames (guest + 4-tab app) so every
+ * surface reports to /api/creator/pageview.
+ */
 "use client";
 
 import { useEffect } from "react";

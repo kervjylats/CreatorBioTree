@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
 
     const cookieStore = await cookies();
     const supabase = createServiceClient();
-    const session = await getFanSession(cookieStore, supabase);
-    const fanId = session && session.creatorId === creator_id ? session.fanId : null;
+    const session = await getFanSession(cookieStore, supabase, creator_id);
+    const fanId = session?.fanId ?? null;
 
     await fanService.trackInstall(creator_id, fanId, platform ?? "unknown", supabase);
     return NextResponse.json({ ok: true });

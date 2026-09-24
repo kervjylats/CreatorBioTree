@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Loader2, ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ChatIcon } from "@/components/chat/ChatShell";
+import { toast } from "sonner";
 
 interface CollabPartner {
   id: string;
@@ -37,7 +39,7 @@ export function CollabDetail({ partnershipId, onBack }: CollabDetailProps) {
           setCreatedAt(row.created_at);
         }
       })
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load partner"); })
       .finally(() => setLoading(false));
   }, [partnershipId]);
 
@@ -90,6 +92,13 @@ export function CollabDetail({ partnershipId, onBack }: CollabDetailProps) {
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-foreground">{partner.display_name}</h3>
               <Badge variant="outline" className="text-micro border-green-300 text-green-700">Collab</Badge>
+              {partner.id && (
+                <ChatIcon
+                  otherKey={partner.id}
+                  otherParty="creator"
+                  name={partner.display_name}
+                />
+              )}
             </div>
             <span className="text-xs text-muted-foreground">@{partner.username}</span>
             {partner.tagline && (

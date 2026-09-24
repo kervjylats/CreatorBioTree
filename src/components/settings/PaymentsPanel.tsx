@@ -22,7 +22,7 @@ export function PaymentsPanel() {
       .then((data) => {
         setConnected(!!data?.creator?.paypal_email);
       })
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load payment settings"); })
       .finally(() => setLoading(false));
   }, []);
 

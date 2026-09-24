@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Resolve the fan's followed partners (fan_follows table).
-  const session = await getFanSession(req.cookies, supabase);
+  const session = await getFanSession(req.cookies, supabase, host.id);
   let followedIds: string[] = [];
   if (session) {
     const { data: follows } = await supabase

@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     // Same session cookie as fans — the render rule (no password_hash → follower)
     // keeps them on the personalized guest page, never the 4-tab app.
     const response = NextResponse.json({ followed: true, fan_id: fanId });
-    await setFanSession(response, fanId, creator.id, supabase);
+    await setFanSession(response, fanId, creator.id, supabase, request.cookies);
     return response;
   } catch (err) {
     console.error("[fan/follow-creator]", err);

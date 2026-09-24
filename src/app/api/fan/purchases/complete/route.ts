@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validation.error.format() }, { status: 400 });
     }
 
-    const { content_item_id, fan_email, creator_id, opt_in_updates } = validation.data;
+    const { content_item_id, fan_email, creator_id } = validation.data;
     const supabase = createServiceClient();
     const normalizedEmail = fan_email.toLowerCase();
 
@@ -121,10 +121,11 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ ok: true, purchase_id: purchase.id });
 
-    // The ONLY follow bridge: the buyer's explicit "Also send me updates?" opt-in.
-    if (opt_in_updates) {
-      await setFanSession(response, fanId, creator_id, supabase);
-    }
+    // G1 (2026-09-23): ALWAYS recognize the buyer on this device so they're
+    // never asked to re-buy something they already own. The "Also send me
+    // updates?" opt-in remains the ONLY bridge to actual email updates — a
+    // purchase still NEVER auto-follows (fan-shell.md decision #12).
+    await setFanSession(response, fanId, creator_id, supabase, request.cookies);
 
     return response;
   } catch (err) {

@@ -179,23 +179,23 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 
 ## 10. Partnerships (Persona 10)
 
-- [ ] Creator A → Network → My Peeps right rail → expand Partners row → "Invite partner" → gets invite link (`?invite=CODE`).
+- [ ] Creator A → `/dashboard/network/partners` (My Peeps dock → Partners) → "Invite partner" → gets invite link (`?invite=CODE`).
 - [ ] Creator B opens invite link → signup → auto-connected.
 - [ ] Both see each other in Partners list.
 
 ## 11. Collabs (Persona 11)
 
-- [ ] Creator A → Network → Discover → search Creator B → "Connect" (sends request).
-- [ ] Creator B → Network → Requests → "Accept" → collab formed.
+- [ ] Creator A → `/dashboard/network` hub → Discover center → search Creator B → "Connect" (sends request).
+- [ ] Creator B → `/dashboard/network/partners` (dock → Partners) → Requests → "Accept" → collab formed.
 - [ ] Both see each other in CollabList.
 
 ## 12. Team (Persona 9)
 
-- [ ] Creator → Network → My Peeps right rail → expand Staffs row → "Invite" → enter email + role.
+- [ ] Creator → `/dashboard/network/staff` (My Peeps dock → Staff) → "Invite" → enter email + role.
 - [ ] Staff member receives invite → accepts → becomes team member.
 - [ ] Creator toggles permissions (Content ON, Settings OFF, etc.).
 - [ ] Team member can access toggled-on sections.
-- [ ] Note: TeamRow is wired into NetworkPage but requires team members to be created first (test via API or create via invite flow above).
+- [ ] Note: TeamRow is wired into StaffPage but requires team members to be created first (test via API or create via invite flow above).
 
 ## 13. Affiliates (Persona 12)
 
@@ -218,16 +218,19 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 - [ ] Guest page shows "Join the community" CTA card (if creator has community).
 - [ ] Fan Connect tab shows community card → deep-links to Home tab.
 
-## 15. Network (Persona 6)
+## 15. Network (Persona 6) — REBUILT 2026-09-26 (hub + dock + 3 sub-screens)
 
-- [ ] `/dashboard/network` — 3-column layout.
-- [ ] Left rail: Billboard card + Discover (search + results) + AffiliateDiscover + EarningsSummary.
-- [ ] Center: CollabList + CollabDetail (billboard editor visible when connected).
-- [ ] Right rail: InboxRequests (pending collab requests) + My Peeps (3 expandable rows: Partners/Fans/Staffs).
-- [ ] Billboard rotates partner cards (5s interval), partners with active deals get 2x weight.
-- [ ] My Peeps Partners row expands → PartnerInviteCard + connected partners list.
-- [ ] My Peeps Fans row expands → FanListTable with filters + CSV export.
-- [ ] My Peeps Staffs row expands → TeamRow with invite button + permission toggles.
+- [ ] `/dashboard/network` — 2-column layout (`lg`): left rail + center Discover grid.
+- [ ] Left rail: Billboard preview + Billboard editor + AffiliateDiscover + EarningsSummary.
+- [ ] Center: search box + discoverable-creator result cards (avatar/name/@username/tagline/Featured badge) with **Visit** (new tab) + **Connect** buttons.
+- [ ] Connect: sends collab request → button shows "Requested ✓" → 409 "Already connected" shows "Connected" → stays disabled.
+- [ ] Mobile (<`lg`): order = Discover → Billboard → Affiliates (no sidebar, bottom nav).
+- [ ] **Unified dock stack** (bottom-right, ONE vertical column, visible on every `/dashboard/*` page): `Partners · Fans · Staff · 💬 Messages` (top→bottom) — four uniform round icon buttons (icon-only on all screen sizes, hover tooltips). Active sub-screen's button fills dark. Each button shows ONE combined red badge (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread); hidden when 0. Stack is a single evenly-spaced group (no drift between the My Peeps buttons and the chat bubble).
+- [ ] Dock badges update when a collab request arrives, a team invite is pending, or a chat thread has unread (30s poll).
+- [ ] `/dashboard/network/partners`: Requests inbox (incoming Accept/Decline + outgoing "Pending") → Active collabs list → in-page CollabDetail (back button, Visit their page link, 💬 ChatIcon) → "Invite a partner" card (7-day code).
+- [ ] `/dashboard/network/fans`: full-width FanListTable (filters + status chips + CSV export) → FanProfileDrawer (identity, purchases, subscription, 💬 ChatIcon, do-not-contact toggle).
+- [ ] `/dashboard/network/staff`: pending team invites section + members list (TeamRow) → PermissionsToggles edit panel → InviteEmail on top; 💬 ChatIcon per member row.
+- [ ] Billboard editor: tagline/tags/collab-style + **bio, rate card (post/story/video), media-kit message** persist after save.
 
 ## 16. Offline
 

@@ -27,6 +27,9 @@
   --card:              #FFFFFF;
   --card-foreground:   #3D3A35;
   --shell-width:       512px;
+  --bottom-nav-height: 80px;
+  --phone-width:       390px;
+  --phone-height:      640px;
 }
 
 @theme inline {

@@ -15,6 +15,7 @@ interface CollabPartner {
 
 interface CollabRow {
   id: string;
+  status: string;
   partner_info: CollabPartner | null;
   created_at: string;
 }
@@ -31,7 +32,10 @@ export function CollabList({ onSelect, selectedId }: CollabListProps) {
   useEffect(() => {
     fetch("/api/creator/partners/list")
       .then((r) => r.json())
-      .then((d) => setCollabs(d.partnerships ?? []))
+      .then((d) => {
+        const all = (d.partnerships ?? []) as CollabRow[];
+        setCollabs(all.filter((c) => c.status === "active"));
+      })
       .catch(() => setCollabs([]))
       .finally(() => setLoading(false));
   }, []);

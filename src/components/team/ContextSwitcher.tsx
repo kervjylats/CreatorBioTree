@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface Context {
   id: string;
@@ -38,7 +39,7 @@ export function ContextSwitcher({
       .then((data) => {
         if (data.contexts) setContexts(data.contexts);
       })
-      .catch(() => {});
+      .catch(() => { toast.error("Failed to load contexts"); });
   }, []);
 
   if (contexts.length <= 1) return null;

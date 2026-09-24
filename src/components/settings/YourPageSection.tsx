@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Download } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { toast } from "sonner";
 
 export function YourPageSection() {
   const [username, setUsername] = useState<string | null>(null);
@@ -23,7 +24,7 @@ export function YourPageSection() {
         const u = data?.creator?.username;
         if (u) setUsername(u);
       })
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load page settings"); })
       .finally(() => setLoading(false));
   }, []);
 

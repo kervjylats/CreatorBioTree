@@ -23,7 +23,7 @@ export function MessagingPrivacy() {
           setAllowAny(data.allow_messages_from_anyone);
         }
       })
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load preferences"); })
       .finally(() => setLoading(false));
   }, []);
 

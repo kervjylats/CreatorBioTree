@@ -1,23 +1,15 @@
-/** TODO: Add purpose docstring — Route handler. */
+/**
+ * POST /api/creator/pageview — fire-and-forget pageview ping (fan-shell
+ * analytics; never surfaces errors). Rate-limited (5/IP/min/creator), UUID
+ * validated (skipped in mock), silent 200 on limit. Records fan_id when a
+ * session exists (fan CSV export) + viewed_at. NOTE: in-memory limit resets
+ * on cold starts — fine for casual abuse; stricter = Upstash Redis.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { rateLimiter } from "@/lib/rate-limiter";
+import { getFanSession } from "@/lib/fanSession";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
-
-/**
- * POST /api/creator/pageview
- *
- * WHAT CHANGED:
- *   - Added IP-based in-memory rate limiting (max 5 requests per IP per minute).
- *     Without this, any script could send 100k fake views to any creator.
- *   - Added UUID format validation for creator_id. Before, any string was
- *     accepted and passed directly to the database.
- *   - Silently ignore (200 OK) rate-limited requests rather than returning 429,
- *     so client-side fetch().catch(() => {}) callers don't log noise.
- *
- * NOTE: In-memory rate limiting resets on Vercel cold starts. This is fine for
- * this use case — it stops casual abuse. For stricter limits, use Upstash Redis.
- */
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -53,9 +45,16 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServiceClient();
 
+    // Attribute the view to a fan when a session exists for this creator
+    // (the fan CSV export + per-fan view stats depend on fan_id).
+    const session = await getFanSession(request.cookies, supabase, creator_id);
+    const fanId = session?.fanId ?? null;
+
     await supabase.from("page_views").insert({
       creator_id,
       content_item_id: content_item_id ?? null,
+      fan_id: fanId,
+      viewed_at: new Date().toISOString(),
       referrer: request.headers.get("referer") ?? null,
     });
 

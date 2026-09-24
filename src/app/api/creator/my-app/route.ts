@@ -37,7 +37,14 @@ export async function GET() {
       .eq("creator_id", user.id)
       .order("sort_order", { ascending: true });
 
-    return NextResponse.json({ creator, items: items ?? [] });
+    // Overview StatCards consumes page_views — count completed views so the
+    // "Page Views" card shows a real number (2026-09-23 fix).
+    const { count: pageViews } = await supabase
+      .from("page_views")
+      .select("id", { count: "exact", head: true })
+      .eq("creator_id", user.id);
+
+    return NextResponse.json({ creator, items: items ?? [], page_views: pageViews ?? 0 });
   } catch (err) {
     const handled = handleAuthError(err);
     if (handled) return handled;

@@ -14,13 +14,15 @@ import { Bell, BellOff } from "lucide-react";
 import { toast } from "sonner";
 import type { CreatorBranding } from "@/lib/branding";
 import type { FanViewId } from "@/types";
+import { AUTHENTICATED_FAN_TABS, FAN_TAB_BY_PATH } from "@/lib/nav-config";
 import { FanBottomNav } from "./FanBottomNav";
-import { PageViewTracker } from "./PageViewTracker";
+import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { InstallBanner } from "./InstallBanner";
 import { IOSInstallGuide } from "./IOSInstallGuide";
 import { InAppBrowserWarning } from "./InAppBrowserWarning";
 import { UpdateToast } from "./UpdateToast";
 import { ChatIcon, ChatInboxPopover } from "@/components/chat/ChatShell";
+import { PoweredByFooter } from "./PoweredByFooter";
 import { buttonShape } from "./themeStyles";
 
 interface FanAppShellProps {
@@ -29,17 +31,10 @@ interface FanAppShellProps {
   children: ReactNode;
 }
 
-const TAB_BY_PATH: Record<string, FanViewId> = {
-  "/home": "home",
-  "/content": "content",
-  "/connect": "connect",
-  "/settings": "settings",
-};
-
 export function FanAppShell({ branding, creatorId, children }: FanAppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const activeTab: FanViewId = TAB_BY_PATH[pathname ?? ""] ?? "home";
+  const activeTab: FanViewId = FAN_TAB_BY_PATH[pathname ?? ""] ?? "home";
 
   const [notify, setNotify] = useState(
     () => typeof window !== "undefined" && window.localStorage.getItem(`fan_notify_${creatorId}`) === "1",
@@ -86,17 +81,15 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
 
         {/* Desktop top nav — hidden on phone/tablet, visible at lg */}
         <nav className="mx-auto mt-2 hidden max-w-lg gap-1 lg:flex">
-          {(["home", "content", "connect", "settings"] as const).map((tab) => {
-            const active = activeTab === tab;
-            const label = tab.charAt(0).toUpperCase() + tab.slice(1);
+          {AUTHENTICATED_FAN_TABS.map(({ id, label }) => {
+            const active = activeTab === id;
             return (
               <button
-                key={tab}
+                key={id}
                 type="button"
                 onClick={() => {
-                  if (tab === activeTab) return;
-                  if (tab === "home") router.push(`/${branding.creatorUsername}/home`);
-                  else router.push(`/${branding.creatorUsername}/${tab}`);
+                  if (id === activeTab) return;
+                  router.push(`/${branding.creatorUsername}/${id}`);
                 }}
                 className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
                 style={{
@@ -116,18 +109,22 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
       <InstallBanner branding={branding} />
       <IOSInstallGuide branding={branding} />
 
-      <main className="flex-1 pb-20 lg:pb-8">{children}</main>
+      <main className="flex-1 pb-[var(--bottom-nav-height)] lg:pb-8">
+        {children}
+        <PoweredByFooter branding={branding} />
+      </main>
 
       <UpdateToast branding={branding} />
       <PageViewTracker creatorId={creatorId} />
-      <ChatInboxPopover />
+      <div className="fixed bottom-20 right-4 z-50 sm:bottom-6 sm:right-6">
+        <ChatInboxPopover />
+      </div>
       <FanBottomNav
         activeTab={activeTab}
         branding={branding}
         onTabChange={(tab) => {
           if (tab === activeTab) return;
-          if (tab === "home") router.push(`/${branding.creatorUsername}/home`);
-          else router.push(`/${branding.creatorUsername}/${tab}`);
+          router.push(`/${branding.creatorUsername}/${tab}`);
         }}
       />
     </div>

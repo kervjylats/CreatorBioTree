@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Download } from "lucide-react";
+import { toast } from "sonner";
 
 interface FanRow {
   id: string;
@@ -53,7 +54,7 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
           );
         }
       })
-      .catch(() => {});
+      .catch(() => { toast.error("Failed to load fans"); });
   }, []);
 
   const filtered = fans.filter((f) => {

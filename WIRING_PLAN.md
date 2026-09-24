@@ -445,6 +445,17 @@ DEPENDED  EVERYTHING: 1–5, 11 (search) 12 (chat icons) 13 14 15 16 (rails) 17 
 ORDER     18/23 — the most shelf-heavy (Need Themes like).
 ```
 
+> **✅ DONE 2026-08-30 + ADDENDUM (2026-09-26, `NETWORK_REDESIGN_PLAN.md`) — layout OVERRIDDEN.**
+> The 3-section anchored layout is superseded by **hub + floating dock + 3 sub-screens**:
+> - **Hub `/dashboard/network`** — 2-col at `lg`: LEFT rail (BillboardPreview/Editor + AffiliateDiscover + EarningsSummary) · CENTER = **Discover grid** (`/api/search/creators?q=` + result cards with Visit + Connect buttons). Right rail removed. Mobile order: Discover → Billboard → Affiliates.
+> - **3 sub-screens:** `/dashboard/network/partners` (InboxRequests pending-only + CollabList active-only + CollabDetail w/ ChatIcon + PartnerInviteCard) · `/dashboard/network/fans` (FanListTable full-width + FanProfileDrawer w/ ChatIcon) · `/dashboard/network/staff` (pending invites + TeamRow members + PermissionsToggles + InviteEmail + ChatIcon per row). Route chain per sub-screen: `page.tsx` re-export → `screens/creator/network/<name>/Screen.tsx` → `components/network/<Name>Page.tsx`.
+> - **My Peeps + 💬 = ONE unified dock stack** (`components/relationships/MyPeeps.tsx` + `ChatInboxPopover`), mounted in `app/(shell)/layout.tsx` inside the **single** floating wrapper `fixed bottom-20 right-4 z-50 flex flex-col items-center gap-2 sm:bottom-6 sm:right-6` — vertical order top→bottom = Partners · Fans · Staff · Messages. Both components are **position-less** (MyPeeps = fragment of 3 buttons; ChatInboxPopover root = `relative`) — the mount site owns placement, so there is no hardcoded offset to keep in sync. All four buttons are uniform `h-11 w-11` round icon buttons (icon-only every breakpoint, `title` tooltips); active page from `usePathname()`; red combined pill per chip (Partners = pending_requests + unread · Fans = unread · Staff = pending_invites + unread; "99+" cap; hidden at 0); 30s poll. Fan shell wraps its bubble independently in `FanAppShell.tsx` (different surface, not a sync pair).
+> - **`GET /api/creator/relationships` re-shaped:** `{ partners, fans, staff, pending_requests, pending_invites, unread: { partners, fans, staff } }` — unread classifies each active direct convo's other participant (fan_accounts → fans · creator_team_members → staff · non-ended partnership → partners), skipping muted + deleted + own messages.
+> - **`GET /api/creator/partners/list`** now returns ALL non-ended rows (active + pending) + computed `direction` (`"incoming"` when `creator_b === user.id`, else `"outgoing"`).
+> - **`GET /api/creator/fans/list`** now returns `id`, `do_not_contact`, computed `total_spent` (sum of completed `fan_purchases.amount_paid` per fan).
+> - **Billboard GET/PUT** adds `bio` (600) + `rate_card {post,story,video}` + `media_kit_message` (300) on the creators row; dead `/media-kit` shareable-URL block removed from BillboardEditor.
+> - **Mock fixes on the spot (2026-09-26):** mock query builder gained `.gt()`, `.is()`, and `select(…, { count })` support (were missing entirely → 500s in mock for relationships / team+partner invites / count queries).
+
 ---
 
 ## SHEET 19 — My-App (biggest screen)
@@ -527,7 +538,16 @@ DEPENDED…    10 (fan login), full fan shell (20) for chick context
 > `/api/fan/partners` returns real followed list + deal weights for billboard.
 >
 > **Still deferred:** push broadcasts (Bell/notify = local toggle + `/api/push/subscribe`),
-> claim purchases, billing history.
+> billing history.
+>
+> **2026-09-23 (Recognition + Receipts):** fan session = Model B (one `fan_session` cookie,
+> per-creator token map — `fanSession.ts`); purchase completion ALWAYS sets the session
+> (G1); receipts visible to guest-buyers/followers on the guest page (G2). **Parked as
+> future work:** claim purchases (G3 — merge purchases under a different-email account),
+> cross-creator purchase hub (G4), real PayPal SDK/webhooks (G5). Money philosophy:
+> app stays OUT of creator↔fan money flows — creators process PayPal/Stripe sales and keep
+> 100%; platform revenue = creator-paid plans/subscriptions via Paddle/LemonSqueezy/Gumroad
+> (decision deferred to end of dev).
 
 ```
 SCREEN: Fan shell · /[username] ·  spec: fan-shell.md (Parts 1–4)

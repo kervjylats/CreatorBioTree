@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { Users, UserCheck, FileText, DollarSign } from "lucide-react";
+import { toast } from "sonner";
 
 interface Stats {
   total_creators?: number;
@@ -21,7 +22,7 @@ export function StatsCards() {
     fetch("/api/admin/stats")
       .then((r) => r.json())
       .then(setStats)
-      .catch(() => {});
+      .catch(() => { toast.error("Failed to load stats"); });
   }, []);
 
   const cards = [

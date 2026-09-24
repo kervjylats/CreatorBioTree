@@ -1,22 +1,17 @@
 /**
  * DashboardSidebar — left-rail navigation for the creator desktop/tablet.
- * Renders 4 tab nav (Overview, Network, My App, Settings) + Admin Panel
- * for admin users. No sign out here — that lives in Settings.
+ * Renders nav items from nav-config.ts (single source of truth).
+ * Admin Panel appears for admin users on BOTH desktop sidebar and mobile bottom bar.
+ * No sign out here — that lives in Settings.
  * Messages via floating ChatInboxPopover.
  *
- * On phones (<md), replaced by a bottom bar with the same 4 tabs.
+ * On phones (<md), replaced by a bottom bar with the same items.
  */
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Globe,
-  Smartphone,
-  Settings,
-  Shield,
-} from "lucide-react";
+import { getVisibleNavItems } from "@/lib/nav-config";
 
 interface DashboardSidebarProps {
   creator: {
@@ -30,13 +25,6 @@ interface DashboardSidebarProps {
   onNavigate?: () => void;
 }
 
-const NAV_ITEMS = [
-  { href: "/dashboard/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/network", label: "Network", icon: Globe },
-  { href: "/dashboard/my-app", label: "My App", icon: Smartphone },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-] as const;
-
 export function DashboardSidebar({
   creator,
   userEmail,
@@ -44,6 +32,7 @@ export function DashboardSidebar({
   onNavigate,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const navItems = getVisibleNavItems(isAdmin);
 
   const isActive = (href: string) =>
     href === "/dashboard/overview"
@@ -78,9 +67,9 @@ export function DashboardSidebar({
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation — same items on desktop sidebar and mobile bottom bar */}
       <nav className="flex-1 space-y-0.5 px-3 py-4">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
@@ -95,21 +84,6 @@ export function DashboardSidebar({
             {item.label}
           </Link>
         ))}
-
-        {isAdmin && (
-          <Link
-            href="/admin"
-            onClick={handleNavClick}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-              pathname.startsWith("/admin")
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            }`}
-          >
-            <Shield size={18} />
-            Admin Panel
-          </Link>
-        )}
       </nav>
     </div>
   );
@@ -121,9 +95,9 @@ export function DashboardSidebar({
         {sidebarContent}
       </aside>
 
-      {/* Mobile bottom bar — 4 tabs only */}
+      {/* Mobile bottom bar — same items as desktop sidebar */}
       <nav className="fixed inset-x-0 bottom-0 z-30 safe-bottom flex border-t border-border bg-card md:hidden">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = isActive(item.href);
           return (
             <Link

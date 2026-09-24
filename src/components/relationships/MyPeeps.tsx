@@ -1,65 +1,95 @@
 /**
- * My Peeps umbrella: three count cards for Partners/Fans/Staff
- * (relationships.md Part 1).
+ * My Peeps dock — three navigation icon buttons (Partners / Fans / Staff) with
+ * red count badges. POSITION-LESS: the mount site (shell layout's floating stack)
+ * owns placement — this component renders only the button group. Hidden entirely
+ * on /admin. Uniform h-11 w-11 circles at every breakpoint (matches the chat
+ * bubble that sits below it in the stack).
  */
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { usePathname, useRouter } from "next/navigation";
 import { Users, Heart, Briefcase } from "lucide-react";
+import { toast } from "sonner";
 
 interface Counts {
   partners: number;
   fans: number;
   staff: number;
+  pending_requests: number;
+  pending_invites: number;
+  unread: { partners: number; fans: number; staff: number };
 }
 
-interface MyPeepsProps {
-  onSelectRow?: (row: "partners" | "fans" | "staff") => void;
-  activeRow?: "partners" | "fans" | "staff" | null;
+/** Combined badge math: partners = pending collab requests + partner unread; fans = fan unread; staff = pending invites + staff unread. */
+function badgeFor(key: "partners" | "fans" | "staff", c: Counts): number {
+  if (key === "partners") return (c.pending_requests ?? 0) + (c.unread?.partners ?? 0);
+  if (key === "fans") return c.unread?.fans ?? 0;
+  return (c.pending_invites ?? 0) + (c.unread?.staff ?? 0);
 }
 
-/** My Peeps umbrella: three count cards for Partners/Fans/Staff (relationships.md Part 1). */
-export function MyPeeps({ onSelectRow, activeRow }: MyPeepsProps) {
-  const [counts, setCounts] = useState<Counts>({ partners: 0, fans: 0, staff: 0 });
+/** My Peeps — position-less Partners/Fans/Staff icon buttons with counts (mounted in the shell layout's floating row). */
+export function MyPeeps() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [counts, setCounts] = useState<Counts>(() => ({
+    partners: 0,
+    fans: 0,
+    staff: 0,
+    pending_requests: 0,
+    pending_invites: 0,
+    unread: { partners: 0, fans: 0, staff: 0 },
+  }));
+
+  const isAdmin = pathname?.startsWith("/admin") ?? false;
 
   useEffect(() => {
-    fetch("/api/creator/relationships")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.partners !== undefined) {
-          setCounts(data);
-        }
-      })
-      .catch(() => {});
+    const fetchCounts = () => {
+      fetch("/api/creator/relationships")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.partners !== undefined) setCounts(data);
+        })
+        .catch(() => { toast.error("Failed to load counts"); });
+    };
+    fetchCounts();
+    const id = setInterval(fetchCounts, 30000);
+    return () => clearInterval(id);
   }, []);
 
   const rows = [
-    { key: "partners" as const, label: "Partners", count: counts.partners, icon: Users },
-    { key: "fans" as const, label: "Fans", count: counts.fans, icon: Heart },
-    { key: "staff" as const, label: "Staff", count: counts.staff, icon: Briefcase },
+    { key: "partners" as const, label: "Partners", icon: Users, href: "/dashboard/network/partners" },
+    { key: "fans" as const, label: "Fans", icon: Heart, href: "/dashboard/network/fans" },
+    { key: "staff" as const, label: "Staff", icon: Briefcase, href: "/dashboard/network/staff" },
   ];
 
   return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-semibold text-muted-foreground">My Peeps</h3>
-      {rows.map((row) => (
-        <Card
-          key={row.key}
-          className={`cursor-pointer transition-colors hover:bg-accent/50 ${
-            activeRow === row.key ? "border-primary" : ""
-          }`}
-          onClick={() => onSelectRow?.(row.key)}
-        >
-          <CardContent className="flex items-center justify-between p-3">
-            <div className="flex items-center gap-2">
-              <row.icon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{row.label}</span>
-            </div>
-            <span className="text-sm text-muted-foreground">{row.count}</span>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <>
+      {(!isAdmin ? rows : []).map((row) => {
+        const active = pathname?.startsWith(row.href) ?? false;
+        const badge = badgeFor(row.key, counts);
+        return (
+          <button
+            key={row.key}
+            type="button"
+            aria-label={`My Peeps — ${row.label}`}
+            title={row.label}
+            onClick={() => router.push(row.href)}
+            className={`relative flex h-11 w-11 items-center justify-center rounded-full border font-medium transition-colors ${
+              active
+                ? "border-foreground bg-foreground text-background"
+                : "border-border bg-card text-foreground shadow-lg hover:bg-accent"
+            }`}
+          >
+            <row.icon size={17} strokeWidth={active ? 2.5 : 2} />
+            {badge > 0 && !active && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-caption font-bold text-white">
+                {badge > 99 ? "99+" : badge}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </>
   );
 }

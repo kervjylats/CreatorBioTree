@@ -64,7 +64,9 @@ export type TableName =
   | "affiliate_deals"
   | "affiliate_attributions"
   | "affiliate_conversions"
-  | "affiliate_links";
+  | "affiliate_links"
+  // ── External services (admin panel) ──
+  | "admin_service_access";
 
 // ─── Exported helpers ────────────────────────────────────────────────────────
 
@@ -121,6 +123,7 @@ function initStore(): void {
   mockStore.set("affiliate_attributions", []);
   mockStore.set("affiliate_conversions", []);
   mockStore.set("affiliate_links", []);
+  mockStore.set("admin_service_access", []);
 }
 
 export function seedAdminAccounts(): void {
@@ -137,6 +140,27 @@ export function seedAdminAccounts(): void {
         created_at: c.created_at ?? new Date().toISOString(),
         updated_at: c.updated_at ?? new Date().toISOString(),
       });
+    }
+  }
+  seedServiceAccess();
+}
+
+import { ALL_SERVICE_IDS } from "@/lib/services-config";
+
+function seedServiceAccess(): void {
+  const admins = getTable<Record<string, unknown>>("admin_accounts");
+  const access = getTable<Record<string, unknown>>("admin_service_access");
+  for (const admin of admins) {
+    if (admin.role === "super_admin" && !access.some((a) => a.user_id === admin.user_id)) {
+      for (const serviceId of ALL_SERVICE_IDS) {
+        access.push({
+          id: `svc-${admin.user_id}-${serviceId}`,
+          user_id: admin.user_id,
+          service_id: serviceId,
+          enabled: true,
+          created_at: new Date().toISOString(),
+        });
+      }
     }
   }
 }

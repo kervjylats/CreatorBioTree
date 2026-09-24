@@ -14,6 +14,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
 interface Activity {
   id: string;
@@ -38,7 +39,7 @@ export function ActivityTimeline() {
     fetch("/api/creator/activity")
       .then((r) => r.json())
       .then((data) => setActivities(Array.isArray(data) ? data : []))
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load activity"); })
       .finally(() => setLoading(false));
   }, []);
 

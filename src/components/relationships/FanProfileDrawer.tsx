@@ -14,6 +14,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { ChatIcon } from "@/components/chat/ChatShell";
+import { toast } from "sonner";
 
 interface FanProfile {
   fan: {
@@ -55,7 +57,7 @@ export function FanProfileDrawer({
       .then((data) => {
         if (data.fan) setProfile(data);
       })
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load fan profile"); })
       .finally(() => setLoading(false));
   }, [fanId, open]);
 
@@ -95,7 +97,16 @@ export function FanProfileDrawer({
         {profile && (
           <div className="space-y-4 py-2">
             <div>
-              <h4 className="text-sm font-semibold">Identity</h4>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-semibold">Identity</h4>
+                {profile.fan.id && (
+                  <ChatIcon
+                    otherKey={profile.fan.id}
+                    otherParty="fan"
+                    name={profile.fan.email}
+                  />
+                )}
+              </div>
               <p className="text-sm">{profile.fan.email}</p>
               <p className="text-xs text-muted-foreground">
                 Joined {new Date(profile.fan.created_at).toLocaleDateString()}

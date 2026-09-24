@@ -189,7 +189,7 @@ interface ChatInboxPopoverProps {
   onOpenFull?: () => void;
 }
 
-/** The 💬 floating inbox — bottom-right on every dashboard/fan screen, WhatsApp-style popover + badge. */
+/** The 💬 floating inbox — POSITION-LESS: the mount site owns placement (shell layout's floating stack next to My Peeps; FanAppShell wraps it in its own fixed corner). WhatsApp-style popover + badge. */
 export function ChatInboxPopover({ onOpenFull }: ChatInboxPopoverProps) {
   const { conversations, unread, refresh } = useChat();
   const [open, setOpen] = useState(false);
@@ -212,15 +212,16 @@ export function ChatInboxPopover({ onOpenFull }: ChatInboxPopoverProps) {
 
   return (
     <>
-      <div className="fixed bottom-20 right-4 z-50 sm:bottom-6 sm:right-6">
+      <div className="relative">
         <button
           type="button"
           aria-label="Messages"
+          title="Messages"
           onClick={() => {
             setOpen((v) => !v);
             if (!open) void refresh();
           }}
-          className="relative flex h-12 w-12 items-center justify-center rounded-full bg-foreground text-background shadow-lg transition-transform hover:scale-105"
+          className="relative flex h-11 w-11 items-center justify-center rounded-full bg-foreground text-background shadow-lg transition-transform hover:scale-105"
         >
           <MessageCircle size={22} />
           {unread > 0 && (
@@ -463,7 +464,7 @@ export function ChatThread({ conversationId, onBack, onOpenFull, compact, accent
   // Mark read whenever new messages arrive.
   useEffect(() => {
     if (!data) return;
-    void chatApi(`/api/chat/conversations/${conversationId}/read`, { method: "POST" }).catch(() => {});
+    void chatApi(`/api/chat/conversations/${conversationId}/read`, { method: "POST" }).catch(() => { toast.error("Failed to mark as read"); });
   }, [data?.messages.length, conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {

@@ -18,9 +18,5 @@ interface MyAppPageProps {
 
 export default async function MyAppScreen({ searchParams }: MyAppPageProps) {
   const params = await searchParams;
-  return (
-    <main className="min-h-screen bg-background">
-      <MyAppForm initialTab={params?.tab} />
-    </main>
-  );
+  return <MyAppForm initialTab={params?.tab} />;
 }

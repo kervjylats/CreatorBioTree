@@ -51,7 +51,7 @@ export function QrCard() {
         const username = data?.creator?.username;
         if (username) setUrl(`${window.location.origin}/${username}`);
       })
-      .catch(() => {});
+      .catch(() => { toast.error("Failed to load page link"); });
   }, []);
 
   const cellSize = 8;

@@ -51,7 +51,7 @@ export function DangerZone() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
+          <div className="flex flex-col gap-2 rounded-xl border border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-foreground">Sign out</p>
               <p className="text-xs text-muted-foreground">
@@ -63,7 +63,7 @@ export function DangerZone() {
               Sign out
             </Button>
           </div>
-          <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
+          <div className="flex flex-col gap-2 rounded-xl border border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-foreground">Export data</p>
               <p className="text-xs text-muted-foreground">
@@ -75,7 +75,7 @@ export function DangerZone() {
               Export
             </Button>
           </div>
-          <div className="flex items-center justify-between rounded-xl border border-destructive/20 px-4 py-3">
+          <div className="flex flex-col gap-2 rounded-xl border border-destructive/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-foreground">Delete account</p>
               <p className="text-xs text-muted-foreground">

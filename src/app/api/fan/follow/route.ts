@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
   if (!hostCreator) return NextResponse.json({ error: "Current creator not found" }, { status: 404 });
 
-  const session = await getFanSession(req.cookies, supabase);
-  if (!session || session.creatorId !== hostCreator.id) {
+  const session = await getFanSession(req.cookies, supabase, hostCreator.id);
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
@@ -77,8 +77,8 @@ export async function DELETE(req: NextRequest) {
     .maybeSingle();
   if (!hostCreator) return NextResponse.json({ error: "Current creator not found" }, { status: 404 });
 
-  const session = await getFanSession(req.cookies, supabase);
-  if (!session || session.creatorId !== hostCreator.id) {
+  const session = await getFanSession(req.cookies, supabase, hostCreator.id);
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 

@@ -27,7 +27,7 @@ export function ProfileSection() {
           setTagline(c.tagline ?? "");
         }
       })
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load profile"); })
       .finally(() => setLoading(false));
   }, []);
 

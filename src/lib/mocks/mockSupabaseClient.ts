@@ -64,6 +64,7 @@ globalForAuth.__MOCK_AUTH_USERS__ = authUsers;
 interface MockResult<TData = unknown> {
   data: TData | null;
   error: { message: string } | null;
+  count?: number;
 }
 
 // ─── Filter representation ───────────────────────────────────────────────────
@@ -78,6 +79,7 @@ interface Filter {
     | "ilike"
     | "contains"
     | "gte"
+    | "gt"
     | "or"
     | "is"
     | "not";
@@ -304,6 +306,8 @@ function matchFilter(row: Record<string, unknown>, f: Filter): boolean {
       return Array.isArray(val) && Array.isArray(f.val) && f.val.every((v) => val.includes(v));
     case "gte":
       return (val as unknown as string | number) >= (f.val as string | number);
+    case "gt":
+      return (val as unknown as string | number) > (f.val as string | number);
     case "or": {
       // f.val is an array of sub-filters; OR them.
       const subs = f.val as Filter[];
@@ -330,6 +334,7 @@ class MockQueryBuilder implements PromiseLike<MockResult> {
   private table: TableName | null = null;
   private mode: Mode = "select";
   private selectCols: string | undefined;
+  private selectCount: "exact" | "planned" | undefined;
   private payload: Record<string, unknown> | Record<string, unknown>[] | null = null;
   private upsertOpts: { onConflict?: string; ignoreDuplicates?: boolean } = {};
   private filters: Filter[] = [];
@@ -345,8 +350,9 @@ class MockQueryBuilder implements PromiseLike<MockResult> {
     return this;
   }
 
-  select(cols?: string): this {
+  select(cols?: string, opts?: { count?: "exact" | "planned"; head?: boolean }): this {
     this.selectCols = cols;
+    this.selectCount = opts?.count;
     this.mode = this.mode === "select" ? "select" : this.mode;
     return this;
   }
@@ -394,6 +400,11 @@ class MockQueryBuilder implements PromiseLike<MockResult> {
     return this;
   }
 
+  is(col: string, val: unknown): this {
+    this.filters.push({ col, op: "is", val });
+    return this;
+  }
+
   like(col: string, val: string): this {
     this.filters.push({ col, op: "like", val });
     return this;
@@ -411,6 +422,11 @@ class MockQueryBuilder implements PromiseLike<MockResult> {
 
   gte(col: string, val: unknown): this {
     this.filters.push({ col, op: "gte", val });
+    return this;
+  }
+
+  gt(col: string, val: unknown): this {
+    this.filters.push({ col, op: "gt", val });
     return this;
   }
 
@@ -499,7 +515,13 @@ class MockQueryBuilder implements PromiseLike<MockResult> {
     const { joins } = parseSelectSpec(this.table!, this.selectCols);
     const joined = applyJoins(this.table!, limited as Record<string, unknown>[], joins);
 
-    return this.shape(joined);
+    const result = this.shape(joined);
+    if (this.selectCount) {
+      let count = matched.length;
+      if (this.limitN !== null) count = Math.min(count, this.limitN);
+      result.count = count;
+    }
+    return result;
   }
 
   private execInsert(rows: Record<string, unknown>[]): MockResult {

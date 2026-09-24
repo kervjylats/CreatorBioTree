@@ -1,29 +1,19 @@
-/** TODO: Add purpose docstring. */
 /**
  * Eight toggle switches for team permission areas. Settings and Money show
  * warnings when enabled (team.md Part 1).
+ * Permission definitions live in src/lib/team-permissions.ts.
  */
 "use client";
 
 import { Switch } from "@/components/ui/switch";
 import { AlertTriangle } from "lucide-react";
+import { TEAM_PERMISSIONS } from "@/lib/team-permissions";
 
 interface PermissionsTogglesProps {
   permissions: Record<string, boolean>;
   onChange: (permissions: Record<string, boolean>) => void;
   disabled?: boolean;
 }
-
-const TOGGLES = [
-  { key: "content", label: "Content", warning: false },
-  { key: "stats", label: "Overview & Stats", warning: false },
-  { key: "relationships", label: "Relationships", warning: false },
-  { key: "messages", label: "Messages", warning: false },
-  { key: "community", label: "Community", warning: false },
-  { key: "network", label: "Network", warning: false },
-  { key: "settings", label: "Settings", warning: true },
-  { key: "money", label: "Money", warning: true },
-] as const;
 
 /** Eight toggle switches for team permission areas. Settings and Money show a warning when enabled (team.md Part 1). */
 export function PermissionsToggles({
@@ -37,7 +27,7 @@ export function PermissionsToggles({
 
   return (
     <div className="space-y-3">
-      {TOGGLES.map((toggle) => (
+      {TEAM_PERMISSIONS.map((toggle) => (
         <div key={toggle.key} className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm">{toggle.label}</span>

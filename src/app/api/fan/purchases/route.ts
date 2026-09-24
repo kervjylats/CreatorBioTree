@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = createServiceClient();
-    const session = await getFanSession(request.cookies, supabase);
-    if (!session || session.creatorId !== creatorId) {
+    const session = await getFanSession(request.cookies, supabase, creatorId);
+    if (!session) {
       return NextResponse.json({ error: "Not signed in" }, { status: 401 });
     }
 

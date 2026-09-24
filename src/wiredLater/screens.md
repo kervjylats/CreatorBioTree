@@ -34,15 +34,16 @@ Parts archive (old code) available:
 
 ## Dashboard Network `/dashboard/network`
 
-**3-section anchored layout (DECIDED 2026-08-05):** left rail (Discover + Affiliates) · center (detail of the selected row) · right rail = **My Peeps** (the anchored people umbrella — Partners / Fans / Staffs rows; see `features/relationships.md`).
+**WIRED 2026-09-26 → hub + dock + 3 sub-screens** (built per `NETWORK_REDESIGN_PLAN.md`, overriding the earlier 3-section layout; spec `network.md` is the feature vision):
 
-- **Discover** — creator directory: search, billboard cards, collab requests inbox, visibility settings
-- **Affiliates** — My Earnings / Discover / My Links + the deal config form (scope: per-item vs per-creator · trigger: purchase/follow/subscribe/tip/signup/any · type: %/fixed/free/tiered/custom; asymmetric, no min/max — economics in `monetization/creators.md` Part 2)
-- **My Peeps (right rail)** — Partners row (collab list + partnership invites), Fans row (fan list), Staffs row (team list)
+- **Hub (`/dashboard/network`)** — 2 columns at `lg`: LEFT rail (Billboard preview + editor + Affiliates: EarningsSummary/AffiliateDiscover) · CENTER = **Discover grid** (search box + result cards with Visit + Connect buttons). Mobile order: Discover → Billboard → Affiliates.
+- **3 sub-screens** — `/dashboard/network/partners` (collab Requests inbox with Accept/Decline + outgoing Pending + active Collabs list/detail + "Invite a partner" card), `/dashboard/network/fans` (full-width `FanListTable` + `FanProfileDrawer`), `/dashboard/network/staff` (pending team invites + members + `PermissionsToggles`).
+- **My Peeps = unified dock stack** (ONE component, `src/components/relationships/MyPeeps.tsx`) — the single floating stack at bottom-right on every `/dashboard/*` page: **Partners · Fans · Staff · 💬 Messages** (top→bottom) as uniform round icon buttons. Active page highlights; each chip carries ONE combined red badge (Partners = pending requests + unread, Fans = unread, Staff = pending invites + unread). Counts from `GET /api/creator/relationships` (30s poll). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement.
+- **💬 ChatIcon** on collab detail + fan drawer + staff rows (creator↔creator / creator↔fan threads).
 
 **Full spec: `screens/creator-dashboard/network/network.md`** (friend-request style, discovery directory, discoverability toggle, affiliates §7)
 
-Cross-cutting features that live here (**wiring homes DECIDED**): **Partnership** → My Peeps → Partners row (`features/partnership.md`), **Relationships/My Peeps** → right rail (`features/relationships.md`), **Team** → My Peeps → Staffs row (`features/team.md`).
+Cross-cutting features that live here: **Partnership** → Partners sub-screen (`features/partnership.md`), **Relationships/My Peeps** → dock + sub-screens (`features/relationships.md`), **Team** → Staff sub-screen (`features/team.md`).
 
 Parts archive (old code) available for the discovery directory:
 - [CreatorCard.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\CreatorCard.tsx)
@@ -104,7 +105,7 @@ Parts archive (old code) available:
 
 **Full spec: `screens/fan-shell/fan-shell.md`** (account model, three gates, guest vs fan views, 4 tabs, auth).
 
-Guest view: PublicCreatorPage (3-layer storefront + signup/login entry).
+Guest view: GuestPageContent (3-layer storefront + signup/login entry + Follow gate).
 Auth view: 4-tab PWA (Home activity hub, Content catalog feed, Connect partners hub, Settings account hub).
 
 **Connect tab = the connection hub** (DECIDED layout: **Billboard** rotating deal partners at 2× weight + names of all partners underneath · **All Partners** left column · **Followed** right column with "Following ✓" badges · **Community** + **Artist Links** bottom; self-gating sections, no placeholders, creator-configurable all-empty message; follow toggle lives in the partner modal only — `fan-shell.md` Part 4c). Artist links were **moved from the Content tab to the Connect tab** as rich cards — the Content tab is now a true 3-layer view (Header → Spotlight → Catalog Feed).
@@ -195,24 +196,23 @@ No new screen route beyond `/dashboard/messages` — the rest lives inside the f
 
 ---
 
-## My Peeps / Relationships (feature — Network right rail, DECIDED)
+## My Peeps / Relationships (feature — floating dock + Network sub-screens, WIRED 2026-09-26)
 
-**Full spec: `features/relationships.md`** — **"My Peeps"**: the anchored right rail of the Network page, an umbrella over Partners / Fans / Staffs.
+**Full spec: `features/relationships.md`** — **"My Peeps"**: the single floating dock stack on every `/dashboard/*` page (**Partners · Fans · Staff · 💬**, uniform round icon buttons, top→bottom), an umbrella over Partners / Fans / Staffs, each opening a Network sub-screen.
 
-- **Partners row** — collab list + partnership invites + "Invite a partner" (see Partnership below)
-- **Fan list** — email, joined, referred-by, status chip, lifetime value, last purchase + quick filters + CSV export (replaces the old fan-export widget)
-- **Profile drawer** — per fan: purchases, subscription, installs/activity, **message history (ChatShell reuse)**, creator notes, actions
-- **Staffs row** — the team list (see Team below)
-- **Consent** — do-not-contact flag, email opt-out flag, GDPR note
+- **Dock** — ONE component (`MyPeeps.tsx`): 3 icon buttons + the 💬 bubble in one vertical stack, combined red badges (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread; 30s poll of `GET /api/creator/relationships`)
+- **Partners (`/dashboard/network/partners`)** — collab Requests inbox (Accept/Decline + outgoing Pending) + active collabs list/detail + "Invite a partner" card
+- **Fans (`/dashboard/network/fans`)** — full-width fan table (email, joined, referred-by, status chip, lifetime value, last purchase + filters + CSV export) + `FanProfileDrawer` (purchases, subscription, installs/activity, **message history via ChatShell**, consent flags)
+- **Staff (`/dashboard/network/staff`)** — pending team invites + members + permission toggles (see Team below)
 - Collabs → `network.md`; community members → `messaging.md` Part 3
 
-**Wiring home DECIDED (2026-08-05)** — Network page → **My Peeps right rail, anchored (Layout B)**. Not an own tab, not Overview.
+**Wired 2026-09-26** — replaces the DECIDED (2026-08-05) "anchored right rail (Layout B)" placement.
 
 Old code (reference): [FanStatsCard.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\FanStatsCard.tsx) (old fan modal table), [CreatorManagementWidgets.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\CreatorManagementWidgets.tsx) (`FanExportButton`), backup [dashboard-overview/page-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\dashboard-overview\page-old.tsx).
 
 ---
 
-## Team (feature — My Peeps → Staffs row, DECIDED)
+## Team (feature — Network Staff sub-screen, WIRED 2026-09-26)
 
 **Full spec: `features/team.md`** — creator staff access (Model A identity).
 
@@ -220,22 +220,22 @@ Old code (reference): [FanStatsCard.tsx](vscode://file/C:\Users\rowlu\Documents\
 - **Permission toggles** — Content · Stats · Relationships · Messages · Community · Network · Settings · Money — all OFF by default, owner ticks per person
 - **Context switcher** — team members switch between their own dashboard and managed ones (members can be creators themselves)
 - **Audit log** — `creator_team_activity`, owner-only visibility
-- **Wiring home DECIDED (2026-08-05)** — Network page → My Peeps → **Staffs row**
+- **Home** — `/dashboard/network/staff` (from the My Peeps dock) — invites + members + toggles for the owner
 
 No parts-archive reference — this feature was never built, wires fresh from the spec.
 
 ---
 
-## Partnership (feature — My Peeps → Partners row, DECIDED)
+## Partnership (feature — Network Partners sub-screen, WIRED 2026-09-26)
 
 **Full spec: `features/partnership.md`** — inviting creators from OUTSIDE the app to become partners.
 
-- **Invite** — creator generates a 7-day single-use `?invite=CODE` link (My Peeps → Partners row, "Invite a partner")
+- **Invite** — creator generates a 7-day single-use `?invite=CODE` link (`/dashboard/network/partners`, "Invite a partner" card)
 - **Join** — outsider completes normal onboarding ("Join your partner") → post-signup route auto-connects them (`partnerships` row, `source: "invited"`)
 - **No request/accept** — the link IS the mechanism
 - **One shared data model** — `partnerships` + `source` flag (`collab` | `invited`); `partner_invites` table
 - **Terminology split (founder decision)** — outside-app invite = **Partnership**; in-app creator↔creator = **Collabs** (`network.md`)
-- **Wiring home DECIDED (2026-08-05)** — Network page → My Peeps → **Partners row**
+- **Home** — `/dashboard/network/partners` (requests + collabs + invite card, from the My Peeps dock)
 
 Old code (reference): [PartnerInviteCard-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\PartnerInviteCard-old.tsx), [creator-partners-invite-route-old.ts](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\api\creator-partners-invite-route-old.ts), [creator-partners-onboarding-route-old.ts](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\api\creator-partners-onboarding-route-old.ts).
 

@@ -1,4 +1,4 @@
-/** Requests inbox (network.md) — pending collab requests (incoming + outgoing). Accept/decline buttons for incoming. */
+/** Requests inbox (network.md) — PENDING collab requests (incoming + outgoing). Accept/decline buttons for incoming. */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 
 interface RequestRow {
   id: string;
+  status: string;
   partner_info: {
     id: string;
     username: string;
@@ -32,8 +33,8 @@ export function InboxRequests({ onAccepted }: InboxRequestsProps) {
     fetch("/api/creator/partners/list")
       .then((r) => r.json())
       .then((d) => {
-        const all = d.partnerships ?? [];
-        setRequests(all);
+        const all = (d.partnerships ?? []) as RequestRow[];
+        setRequests(all.filter((p) => p.status === "pending"));
       })
       .catch(() => setRequests([]))
       .finally(() => setLoading(false));

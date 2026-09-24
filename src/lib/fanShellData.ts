@@ -41,11 +41,11 @@ export async function resolveFanShellData(username: string): Promise<FanShellDat
   >;
 
   const cookieStore = await cookies();
-  const session = await getFanSession(cookieStore, supabase);
+  const session = await getFanSession(cookieStore, supabase, creator.id);
 
   // Identity: Fan (password set) vs Follower (no password) vs visitor (no session).
   let identity: FanIdentity | null = null;
-  if (session && session.creatorId === creator.id) {
+  if (session) {
     const { data: account } = await supabase
       .from("fan_accounts")
       .select("id, email, password_hash")

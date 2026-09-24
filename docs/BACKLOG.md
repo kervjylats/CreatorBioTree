@@ -25,4 +25,4 @@ Open items from manual testing. Not wired yet — design/product decisions pendi
 
 ## Search
 
-- [ ] **Search should be accessible from Network tab** — user can't find `/search`. Add a search input to the Network page (left rail Discover section) so creators can search for other creators directly from the dashboard.
+- [x] **Search should be accessible from Network tab** — **DONE 2026-09-26:** the Network hub's center is now a Discover grid (search input + result cards), per `NETWORK_REDESIGN_PLAN.md` Phase B.

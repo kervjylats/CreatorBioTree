@@ -12,6 +12,8 @@ import { ExternalLink, Users } from "lucide-react";
 import type { FanShellData } from "./fanData";
 import { PartnerModal } from "./PartnerModal";
 import { cardRadius } from "./themeStyles";
+import { SectionTitle } from "./SectionTitle";
+import { getInitials } from "@/lib/fan-helpers";
 
 interface Partner {
   id: string;
@@ -87,9 +89,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
         const currentPartner = weightedPartners[billboardIndex % weightedPartners.length];
         return (
           <section className="px-4 pt-4">
-            <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-              Partners
-            </h2>
+            <SectionTitle branding={branding}>Partners</SectionTitle>
             <button
               type="button"
               onClick={() => openPartner(currentPartner.username)}
@@ -147,12 +147,10 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
       {/* All Partners + Followed two-column layout */}
       {partners.length > 0 && (
         <section className="px-4 pt-4">
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row">
             {/* All Partners (left column) */}
             <div className="flex-1 min-w-0">
-              <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-                All Partners
-              </h2>
+              <SectionTitle branding={branding}>All Partners</SectionTitle>
               <div className="flex flex-col gap-1.5">
                 {partners.map((p) => (
                   <button
@@ -169,7 +167,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={p.avatar_url} alt={p.display_name} className="h-full w-full object-cover" />
                       ) : (
-                        p.display_name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+                        getInitials(p.display_name)
                       )}
                     </span>
                     <span className="block truncate text-xs font-semibold" style={{ color: branding.textColor }}>
@@ -183,9 +181,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
             {/* Followed (right column) */}
             {followed.length > 0 && (
               <div className="flex-1 min-w-0">
-                <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-                  Followed
-                </h2>
+                <SectionTitle branding={branding}>Followed</SectionTitle>
                 <div className="flex flex-col gap-1.5">
                   {followed.map((p) => (
                     <button
@@ -202,7 +198,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={p.avatar_url} alt={p.display_name} className="h-full w-full object-cover" />
                         ) : (
-                          p.display_name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+                          getInitials(p.display_name)
                         )}
                       </span>
                       <span className="block truncate text-xs font-semibold" style={{ color: branding.textColor }}>
@@ -220,11 +216,9 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
       {/* Community card (messaging.md Part 3 — deep-links to Home tab) */}
       {data.community && (
         <section className="px-4 pt-4">
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-            Community
-          </h2>
+          <SectionTitle branding={branding}>Community</SectionTitle>
           <Link
-            href="/home"
+            href={`/${branding.creatorUsername}/home`}
             className={cardRadius(branding, "flex items-center gap-3 p-4")}
             style={{ backgroundColor: branding.cardColor }}
           >
@@ -254,9 +248,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
           tabIndex={editMode ? 0 : undefined}
           onKeyDown={editMode ? (e) => { if (e.key === "Enter" || e.key === " ") onEdit?.({ kind: "links" }); } : undefined}
         >
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-            Artist links
-          </h2>
+          <SectionTitle branding={branding}>Artist links</SectionTitle>
           {links.length > 0 ? (
             <div className="flex flex-col gap-2">
               {links.map((link) => (

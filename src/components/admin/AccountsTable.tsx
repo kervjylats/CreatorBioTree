@@ -48,7 +48,7 @@ export function AccountsTable() {
     fetch("/api/admin/accounts")
       .then((r) => r.json())
       .then((data) => setAccounts(Array.isArray(data) ? data : []))
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load accounts"); })
       .finally(() => setLoading(false));
   };
 

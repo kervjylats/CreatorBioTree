@@ -10,6 +10,7 @@
 import type { ReactNode } from "react";
 import type { CreatorBranding } from "@/lib/branding";
 import type { EditModeTarget } from "@/components/fan-pwa/GuestPageContent";
+import { getInitials } from "@/lib/fan-helpers";
 import { contrastText } from "@/components/fan-pwa/themeStyles";
 
 interface CreatorHeaderProps {
@@ -24,15 +25,6 @@ interface CreatorHeaderProps {
   onEdit?: (target: EditModeTarget) => void;
   /** Inline actions next to avatar (Email/Follow/Contact for Guest tab). */
   actions?: ReactNode;
-}
-
-function initials(displayName: string): string {
-  return displayName
-    .split(/[\s@._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
 }
 
 /** Check whether an avatar URL is the platform default (not a real upload). */
@@ -140,7 +132,7 @@ export function CreatorHeader({ branding, bio, editMode, onEdit, actions }: Crea
                 }}
                 onClick={editMode ? () => onEdit?.({ kind: "avatar" }) : undefined}
               >
-                {initials(branding.displayName)}
+                {getInitials(branding.displayName)}
               </div>
               {editMode && (
                 <span

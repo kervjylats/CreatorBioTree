@@ -88,8 +88,8 @@ src/
 │   │   ├── overview/             # /dashboard/overview (wired)
 │   │   ├── my-app/               # /dashboard/my-app (see + edit fan shell — WIRED)
 │   │   ├── messages/             # /dashboard/messages (full chat screen — WIRED)
-│   │   ├── network/              # /dashboard/network (wired)
-│   │   └── settings/             # /dashboard/settings (wired)
+│   │   ├── network/               # /dashboard/network (hub + 3 sub-screens: partners/, fans/, staff/) — WIRED
+│   │   └── settings/              # /dashboard/settings (wired)
 │   │
 │   ├── (fan)/[username]/         # Per-creator fan app (PWA #3) — WIRED
 │   │   ├── page.tsx              # REDIRECT → ./guest
@@ -188,7 +188,10 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `/dashboard/overview` | Dashboard home (stats, activity, checklist) — **wired** | Yes (creator/admin) |
 | `/dashboard/my-app` | See + edit your fan shell — full-screen, tap-to-edit (wired) | Yes (creator/admin) |
 | `/dashboard/messages` | Full chat screen (wired) | Yes (creator/admin) |
-| `/dashboard/network` | Partner management (Discover/Affiliates/My Peeps) — **wired** | Yes (creator/admin) |
+| `/dashboard/network` | Partner management (Discover hub + My Peeps dock + 3 sub-screens) — **wired** | Yes (creator/admin) |
+| `/dashboard/network/partners` | Collab requests + active collabs + invite card — **wired** | Yes (creator/admin) |
+| `/dashboard/network/fans` | Full-width fan table + profile drawer — **wired** | Yes (creator/admin) |
+| `/dashboard/network/staff` | Team invites + members + permissions — **wired** | Yes (creator/admin) |
 | `/dashboard/settings` | Payout setup — **wired** | Yes (creator/admin) |
 | `/admin` | Platform management (was `/dashboard/admin`) — **wired** (5-tab panel) | Yes (admin only) |
 | `/search` | Creator search | No |
@@ -223,11 +226,12 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `catalog/[itemId]/modules/[moduleId]/` | GET/PATCH/DELETE | Single module CRUD |
 | `catalog/[itemId]/modules/[moduleId]/lessons/` | GET/POST | List/create lessons |
 | `catalog/[itemId]/lessons/` | GET | Bulk fetch all lessons |
-| `fans/list/` | GET | List your fans |
+| `fans/list/` | GET | List your fans (id, email, total_spent, consent flags) |
 | `fans/[id]/` | GET | Single fan profile |
 | `fans/export/` | GET | Export fans as CSV |
-| `relationships/` | GET | My Peeps umbrella data |
+| `relationships/` | GET | My Peeps data: counts + pending requests/invites + per-group unread (drives dock badges) |
 | `partners/*` | — | 6 routes: billboard, discoverable, invite, onboarding, request, respond |
+| `partners/list/` | GET | All non-ended partnerships + computed `direction` (incoming/outgoing) |
 | `team/*` | — | 8 routes: members, invites, accept, activity, contexts |
 | `affiliates/*` | — | 9 routes: deals, links, discover, earnings |
 | `pageview/` | POST | Record a page view (rate-limited 5/IP/min, silent 200) |
@@ -324,8 +328,7 @@ Single-file messaging engine per messaging.md: `useChat` (6s polling), `useUnrea
 
 | File | Purpose |
 |---|---|
-| `GuestPageContent` | 3-layer guest view (Header → Spotlight → Catalog) + Follow gate + `?payment=success` handoff |
-| `PublicCreatorPage` | Guest wrapper (server) |
+| `GuestPageContent` | 3-layer guest view (Header → Spotlight → Catalog) + Follow gate + `?payment=success` handoff + "Your purchases" receipts card + PoweredByFooter |
 | `FanAppShell` | Authenticated app — bottom nav + 4 tabs |
 | `FanHomeTab` / `FanContentTab` / `FanConnectTab` / `FanSettingsTab` | The 4 tabs |
 | `ItemCards` | Per-type item cards (all 16 types) + CheckoutModal + newsletter/tip-jar inline |
@@ -375,7 +378,7 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 | Spec | What it covers |
 |---|---|
 | `features/messaging.md` | FREE chat — floating inbox both sides, 1-on-1s, requests/block, groups + announcements, Community (Part 3) |
-| `features/relationships.md` | **"My Peeps"** — umbrella hub (Partners/Fans/Staffs rows), fan list + profile drawer + consent. Wiring home: Network right rail |
+| `features/relationships.md` | **"My Peeps"** — umbrella hub (Partners/Fans/Staffs rows). Wired 2026-09-26 as the **unified dock stack** (3 icon buttons + 💬, one vertical column, combined badges) + the 3 Network sub-screens; fan list + profile drawer + consent |
 | `features/team.md` | Creator staff access — permission toggles, audit log. Wiring home: My Peeps → Staffs row |
 | `features/partnership.md` | Outside-app invite flow (`?invite=CODE`). Wiring home: My Peeps → Partners row |
 | `features/partner-page.md` | Fan-only partner modal (Connect tab) |
@@ -557,7 +560,7 @@ Wired pages render (My App editor, Messages; floating chat inbox everywhere)
 ```
 Fan visits /[username] for the first time
     ↓
-No fan_session cookie → shows PublicCreatorPage (guest view)
+No fan_session cookie → shows the guest page (GuestPageContent) for that creator
     ↓
 Fan clicks "Sign up" → FanAuthModal → POST /api/fan/register
     ↓

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
       }
       const response = NextResponse.json({ fan_id: existingFan.id, redirect: `/${creator.username}/home` });
-      await setFanSession(response, existingFan.id, creator_id, supabase);
+      await setFanSession(response, existingFan.id, creator_id, supabase, request.cookies);
       return response;
     }
 
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = NextResponse.json({ fan_id: fan.id, redirect: `/${creator.username}/home` });
-    await setFanSession(response, fan.id, creator_id, supabase);
+    await setFanSession(response, fan.id, creator_id, supabase, request.cookies);
     return response;
   } catch (err) {
     console.error("[fan/register]", err);

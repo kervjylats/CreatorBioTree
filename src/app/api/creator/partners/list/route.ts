@@ -1,4 +1,8 @@
-/** List all partnerships (active collabs + invited partners) for the authenticated creator. */
+/**
+ * List all non-ended partnerships for the authenticated creator (active collabs
+ * + invited partners + pending requests), each with a computed direction:
+ * "incoming" when the other creator requested us, "outgoing" when we requested them.
+ */
 import { NextResponse } from "next/server";
 import { requireAuth, handleAuthError } from "@/lib/requireAuth";
 
@@ -9,7 +13,7 @@ export async function GET() {
     const { data: mine } = await supabase
       .from("partnerships")
       .select("*")
-      .eq("status", "active")
+      .neq("status", "ended")
       .or(`creator_a.eq.${user.id},creator_b.eq.${user.id}`);
 
     const partnerIds = (mine ?? []).map((p) =>
@@ -30,6 +34,7 @@ export async function GET() {
       const partner = partnerMap.get(partnerId);
       return {
         ...p,
+        direction: p.creator_b === user.id ? ("incoming" as const) : ("outgoing" as const),
         partner_info: partner
           ? {
               id: partner.id,

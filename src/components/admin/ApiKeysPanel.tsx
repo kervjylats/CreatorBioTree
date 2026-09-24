@@ -24,7 +24,7 @@ export function ApiKeysPanel() {
         const list = Array.isArray(data) ? data : [];
         setKeys(list.filter((a: AdminAccount) => a.role === "agent"));
       })
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load accounts"); })
       .finally(() => setLoading(false));
   }, []);
 

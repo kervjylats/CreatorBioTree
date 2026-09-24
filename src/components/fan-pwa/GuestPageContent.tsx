@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { CheckCircle2, MessageCircle, Users } from "lucide-react";
+import { CheckCircle2, MessageCircle, Receipt, Users } from "lucide-react";
 import type { ContentItem } from "@/types";
 import type { CreatorBranding } from "@/lib/branding";
 import type { FanShellData } from "./fanData";
@@ -19,6 +19,7 @@ import { FollowBox } from "./FollowBox";
 import { ItemCard } from "./ItemCards";
 import { FanAuthModal } from "./FanAuthModal";
 import { GuestContactModal } from "@/components/chat/ChatShell";
+import { PoweredByFooter } from "./PoweredByFooter";
 import { buttonClass, cardRadius } from "./themeStyles";
 
 export interface EditModeTarget {
@@ -82,11 +83,10 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
           email,
           optedIn: optIn,
         });
-        toast(optIn ? "Purchase recorded — thanks! Your receipt lands in Settings." : "Purchase recorded — thanks!");
-        // Opted-in buyers get a session: reload so the server renders their
-        // unlocked state. Non-opted-in buyers have no session — the inline
-        // confirmation banner is their receipt (a purchase never auto-follows).
-        if (optIn) window.location.reload();
+        toast("Purchase recorded — thanks! Your receipt is on this page and in Settings.");
+        // G1: a session is now ALWAYS set on purchase completion, so reload so
+        // the server renders the fan's unlocked state + receipts section.
+        window.setTimeout(() => window.location.reload(), 900);
       } else {
         toast(typeof json?.error === "string" ? json.error : "Couldn't record the purchase — contact the creator.");
         window.history.replaceState(null, "", window.location.pathname);
@@ -187,6 +187,44 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
           </div>
         )}
 
+        {/* Receipts for recognized guest-buyers / Followers (G2, 2026-09-23) —
+            Fans see the full receipts panel in the 4-tab Settings; this gives
+            buyers without a password their own list on the guest page. */}
+        {data.identity && data.purchases.length > 0 && (
+          <div className="px-4 pt-5">
+            <div className={cardRadius(branding, "p-4")} style={{ backgroundColor: branding.cardColor }}>
+              <div className="flex items-center gap-2">
+                <Receipt size={15} style={{ color: branding.accentColor }} />
+                <h2 className="text-sm font-bold" style={{ color: branding.textColor }}>
+                  Your purchases
+                </h2>
+              </div>
+              <div className="mt-3 flex flex-col gap-2">
+                {data.purchases.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between"
+                    style={{ color: branding.textColor }}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {items.find((i) => i.id === p.content_item_id)?.title ?? "Purchase"}
+                      </p>
+                      <p className="text-xs" style={{ color: branding.textColor + "77" }}>
+                        {new Date(p.purchased_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <p className="shrink-0 text-sm font-bold">{money(p.amount_paid ?? 0, p.currency)}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-right text-xs font-semibold" style={{ color: branding.textColor + "88" }}>
+                Total spent: {money(data.purchases.reduce((sum, p) => sum + (p.amount_paid ?? 0), 0), data.purchases[0]?.currency)}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Empty state — edit mode only, no items to show */}
         {editMode && items.length === 0 && (
           <div className="px-4 pt-8">
@@ -225,7 +263,7 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
             >
               Catalog
             </h2>
-            <div className="space-y-4 px-4 pb-24">
+            <div className="space-y-4 px-4 pb-[var(--bottom-nav-height)]">
               {feed.map((item) => (
                 <div key={item.id} data-mock-edit-kind="card" onClick={editMode ? () => onEdit?.({ kind: "card", itemId: item.id }) : undefined}>
                   <ItemCard item={item} identity={data.identity} purchases={purchases} branding={branding} onUnlock={handleUnlock} onAuthPrompt={() => setAuthOpen(true)} />
@@ -234,6 +272,8 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
             </div>
           </>
         ) : null}
+
+        <PoweredByFooter branding={branding} hidden={editMode} />
       </div>
 
       {authOpen && (

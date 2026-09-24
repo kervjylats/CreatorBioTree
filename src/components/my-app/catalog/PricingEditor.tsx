@@ -8,6 +8,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import type { AccessType, BillingCycle, ContentItem, PricingModel } from "@/types";
+import { INPUT_CLASS } from "@/lib/ui-constants";
 
 interface PricingEditorProps {
   item: ContentItem;
@@ -72,7 +73,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
                 step="0.01"
                 value={item.price}
                 onChange={(e) => patch({ price: Math.max(0, Number(e.target.value)) })}
-                className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                className={INPUT_CLASS}
               />
             </div>
             <div>
@@ -80,7 +81,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
               <select
                 value={item.currency}
                 onChange={(e) => patch({ currency: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                className={INPUT_CLASS}
               >
                 {["USD", "EUR", "GBP", "AUD", "CAD", "MUR"].map((c) => (
                   <option key={c} value={c}>
@@ -98,7 +99,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
               <select
                 value={!item.pricing_model || item.pricing_model === "free" ? "paid_one_time" : item.pricing_model}
                 onChange={(e) => patch({ pricing_model: e.target.value as PricingModel })}
-                className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                className={INPUT_CLASS}
               >
                 <option value="paid_one_time">One-time</option>
                 <option value="recurring">Subscription</option>
@@ -111,7 +112,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
                 <select
                   value={item.billing_cycle ?? "monthly"}
                   onChange={(e) => patch({ billing_cycle: e.target.value as BillingCycle })}
-                  className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  className={INPUT_CLASS}
                 >
                   {["weekly", "monthly", "yearly"].map((c) => (
                     <option key={c} value={c}>
@@ -173,7 +174,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
                 placeholder="https://paypal.me/you / https://gumroad.com/l/…"
                 value={item.external_payment_url ?? ""}
                 onChange={(e) => patch({ external_payment_url: e.target.value })}
-                className="mt-2 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                className={INPUT_CLASS.replace("mt-1", "mt-2")}
               />
             )}
           </div>

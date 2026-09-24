@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronRight, Copy, Check, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 
 export interface BillboardSettings {
   display_name: string;
@@ -64,18 +64,6 @@ function Section({ title, badge, defaultOpen = false, children }: {
 }
 
 export function BillboardEditor({ settings, onFieldChange, onSave, saving }: BillboardEditorProps) {
-  const [copied, setCopied] = useState(false);
-  const mediaKitUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/${settings.username}/media-kit`
-    : `/${settings.username}/media-kit`;
-
-  const copyUrl = () => {
-    navigator.clipboard.writeText(mediaKitUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
-
   return (
     <div className="space-y-4">
       {/* Billboard fields */}
@@ -183,19 +171,6 @@ export function BillboardEditor({ settings, onFieldChange, onSave, saving }: Bil
               rows={2}
               className="mt-1"
             />
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Shareable URL</label>
-            <div className="mt-1 flex gap-2">
-              <Input value={mediaKitUrl} readOnly className="flex-1 text-xs text-muted-foreground" />
-              <Button type="button" variant="outline" size="sm" onClick={copyUrl}>
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-              </Button>
-            </div>
-            <p className="mt-1 text-micro text-muted-foreground">
-              Share this link with sponsors to show your media kit.
-            </p>
           </div>
         </div>
       </Section>

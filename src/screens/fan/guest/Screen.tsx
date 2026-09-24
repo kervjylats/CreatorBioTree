@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { resolveFanShellData } from "@/lib/fanShellData";
 import { GuestPageContent } from "@/components/fan-pwa/GuestPageContent";
+import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -30,5 +31,10 @@ export default async function GuestScreen({
     redirect(`/${username}/home`);
   }
 
-  return <GuestPageContent data={data} />;
+  return (
+    <>
+      <PageViewTracker creatorId={data.branding.creatorId} />
+      <GuestPageContent data={data} />
+    </>
+  );
 }

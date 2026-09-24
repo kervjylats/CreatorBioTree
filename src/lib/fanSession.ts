@@ -1,14 +1,23 @@
-/** Central fan session management — per-creator identity model. */
+/**
+ * fanSession.ts — central fan session management (fan-shell.md Part 5).
+ * Model B (2026-09-23): one `fan_session` cookie holds a JSON map
+ * { creatorId → token }. Logging in on one creator auto-recognizes you on
+ * every creator's link (same email), yet logging out of one creator leaves
+ * the others logged in. Pass creatorId to resolve that creator's token; omit
+ * it for generic callers (chat, dashboard) that take any valid session.
+ */
 import type { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+export const FAN_SESSION_COOKIE = "fan_session";
 
 interface CookieStoreLike {
   get(name: string): { value: string } | undefined;
 }
 
 export interface FanSession {
-  email:     string;
-  fanId:     string;
+  email: string;
+  fanId: string;
   creatorId: string;
 }
 
@@ -40,28 +49,48 @@ export async function verifyPassword(
   return computed === hash;
 }
 
+// ─── Cookie parsing (Model B map + legacy single-token fallback) ─────────────
+
+interface ParsedSessionCookie {
+  map: Record<string, string>;
+  legacyToken?: string;
+}
+
+function parseSessionCookie(raw: string | undefined): ParsedSessionCookie {
+  if (!raw) return { map: {} };
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return { map: parsed as Record<string, string> };
+    }
+  } catch {
+    // Not JSON → legacy single-token cookie (pre-Model B).
+  }
+  return { map: {}, legacyToken: raw };
+}
+
 // ─── Session resolution ───────────────────────────────────────────────────────
 
-export async function getFanSession(
-  cookieStore: CookieStoreLike,
+async function resolveSessionToken(
   supabase: SupabaseClient,
+  token: string,
+  creatorId?: string,
 ): Promise<FanSession | null> {
-  const token = cookieStore.get("fan_session")?.value;
-  if (!token) return null;
-
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("fan_sessions")
     .select("fan_email, creator_id")
     .eq("token", token)
     .single();
 
-  if (error || !data) return null;
+  if (!data) return null;
+  const resolvedCreatorId = data.creator_id;
+  if (creatorId && resolvedCreatorId !== creatorId) return null;
 
   const { data: account } = await supabase
     .from("fan_accounts")
     .select("id")
     .eq("email", data.fan_email)
-    .eq("creator_id", data.creator_id)
+    .eq("creator_id", resolvedCreatorId)
     .single();
 
   if (!account) return null;
@@ -69,50 +98,72 @@ export async function getFanSession(
   return {
     email: data.fan_email,
     fanId: account.id,
-    creatorId: data.creator_id,
+    creatorId: resolvedCreatorId,
   };
 }
 
 /**
- * Backward-compat: resolves fan_account id for a creator from the session
- * cookie. Used by routes that only need the fan_account id.
+ * Resolve the fan session for a creator. Pass `creatorId` when the caller
+ * knows which creator's app it's serving; omit it for generic callers that
+ * accept any valid session (chat identity, fan dashboard).
+ */
+export async function getFanSession(
+  cookieStore: CookieStoreLike,
+  supabase: SupabaseClient,
+  creatorId?: string,
+): Promise<FanSession | null> {
+  const raw = cookieStore.get(FAN_SESSION_COOKIE)?.value;
+  if (!raw) return null;
+
+  const { map, legacyToken } = parseSessionCookie(raw);
+
+  if (creatorId) {
+    const token = map[creatorId] ?? legacyToken;
+    if (!token) return null;
+    return resolveSessionToken(supabase, token, creatorId);
+  }
+
+  const tokens = legacyToken ? [...Object.values(map), legacyToken] : Object.values(map);
+  for (const token of tokens) {
+    const session = await resolveSessionToken(supabase, token);
+    if (session) return session;
+  }
+  return null;
+}
+
+/**
+ * Resolve the fan_accounts id for a creator from the session cookie.
+ * Convenience for routes that only need the fan_account id.
  */
 export async function getFanAccountForCreator(
   cookieStore: CookieStoreLike,
   supabase: SupabaseClient,
   creatorId: string,
 ): Promise<string | null> {
-  const token = cookieStore.get("fan_session")?.value;
-  if (!token) return null;
-
-  const { data: sessionData } = await supabase
-    .from("fan_sessions")
-    .select("fan_email, creator_id")
-    .eq("token", token)
-    .single();
-
-  if (!sessionData) return null;
-  if (sessionData.creator_id !== creatorId) return null;
-
-  const { data: account } = await supabase
-    .from("fan_accounts")
-    .select("id")
-    .eq("email", sessionData.fan_email)
-    .eq("creator_id", creatorId)
-    .single();
-
-  return account?.id ?? null;
+  const session = await getFanSession(cookieStore, supabase, creatorId);
+  return session?.fanId ?? null;
 }
 
 // ─── Session mutation ─────────────────────────────────────────────────────────
 
 import crypto from "crypto";
 
+export interface CookieStoreWritable extends CookieStoreLike {
+  get(name: string): { value: string } | undefined;
+}
+
+/**
+ * Insert a fresh token for (fan, creator), merge it into the per-creator map,
+ * and write the cookie. Also prunes any older rows for the same fan+creator so
+ * fan_sessions never grows per fan. `cookieStore` carries the incoming cookie
+ * so OTHER creators' tokens survive this write.
+ */
 export async function setFanSession(
   response: NextResponse,
   fanId: string,
   creatorId: string,
   supabase: SupabaseClient,
+  cookieStore: CookieStoreLike,
 ): Promise<void> {
   const { data: account } = await supabase
     .from("fan_accounts")
@@ -129,11 +180,50 @@ export async function setFanSession(
     creator_id: creatorId,
     created_at: new Date().toISOString(),
   });
-  response.cookies.set("fan_session", token, SESSION_OPTIONS);
+
+  // Prune stale rows so each fan keeps at most one session row per creator.
+  await supabase
+    .from("fan_sessions")
+    .delete()
+    .eq("fan_email", account.email)
+    .eq("creator_id", creatorId)
+    .neq("token", token);
+
+  const { map } = parseSessionCookie(cookieStore.get(FAN_SESSION_COOKIE)?.value);
+  map[creatorId] = token;
+  response.cookies.set(FAN_SESSION_COOKIE, JSON.stringify(map), SESSION_OPTIONS);
 }
 
-export function clearFanSession(response: NextResponse): void {
-  response.cookies.set("fan_session", "", {
+/**
+ * Remove ONE creator's token (isolated logout) when `creatorId` + cookieStore
+ * are given; otherwise clear the entire fan session. Also drops the matching
+ * fan_sessions row so the table stays clean.
+ */
+export async function clearFanSession(
+  response: NextResponse,
+  supabase: SupabaseClient,
+  creatorId?: string,
+  cookieStore?: CookieStoreLike,
+): Promise<void> {
+  if (creatorId && cookieStore) {
+    const { map, legacyToken } = parseSessionCookie(cookieStore.get(FAN_SESSION_COOKIE)?.value);
+    const removedToken = map[creatorId] ?? (legacyToken ? legacyToken : null);
+    delete map[creatorId];
+
+    if (removedToken) {
+      await supabase.from("fan_sessions").delete().eq("token", removedToken);
+    } else {
+      return;
+    }
+
+    const keys = Object.keys(map);
+    if (keys.length > 0) {
+      response.cookies.set(FAN_SESSION_COOKIE, JSON.stringify(map), SESSION_OPTIONS);
+      return;
+    }
+  }
+
+  response.cookies.set(FAN_SESSION_COOKIE, "", {
     ...SESSION_OPTIONS,
     maxAge: 0,
   });

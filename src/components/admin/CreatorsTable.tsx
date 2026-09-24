@@ -28,7 +28,7 @@ export function CreatorsTable() {
     fetch("/api/admin/creators")
       .then((r) => r.json())
       .then((data) => setCreators(Array.isArray(data) ? data : []))
-      .catch(() => {})
+      .catch(() => { toast.error("Failed to load creators"); })
       .finally(() => setLoading(false));
   }, []);
 

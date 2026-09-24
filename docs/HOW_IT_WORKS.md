@@ -38,7 +38,7 @@ A basic marketing page with hero section, "How it works" steps, feature comparis
 
 ### 4.1 Sidebar
 
-**Sidebar (≥`md`):** visible on tablet/desktop. On phones, a bottom bar (Overview/Network/My App/Settings + More → drawer) replaces the sidebar. A floating 💬 **chat inbox bubble** (the messaging engine) sits bottom-right on every `/dashboard/*` page.
+**Sidebar (≥`md`):** visible on tablet/desktop. On phones, a bottom bar (Overview/Network/My App/Settings + More → drawer) replaces the sidebar. A single floating dock stack sits bottom-right on every `/dashboard/*` page: the **My Peeps** buttons (Partners/Fans/Staff) with the 💬 **chat inbox bubble** at the bottom — four uniform round icon buttons in one evenly-spaced vertical column.
 
 The planned sidebar (when the dashboard shell is wired) is:
 
@@ -78,13 +78,12 @@ Full spec: `src/wiredLater/screens/creator-dashboard/my-app/my-app.md`.
 
 **Full spec: `src/wiredLater/screens/creator-dashboard/network/network.md`. WIRED (Sheet 18, 2026-08-30).**
 
-Creator-to-creator discovery + collab + people hub (B2B — fans never see it). **3-section anchored layout (DECIDED 2026-08-05):** left rail (Discover + Affiliates) · center detail · right rail = **My Peeps** (Partners / Fans / Staffs umbrella — the home of `features/relationships.md`, `features/team.md`, `features/partnership.md`):
-- **Visibility switch** — `is_discoverable` toggle
-- **Billboard** — tagline (60 chars), up to 3 tags, collab style
-- **Search** — by display name / username, featured float to top
-- **Collabs** — friend-request style: send → accept/decline → connected. No commission required (agreements optional, done later)
-- **Affiliates** (Section 7) — connected partners can promote each other's catalog items **or whole catalogs** for commission: deal scope (item/creator), trigger (purchase/follow/subscribe/tip/signup/any), deal type (% / fixed / free / tiered / custom), asymmetric per-side config, no min/max — economics in `monetization/creators.md` Part 2; My Earnings / Discover / My Links sub-tabs
-- **Deal Maker deferred to end of development** (messaging is already wired — see Section on chat; it no longer belongs to Network's deferred list)
+Creator-to-creator discovery + collab + people hub (B2B — fans never see it). **REBUILT 2026-09-26 (hub + dock + 3 sub-screens, per `NETWORK_REDESIGN_PLAN.md`):**
+- **Hub (`/dashboard/network`)** — 2 columns: left rail (Billboard + Affiliates: EarningsSummary/AffiliateDiscover) · center = **Discover** (search box + result cards with Visit + Connect). The old 3-section layout's right rail is gone.
+- **3 sub-screens** (each with a route under `/dashboard/network/…`): `/partners` (collab requests → active collabs → invite card), `/fans` (full-width fan table + profile drawer), `/staff` (team invites + members + permissions).
+- **My Peeps = unified dock stack** — ONE component in the single floating stack bottom-right (`Partners · Fans · Staff · 💬`, top→bottom): 3 icon buttons (Partners / Fans / Staff), active page highlights, each gets a single red combined-badge (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread). Counts come from `GET /api/creator/relationships` (polled 30s). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement (no hardcoded offsets).
+- Original feature set (kept): visibility switch (`is_discoverable`), billboard (tagline/tags/collab-style/bio/rate-card/media-kit message), search, friend-request collabs, affiliates (Section 7) — economics in `monetization/creators.md` Part 2; My Earnings / Discover / My Links live in the hub left rail.
+- **Deal Maker deferred to end of development** (messaging is already wired — see Section on chat; it no longer belongs to Network's deferred list).
 
 ### 4.5 Settings (`/dashboard/settings`)
 
@@ -106,7 +105,7 @@ Platform owner's control room. One door, different keycards:
 
 ## 5. The Fan Shell (`/[username]`) — PWA #3
 
-### Guest view (not logged in) — `PublicCreatorPage`
+### Guest view (not logged in) — guest page
 
 **WIRED (Sheet 21-V1, 2026-08-11).** 3-layer page: Header (banner, avatar, display name, @username, bio, fan count) → Spotlight → Catalog Feed (interactive cards per item type — all 16 types render, gates apply). Artist Links live in the **Connect tab only** (`fan-shell.md` Part 4c). Guest view is **identical** to the fan Content tab — the only differences: signup/login buttons + PWA install prompt live on the guest page, and gate buttons show "Sign up to unlock" / "Buy — $X" / "Join membership" instead of "Purchased ✓" / "Unlocked ✓".
 
@@ -129,7 +128,7 @@ Full spec in `screens/fan-shell/fan-shell.md` (account model, gates, tabs, guest
 
 1. Visit `/{username}/guest` (redirect from `/{username}`) → see guest page (identical layout to fan view)
 2. Click "Sign Up" → `FanAuthModal` opens → enter email + password (email + password ONLY — no social login for fans, founder decision 2026-08-08)
-3. `fan_session` cookie set (opaque token, 365-day expiry)
+3. `fan_session` cookie set — Model B (2026-09-23): ONE cookie with a per-creator token map. `fan_session.ts` inserts a token per creator_id; logging in on one creator auto-recognizes you on every creator's link (same email). Clearing the cookie NEVER deletes purchases (they're stored server-side keyed by email) — re-entering the same email restores receipts (G1, 2026-09-23).
 4. Page reloads → authenticated view (badges update: "Purchased ✓" when purchase email matches account email)
 
 Follower (email-only, no password) vs Fan (with password): the same `fan_accounts` row — setting a password upgrades the session. A "no password set" login attempt returns 401 and the modal auto-switches to the forgot-password path.
@@ -138,7 +137,9 @@ Fan data is tied to **email**, not device. Fan accounts are **per-creator** (`fa
 
 ### Guest checkout & the account model
 
-Guests buy with **email only** — no account needed (Stan Store style). Checkout runs through the **mock PayPal rail** (`/api/paypal/checkout` — PayPal-first, 2026-08-10; Stripe stays the deferred Atlas reference). The receipt email IS the access key. An **"Also send me updates?" checkbox (default OFF)** is the ONLY bridge from buyer → follower — buying never auto-follows. **Claim purchases** (enter purchase email → verification code → merge) is NOT built yet (deferred). All 4 layers are v1 (spec: `fan-shell.md` Part 1).
+Guests buy with **email only** — no account needed (Stan Store style). Checkout runs through the **mock PayPal rail** (`/api/paypal/checkout` — PayPal-first, 2026-08-10; Stripe stays the deferred Atlas reference). The receipt email IS the access key. An **"Also send me updates?" checkbox (default OFF)** is the ONLY bridge from buyer → follower — buying never auto-follows. **Purchasing always creates a fan session** (G1, 2026-09-23) so the buyer is instantly recognized (receipts on guest page + Settings). **Claim purchases** (enter purchase email → verification code → merge) is NOT built yet (deferred). All 4 layers are v1 (spec: `fan-shell.md` Part 1).
+
+**Money philosophy (2026-09-23):** the app stays OUT of creator↔fan money flows. Creator sales are processed by external processors (PayPal/Stripe first-class); creators keep 100% of what they earn. The platform's own revenue comes from creators (paid Pro plans + subscriptions) — billed via Paddle / LemonSqueezy / Gumroad, decided closer to the end of development.
 
 ---
 

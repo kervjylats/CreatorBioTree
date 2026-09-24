@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { DollarSign, Users, Eye, Heart } from "lucide-react";
+import { toast } from "sonner";
 
 interface Stats {
   totalSales: number;
@@ -38,7 +39,7 @@ export function StatCards() {
           subscribers: data?.subscribers_count ?? 0,
         });
       })
-      .catch(() => {});
+      .catch(() => { toast.error("Failed to load stats"); });
   }, []);
 
   const cards = [

@@ -10,8 +10,10 @@ import { ArrowRight, Clock, CreditCard, Tag } from "lucide-react";
 import type { FanShellData } from "./fanData";
 import { isScheduledVisible, money } from "./fanData";
 import { cardRadius } from "./themeStyles";
+import { SectionTitle } from "./SectionTitle";
 import { CreatorHeader } from "./CreatorHeader";
 import { FanCommunitySection } from "./FanCommunitySection";
+import { getInitials } from "@/lib/fan-helpers";
 import type { EditModeTarget } from "./GuestPageContent";
 
 interface Partner {
@@ -106,14 +108,12 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
       {/* Section 1: Spotlight */}
       {featured.length > 0 && (
         <section className="px-4 pt-4">
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-            Spotlights
-          </h2>
+          <SectionTitle branding={branding}>Spotlights</SectionTitle>
           <div className="flex flex-col gap-2">
             {featured.map((item) => (
               <Link
                 key={item.id}
-                href="/content"
+                href={`/${branding.creatorUsername}/content`}
                 className={cardRadius(branding, "flex items-center justify-between px-4 py-3")}
                 style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
               >
@@ -128,14 +128,12 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
       {/* Section 2: New from creator */}
       {recent.length > 0 && (
         <section className="px-4 pt-4">
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-            New from {branding.displayName}
-          </h2>
+            <SectionTitle branding={branding}>New from {branding.displayName}</SectionTitle>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
             {recent.map((item) => (
               <Link
                 key={item.id}
-                href="/content"
+                href={`/${branding.creatorUsername}/content`}
                 className={cardRadius(branding, "snap-start shrink-0 w-44 p-3")}
                 style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
               >
@@ -155,9 +153,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
       {/* Section 3: Updates from partners you follow */}
       {followedPartners.length > 0 && (
         <section className="px-4 pt-4">
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-            From partners you follow
-          </h2>
+            <SectionTitle branding={branding}>From partners you follow</SectionTitle>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
             {followedPartners.map((p) => (
               <a
@@ -172,7 +168,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={p.avatar_url} alt={p.display_name} className="h-full w-full object-cover" />
                   ) : (
-                    p.display_name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+                    getInitials(p.display_name)
                   )}
                 </span>
                 <span className="block truncate text-sm font-semibold">{p.display_name}</span>
@@ -188,13 +184,11 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
       {/* Section 5: Your activity */}
       {(hasPurchases || hasMembership || data.identity) && (
         <section className="px-4 pt-4">
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-            Your activity
-          </h2>
+          <SectionTitle branding={branding}>Your activity</SectionTitle>
           <div className="flex flex-col gap-2">
             {hasPurchases && (
               <Link
-                href="/settings"
+                href={`/${branding.creatorUsername}/settings`}
                 className={cardRadius(branding, "flex items-center gap-3 px-4 py-3")}
                 style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
               >
@@ -220,7 +214,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
             )}
             {!data.identity && (
               <Link
-                href="/settings"
+                href={`/${branding.creatorUsername}/settings`}
                 className={cardRadius(branding, "flex items-center gap-3 px-4 py-3")}
                 style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
               >
@@ -238,14 +232,12 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
       {/* Section 6: Upcoming */}
       {upcoming.length > 0 && (
         <section className="px-4 pt-4">
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-            Upcoming
-          </h2>
+          <SectionTitle branding={branding}>Upcoming</SectionTitle>
           <div className="flex flex-col gap-2">
             {upcoming.map((item) => (
               <Link
                 key={item.id}
-                href="/content"
+                href={`/${branding.creatorUsername}/content`}
                 className={cardRadius(branding, "flex items-center gap-3 px-4 py-3")}
                 style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
               >
@@ -274,9 +266,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
       {/* Section 7: Announcements */}
       {announcementsChannel && (
         <section className="px-4 pt-4">
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide" style={{ color: branding.textColor + "88" }}>
-            Announcements
-          </h2>
+          <SectionTitle branding={branding}>Announcements</SectionTitle>
           <div
             className={cardRadius(branding, "p-4 text-center")}
             style={{ backgroundColor: branding.cardColor }}
@@ -290,7 +280,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
         </section>
       )}
 
-      <div className="pb-24" />
+      <div className="pb-[var(--bottom-nav-height)]" />
       </div>
     </div>
   );

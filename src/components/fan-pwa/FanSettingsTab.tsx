@@ -54,7 +54,11 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
   );
 
   const handleLogout = async () => {
-    await fetch("/api/fan/logout", { method: "POST" });
+    await fetch("/api/fan/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ creator_id: branding.creatorId }),
+    });
     window.location.href = `/${data.username}/guest`;
   };
 
@@ -221,7 +225,7 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
       </section>
 
       {/* PWA */}
-      <section className="px-4 pt-5 pb-24">
+      <section className="px-4 pt-5 pb-[var(--bottom-nav-height)]">
         <div className={cardRadius(branding, "px-4 py-3")} style={{ backgroundColor: branding.cardColor }}>
           <p className="text-sm font-semibold" style={{ color: branding.textColor }}>
             Install {branding.displayName}&apos;s app

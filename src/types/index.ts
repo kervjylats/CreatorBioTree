@@ -498,7 +498,7 @@ export interface AdminAccount {
 
 /** Permission tiers mapped to roles — used by the permission-check helper. */
 export const ADMIN_PERMISSIONS: Record<AdminRole, string[]> = {
-  super_admin:   ["manage_admins", "view_all", "delete_platform_data", "manage_content", "manage_support", "api_access"],
+  super_admin:   ["manage_admins", "view_all", "delete_platform_data", "manage_content", "manage_support", "api_access", "manage_service_access"],
   support_admin: ["view_creators", "view_fans", "impersonate", "manage_disputes"],
   content_admin: ["moderate_content", "flag_content", "approve_content", "reject_content"],
   agent:         ["api_access"],
@@ -656,6 +656,33 @@ export interface AffiliateLink {
   promoter_creator_id: string;
   code: string;
   click_count: number;
+  created_at: string;
+}
+
+// ─── External Services (admin panel — service access dashboard) ──────────────
+
+export type ServiceId =
+  | "vercel"
+  | "supabase"
+  | "paypal"
+  | "sentry"
+  | "resend"
+  | "posthog"
+  | "onesignal";
+
+export interface ExternalService {
+  id: ServiceId;
+  name: string;
+  category: string;
+  description: string;
+  url: string;
+}
+
+export interface AdminServiceAccess {
+  id: string;
+  user_id: string;
+  service_id: ServiceId;
+  enabled: boolean;
   created_at: string;
 }
 
