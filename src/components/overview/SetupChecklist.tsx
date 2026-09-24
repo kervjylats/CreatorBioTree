@@ -50,13 +50,13 @@ export function SetupChecklist() {
     },
     {
       label: "Create your first item",
-      href: "/dashboard/my-app?tab=catalog",
+      href: "/dashboard/my-app",
       done: state.hasItems,
       icon: Package,
     },
     {
       label: "Customize your design",
-      href: "/dashboard/my-app?tab=design",
+      href: "/dashboard/my-app",
       done: state.hasDesign,
       icon: Palette,
     },

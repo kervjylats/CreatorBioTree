@@ -1,7 +1,7 @@
 /**
  * PhonePreview — the fluid phone frame for the My App editor.
- * Uses CSS width:100% + aspect-ratio:390/640 so the frame automatically
- * fits any screen size. Max width is 390px (set by parent container).
+ * Uses CSS width:100% + aspect-ratio:390/844 (true phone ratio) so the
+ * frame automatically fits any screen. Max width 390px (420px desktop).
  * Layout mirrors FanAppShell: branded header → scrollable content (pb-20)
  * → absolute bottom nav that overlays content (matches real fixed nav).
  * Guest tab is shown as the first bottom nav tab (red accent).

@@ -392,7 +392,7 @@ These have full specs in `src/wiredLater/`:
 
 | Item | Spec | Status |
 |---|---|---|
-| **My App rebuild** (formerly Playground) — full-screen guest-first shell + tap-to-edit brand popovers + editor sheet + 16 item types + device uploads + draft/deploy | `screens/creator-dashboard/my-app/my-app.md` | ✅ DONE (Sheet 19-V1) |
+| **My App rebuild** (formerly Playground) — full-screen guest-first shell + tap-to-edit brand popovers + editor sheet + 16 item types + device uploads + draft/deploy | `screens/creator-dashboard/my-app/my-app.md` | ⚠️ PREVIEW-FIRST (2026-09-24) — phone frame (Draft/Live + real fan surfaces) is the only surface; editor/catalog UI deferred to a later design pass |
 | **Fan page rebuild** — guest page + 4-tab PWA (account model, gates, activity hub, settings hub) + mock PayPal checkout | `screens/fan-shell/fan-shell.md` (+ `my-app.md` Part 3 for display layers) | ✅ DONE (Sheet 21-V1) |
 | **Messaging** — floating inbox both sides, requests/blocks/toggles, groups + announcements, attachments | `features/messaging.md` | ✅ DONE (Sheet 12); Part 3 Community NOT built |
 | **Network rebuild** — search, billboard, collabs, affiliates | `screens/creator-dashboard/network/network.md` | ✅ DONE (Sheet 18) |

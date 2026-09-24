@@ -2,6 +2,9 @@
 
 > **Filename:** this file is `my-app.md` (in `screens/creator-dashboard/my-app/`). The **user-facing name is "My App"** — the sidebar entry, the route `/dashboard/my-app`, and all creator-facing copy. **"My App" replaces the earlier names "Playground" + "My Page" + "View My App"** (full rename founder decision 2026-08-05). Type names (`MyAppTheme`, `MyAppColors`, `MyAppProfile`) and the old-code component names (`useMyAppForm`, `MyAppInfoBanner`) follow the same rename.
 
+> **⚠️ STATUS 2026-09-24 — PREVIEW-FIRST (temporary direction).** Only the **phone frame** is visible on `/dashboard/my-app` right now: the Draft/Live/Deployed bar + the real fan surfaces (Guest/Home/Content/Connect/Settings) in a fluid 390×844 frame (420px wide on desktop). **The editor UI described below (tap-to-edit popovers, editor sheet, Identity/Design/Catalog/Artist Links/Integrations/Email tabs) is deferred to a later design pass** — this file remains the full target spec for when that pass happens. The old editor component files were removed; the generic catalog components (`AddItemPicker`, `ItemEditor`, `PricingEditor`, `FileUploadField`) are kept for reuse.
+
+
 ## Concept
 
 **My App** is the single place where a creator sees and edits their **entire fan shell** — one sidebar entry that replaces the old Playground editor AND the old "View My App" action. ("My App" because you get YOUR own app — that's the whole point of the platform.)

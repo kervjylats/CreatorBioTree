@@ -1,9 +1,11 @@
 /**
  * MyAppForm — the My App editor.
  * Renders a Draft/Live/Deployed bar + phone frame inside a centered,
- * fluid container (max-w-[390px]). The phone frame uses CSS
- * width:100% + aspect-ratio to fit any screen automatically.
- * No JavaScript scaling — pure CSS responsiveness.
+ * fluid container (max-w-[390px], up to 420px on desktop). The phone
+ * frame uses CSS width:100% + aspect-ratio:390/844 (true phone ratio)
+ * to fit any screen automatically. No JavaScript scaling — pure CSS.
+ * Vertical centering uses my-auto so an over-tall frame scrolls
+ * instead of clipping its top on short viewports.
  */
 "use client";
 
@@ -56,8 +58,8 @@ export function MyAppForm({ initialTab }: MyAppFormProps) {
   }
 
   return (
-    <div data-tl="MyAppForm" className="flex min-h-screen flex-col items-center justify-center bg-background py-6 pb-[var(--bottom-nav-height)] md:pb-6">
-      <div className="w-full max-w-[var(--phone-width)] mx-auto">
+    <div data-tl="MyAppForm" className="flex min-h-screen flex-col items-center bg-background py-6 pb-[var(--bottom-nav-height)] md:pb-6">
+      <div className="w-full max-w-[var(--phone-width)] lg:max-w-[420px] mx-auto my-auto">
         <PreviewStateToggle
           state={state}
           onChange={setState}

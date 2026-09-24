@@ -76,6 +76,17 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 
 ## Impromptu Fix Log
 
+### 2026-09-24 — My App Preview-First + Phone Frame Fix (+ 117-file checkpoint commit)
+
+**Founder direction: My App is preview-first for now — the phone frame is the ONLY surface; the editor/catalog UI is deferred to a later design pass. Checkpoint commit `e6040d3` (117 files: shell restructure, network rebuild, dock stack, recognition pass, My App rewrite). Gates green: typecheck 0 · lint 0 · check-docs PASS.**
+
+- **Phone frame fix (the "shrunken/funny" report):** root cause was `--phone-height: 640px` → `aspect-ratio: 390/640` (a squat 0.61 ratio, not phone-shaped) plus a hard `max-w-[390px]` frame dead-centered in a huge empty desktop page. Now: `--phone-height: 844px` (true phone ratio, matches the real fan shell + device frames), container `lg:max-w-[420px]` (frame → 420×909 on desktop), and vertical centering switched from `justify-center` to `my-auto` on the child so an over-tall frame **scrolls instead of clipping its top** on short viewports.
+- **Dead deep-links fixed:** `SetupChecklist` linked `/dashboard/my-app?tab=catalog` + `?tab=design` — but `MyAppForm` now validates `?tab=` against `FAN_TAB_IDS` (guest/home/content/connect/settings), so those editor-tab links silently fell back to Home. Both repointed to `/dashboard/my-app`.
+- **Stale docstrings rewritten:** `Screen.tsx` (dropped "mock auto-login covers auth" + editor-tab `?tab=catalog` claims → preview-first wording), `MyAppForm.tsx`, `PhonePreview.tsx` (390/844 ratio).
+- **Editor files removed intentionally (13):** `AppIdentityCard`, `ArtistLinksTab`, `AutoSave`, `CatalogTab`, `DesignTab`, `ElementPopover`, `EmailTab`, `HomeScreenPreview`, `IconDesigner`, `IntegrationsTab`, `LinksEditor`, `LinksTab`, `MediaKitTab` + `PublicCreatorPage.tsx`. **Kept for future editors:** the generic `catalog/` components (`AddItemPicker`, `ItemEditor`, `PricingEditor`, `FileUploadField`) — unimported = unbundled.
+- **Docs:** `my-app.md` gained a ⚠️ PREVIEW-FIRST status banner (file stays the full target spec); `docs/HOW_IT_WORKS.md` §16 My App row → "⚠️ PREVIEW-FIRST (2026-09-24)".
+- **Note:** the dock (My Peeps + 💬) is a single vertical stack (`flex-col`) in `app/(shell)/layout.tsx` — stale horizontal screenshots are a refresh/TweakLens cache artifact, not a code issue.
+
 ### 2026-09-26 — Network Screen Rebuild: Hub + My Peeps Dock + 3 Sub-Screens (Ship + Mock Fixes)
 
 **Founder-approved plan (`NETWORK_REDESIGN_PLAN.md`) executed, Phases A–E. Gates green: typecheck 0 · lint 0 · check-docs PASS (402 files · smoke-tested).**
