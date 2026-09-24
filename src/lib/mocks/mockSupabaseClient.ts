@@ -291,11 +291,13 @@ function matchFilter(row: Record<string, unknown>, f: Filter): boolean {
   const val = row[f.col];
   switch (f.op) {
     case "eq":
-      return val === f.val;
+      return f.val === null ? val === null || val === undefined : val === f.val;
     case "neq":
       return val !== f.val;
     case "is":
-      return f.val === null ? val === null : val === f.val;
+      // Absent keys behave as SQL NULL (real columns default to NULL) — so an
+      // explicit `IS NULL` must match both null and undefined.
+      return f.val === null ? val === null || val === undefined : val === f.val;
     case "in":
       return Array.isArray(f.val) && f.val.includes(val);
     case "like":

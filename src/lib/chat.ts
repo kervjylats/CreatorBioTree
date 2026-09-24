@@ -5,9 +5,12 @@
  * direct-conversation find-or-create. Shared by every /api/chat/* route —
  * the client never knows its own key; routes return `myKey` alongside data.
  */
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getFanSession } from "@/lib/fanSession";
+
+/** Header set by the fan/guest surfaces naming the creator whose app is open. */
+export const CHAT_HOST_CREATOR_HEADER = "x-chat-host-creator";
 
 /** A chat participant — fan side uses fan_accounts.id, creator side uses creators.id (messaging.md Part 5). */
 export interface ChatParticipant {
@@ -37,7 +40,11 @@ export async function getChatIdentity(supabase: SupabaseClient): Promise<ChatIde
     };
   }
 
-  const session = await getFanSession(await cookies(), supabase);
+  // Fan side: resolve the fan_account for the creator whose app is open. A fan
+  // holds one fan_account per creator, so without this hint a multi-creator fan
+  // could be identified as the wrong account (first valid token wins).
+  const hostCreatorId = (await headers()).get(CHAT_HOST_CREATOR_HEADER) ?? undefined;
+  const session = await getFanSession(await cookies(), supabase, hostCreatorId);
   if (session) {
     const { data: account } = await supabase
       .from("fan_accounts")

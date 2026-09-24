@@ -21,7 +21,7 @@ import { InstallBanner } from "./InstallBanner";
 import { IOSInstallGuide } from "./IOSInstallGuide";
 import { InAppBrowserWarning } from "./InAppBrowserWarning";
 import { UpdateToast } from "./UpdateToast";
-import { ChatIcon, ChatInboxPopover } from "@/components/chat/ChatShell";
+import { ChatIcon, ChatInboxPopover, ChatHostProvider } from "@/components/chat/ChatShell";
 import { PoweredByFooter } from "./PoweredByFooter";
 import { buttonShape } from "./themeStyles";
 
@@ -41,92 +41,94 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
   );
 
   return (
-    <div
-      data-tl="FanAppShell"
-      className="flex min-h-screen-safe w-full flex-col"
-      style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
-    >
-      {/* Top bar */}
-      <header
-        className="sticky top-0 z-40 safe-top px-4 py-3 backdrop-blur-md"
-        style={{ backgroundColor: branding.backgroundColor + "DD" }}
+    <ChatHostProvider creatorId={creatorId}>
+      <div
+        data-tl="FanAppShell"
+        className="flex min-h-screen-safe w-full flex-col"
+        style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
       >
-        <div className="mx-auto flex w-full max-w-lg items-center justify-between">
-          <span className="text-sm font-bold" style={{ color: branding.textColor }}>
-            {branding.appName}
-          </span>
-          <div className="flex items-center gap-2">
-            <ChatIcon
-              otherKey={creatorId}
-              otherParty="creator"
-              name={branding.displayName}
-              accentColor={branding.accentColor}
-            />
-            <button
-              type="button"
-              aria-label={notify ? "Mute notifications" : "Turn on notifications"}
-              onClick={() => {
-                const next = !notify;
-                setNotify(next);
-                window.localStorage.setItem(`fan_notify_${creatorId}`, next ? "1" : "0");
-                toast(next ? "Notifications on" : "Notifications muted");
-              }}
-              className={`${buttonShape(branding)} p-2`}
-              style={{ color: notify ? branding.accentColor : branding.textColor + "88" }}
-            >
-              {notify ? <Bell size={18} /> : <BellOff size={18} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Desktop top nav — hidden on phone/tablet, visible at lg */}
-        <nav className="mx-auto mt-2 hidden max-w-lg gap-1 lg:flex">
-          {AUTHENTICATED_FAN_TABS.map(({ id, label }) => {
-            const active = activeTab === id;
-            return (
+        {/* Top bar */}
+        <header
+          className="sticky top-0 z-40 safe-top px-4 py-3 backdrop-blur-md"
+          style={{ backgroundColor: branding.backgroundColor + "DD" }}
+        >
+          <div className="mx-auto flex w-full max-w-lg items-center justify-between">
+            <span className="text-sm font-bold" style={{ color: branding.textColor }}>
+              {branding.appName}
+            </span>
+            <div className="flex items-center gap-2">
+              <ChatIcon
+                otherKey={creatorId}
+                otherParty="creator"
+                name={branding.displayName}
+                accentColor={branding.accentColor}
+              />
               <button
-                key={id}
                 type="button"
+                aria-label={notify ? "Mute notifications" : "Turn on notifications"}
                 onClick={() => {
-                  if (id === activeTab) return;
-                  router.push(`/${branding.creatorUsername}/${id}`);
+                  const next = !notify;
+                  setNotify(next);
+                  window.localStorage.setItem(`fan_notify_${creatorId}`, next ? "1" : "0");
+                  toast(next ? "Notifications on" : "Notifications muted");
                 }}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
-                style={{
-                  color: active ? branding.accentColor : branding.textColor + "88",
-                  backgroundColor: active ? branding.accentColor + "15" : "transparent",
-                }}
+                className={`${buttonShape(branding)} p-2`}
+                style={{ color: notify ? branding.accentColor : branding.textColor + "88" }}
               >
-                {label}
+                {notify ? <Bell size={18} /> : <BellOff size={18} />}
               </button>
-            );
-          })}
-        </nav>
-      </header>
+            </div>
+          </div>
 
-      {/* PWA install layer — each piece decides its own visibility */}
-      <InAppBrowserWarning />
-      <InstallBanner branding={branding} />
-      <IOSInstallGuide branding={branding} />
+          {/* Desktop top nav — hidden on phone/tablet, visible at lg */}
+          <nav className="mx-auto mt-2 hidden max-w-lg gap-1 lg:flex">
+            {AUTHENTICATED_FAN_TABS.map(({ id, label }) => {
+              const active = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    if (id === activeTab) return;
+                    router.push(`/${branding.creatorUsername}/${id}`);
+                  }}
+                  className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+                  style={{
+                    color: active ? branding.accentColor : branding.textColor + "88",
+                    backgroundColor: active ? branding.accentColor + "15" : "transparent",
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </nav>
+        </header>
 
-      <main className="flex-1 pb-[var(--bottom-nav-height)] lg:pb-8">
-        {children}
-        <PoweredByFooter branding={branding} />
-      </main>
+        {/* PWA install layer — each piece decides its own visibility */}
+        <InAppBrowserWarning />
+        <InstallBanner branding={branding} />
+        <IOSInstallGuide branding={branding} />
 
-      <UpdateToast branding={branding} />
-      <PageViewTracker creatorId={creatorId} />
-      <div className="fixed bottom-20 right-4 z-50 sm:bottom-6 sm:right-6">
-        <ChatInboxPopover />
+        <main className="flex-1 pb-[var(--bottom-nav-height)] lg:pb-8">
+          {children}
+          <PoweredByFooter branding={branding} />
+        </main>
+
+        <UpdateToast branding={branding} />
+        <PageViewTracker creatorId={creatorId} />
+        <div className="fixed bottom-20 right-4 z-50 sm:bottom-6 sm:right-6">
+          <ChatInboxPopover />
+        </div>
+        <FanBottomNav
+          activeTab={activeTab}
+          branding={branding}
+          onTabChange={(tab) => {
+            if (tab === activeTab) return;
+            router.push(`/${branding.creatorUsername}/${tab}`);
+          }}
+        />
       </div>
-      <FanBottomNav
-        activeTab={activeTab}
-        branding={branding}
-        onTabChange={(tab) => {
-          if (tab === activeTab) return;
-          router.push(`/${branding.creatorUsername}/${tab}`);
-        }}
-      />
-    </div>
+    </ChatHostProvider>
   );
 }

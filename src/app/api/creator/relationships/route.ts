@@ -50,79 +50,79 @@ export async function GET() {
       .gt("expires_at", new Date().toISOString());
 
     // ── Per-group unread ───────────────────────────────────────────────────────
-    // Classify each of my active direct conversations by the OTHER participant:
-    // fans (fan_accounts of this creator), partners (any non-ended partnership),
-    // staff (team members). Sum messages newer than my last_read_at, skip muted.
+    // Classify each of my active direct conversations by the OTHER participant
+    // (fans = fan_accounts of this creator, partners = non-ended partnership,
+    // staff = team members), then COUNT messages newer than my last_read_at with
+    // a server-side filtered query — never load full message history. Muted and
+    // left conversations are excluded server-side. The dock polls this every 30s.
     const { data: memberships } = await supabase
       .from("conversation_members")
       .select("*")
-      .eq("participant_key", me.key);
-    const active = (memberships ?? []).filter((m) => !m.left_at);
+      .eq("participant_key", me.key)
+      .is("left_at", null);
+    const active = (memberships ?? []).filter((m) => !m.muted_at);
     const unread = { partners: 0, fans: 0, staff: 0 };
 
     if (active.length > 0) {
       const convoIds = active.map((m) => m.conversation_id as string);
-      const [{ data: convos }, { data: allMembers }, { data: messages }] = await Promise.all([
-        supabase.from("conversations").select("id, type").in("id", convoIds),
-        supabase.from("conversation_members").select("*").in("conversation_id", convoIds),
-        supabase
-          .from("messages")
-          .select("conversation_id, sender_key, created_at, deleted_at")
-          .in("conversation_id", convoIds),
-      ]);
 
-      // Sets for classification
-      const { data: fansData } = await supabase
-        .from("fan_accounts")
-        .select("id")
-        .eq("creator_id", user.id);
+      const [{ data: convos }, { data: others }, { data: fansData }, { data: partnerships }, { data: teamRows }] =
+        await Promise.all([
+          supabase.from("conversations").select("id, type").in("id", convoIds).eq("type", "direct"),
+          supabase
+            .from("conversation_members")
+            .select("conversation_id, participant_key")
+            .in("conversation_id", convoIds)
+            .neq("participant_key", me.key),
+          supabase.from("fan_accounts").select("id").eq("creator_id", user.id),
+          supabase
+            .from("partnerships")
+            .select("creator_a, creator_b")
+            .neq("status", "ended")
+            .or(`creator_a.eq.${user.id},creator_b.eq.${user.id}`),
+          supabase.from("creator_team_members").select("user_id").eq("creator_id", user.id),
+        ]);
+
+      const directIds = new Set((convos ?? []).map((c) => c.id as string));
+      const otherByConvo = new Map<string, string>();
+      for (const o of others ?? []) otherByConvo.set(o.conversation_id as string, o.participant_key as string);
+
       const fanIds = new Set((fansData ?? []).map((f) => f.id));
-
-      const { data: partnerships } = await supabase
-        .from("partnerships")
-        .select("creator_a, creator_b")
-        .neq("status", "ended")
-        .or(`creator_a.eq.${user.id},creator_b.eq.${user.id}`);
       const partnerIds = new Set<string>();
       for (const p of partnerships ?? []) {
         partnerIds.add(p.creator_a === user.id ? p.creator_b : p.creator_a);
       }
-
-      const { data: teamRows } = await supabase
-        .from("creator_team_members")
-        .select("user_id")
-        .eq("creator_id", user.id);
       const staffIds = new Set((teamRows ?? []).map((t) => t.user_id));
 
-      for (const convo of (convos ?? [])) {
-        if (convo.type !== "direct") continue;
-        const memberRow = active.find((m) => m.conversation_id === convo.id);
-        if (!memberRow) continue;
-        if (memberRow.muted_at) continue;
-
-        const other = (allMembers ?? []).find(
-          (m) => m.conversation_id === convo.id && m.participant_key !== me.key,
-        );
+      const jobs: Promise<void>[] = [];
+      for (const memberRow of active) {
+        const convoId = memberRow.conversation_id as string;
+        if (!directIds.has(convoId)) continue;
+        const other = otherByConvo.get(convoId);
         if (!other) continue;
+        const group = fanIds.has(other)
+          ? "fans"
+          : staffIds.has(other)
+            ? "staff"
+            : partnerIds.has(other)
+              ? "partners"
+              : null;
+        if (!group) continue;
 
-        const unreadCount = (messages ?? [])
-          .filter(
-            (m) =>
-              m.conversation_id === convo.id &&
-              !m.deleted_at &&
-              m.sender_key !== me.key &&
-              String(m.created_at) > (memberRow.last_read_at ?? "1970-01-01"),
-          ).length;
-        if (unreadCount === 0) continue;
-
-        if (fanIds.has(other.participant_key as string)) {
-          unread.fans += unreadCount;
-        } else if (staffIds.has(other.participant_key as string)) {
-          unread.staff += unreadCount;
-        } else if (partnerIds.has(other.participant_key as string)) {
-          unread.partners += unreadCount;
-        }
+        jobs.push(
+          (async () => {
+            const { count } = await supabase
+              .from("messages")
+              .select("*", { count: "exact", head: true })
+              .eq("conversation_id", convoId)
+              .neq("sender_key", me.key)
+              .is("deleted_at", null)
+              .gt("created_at", memberRow.last_read_at ?? "1970-01-01");
+            unread[group] += count ?? 0;
+          })(),
+        );
       }
+      await Promise.all(jobs);
     }
 
     return NextResponse.json({

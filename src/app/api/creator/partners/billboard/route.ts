@@ -28,6 +28,7 @@ export async function GET() {
       media_kit_message: me.media_kit_message ?? "",
     });
   } catch (e) {
+    console.error("[partners/billboard] GET:", e);
     return handleAuthError(e) ?? NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
@@ -82,6 +83,7 @@ export async function PUT(req: NextRequest) {
       media_kit_message: updated?.media_kit_message ?? "",
     });
   } catch (e) {
+    console.error("[partners/billboard] PUT:", e);
     return handleAuthError(e) ?? NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }

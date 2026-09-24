@@ -347,6 +347,8 @@ export interface FanAccount {
   referred_by:   string | null;
   last_seen_at:  string | null;
   do_not_contact: boolean;
+  /** "Also send me updates?" consent captured at checkout (fan-shell.md decision #12) — the only email-updates bridge. */
+  marketing_opt_in: boolean;
   notes:         string | null;
   created_at:    string;
 }

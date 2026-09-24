@@ -27,61 +27,86 @@ async function listConversations(supabase: Awaited<ReturnType<typeof createClien
   const { data: memberships } = await supabase
     .from("conversation_members")
     .select("*")
-    .eq("participant_key", meKey);
+    .eq("participant_key", meKey)
+    .is("left_at", null);
 
   const active = (memberships ?? []).filter((m) => !m.left_at);
   if (active.length === 0) return [];
 
   const convoIds = active.map((m) => m.conversation_id as string);
-  const { data: convos } = await supabase.from("conversations").select("*").in("id", convoIds);
+  const [{ data: convos }, { data: allMembers }] = await Promise.all([
+    supabase.from("conversations").select("*").in("id", convoIds),
+    supabase.from("conversation_members").select("*").in("conversation_id", convoIds),
+  ]);
 
-  const { data: allMembers } = await supabase
-    .from("conversation_members")
-    .select("*")
-    .in("conversation_id", convoIds);
-  const { data: allMessages } = await supabase.from("messages").select("*").in("conversation_id", convoIds);
-
-  const nameParticipants = (allMembers ?? []).map((m) => ({ key: m.participant_key as string, party: m.party as "creator" | "fan" }));
+  const nameParticipants = (allMembers ?? []).map((m) => ({
+    key: m.participant_key as string,
+    party: m.party as "creator" | "fan",
+  }));
   const names = await resolveParticipantNames(supabase, nameParticipants);
 
-  const summaries = [];
-  for (const convo of (convos ?? []) as ConvoRow[]) {
-    const memberRow = active.find((m) => m.conversation_id === convo.id)!;
-    const msgs = (allMessages ?? []).filter((m) => m.conversation_id === convo.id && !m.deleted_at);
-    msgs.sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
-    const last = msgs.length ? msgs[msgs.length - 1] : null;
-    const unread = msgs.filter(
-      (m) => m.sender_key !== meKey && String(m.created_at) > (memberRow.last_read_at ?? "1970-01-01"),
-    ).length;
+  // Per-conversation last message + unread count use server-side filtered
+  // queries (order+limit 1, and a COUNT) — never load full history. This list
+  // is polled every 6s by the chat shell.
+  const summaries = await Promise.all(
+    ((convos ?? []) as ConvoRow[]).map(async (convo) => {
+      const memberRow = active.find((m) => m.conversation_id === convo.id)!;
 
-    let title = convo.title ?? "Direct message";
-    let otherKey: string | null = null;
-    let otherParty: "creator" | "fan" | null = null;
-    if (convo.type === "direct") {
-      const other = (allMembers ?? []).find((m) => m.conversation_id === convo.id && m.participant_key !== meKey);
-      otherKey = other?.participant_key ?? null;
-      otherParty = other?.party ?? null;
-      if (other) title = names.get(other.participant_key as string) ?? "Direct message";
-    }
+      const [{ data: lastRows }, { count: unreadCount }] = await Promise.all([
+        supabase
+          .from("messages")
+          .select("*")
+          .eq("conversation_id", convo.id)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
+          .limit(1),
+        supabase
+          .from("messages")
+          .select("*", { count: "exact", head: true })
+          .eq("conversation_id", convo.id)
+          .neq("sender_key", meKey)
+          .is("deleted_at", null)
+          .gt("created_at", memberRow.last_read_at ?? "1970-01-01"),
+      ]);
+      const last = lastRows?.[0] ?? null;
 
-    summaries.push({
-      id: convo.id,
-      type: convo.type,
-      title,
-      otherKey,
-      otherParty,
-      lastMessage: last
-        ? { body: last.body as string, created_at: last.created_at as string, deleted: Boolean(last.deleted_at), sender_key: last.sender_key }
-        : null,
-      unread,
-      muted: Boolean(memberRow.muted_at),
-      pinned: Boolean(convo.pinned),
-      announcementsOnly: Boolean(convo.announcements_only),
-      myRole: memberRow.role ?? "member",
-      memberCount: (allMembers ?? []).filter((m) => m.conversation_id === convo.id && !m.left_at).length,
-      updatedAt: convo.last_message_at ?? convo.created_at,
-    });
-  }
+      let title = convo.title ?? "Direct message";
+      let otherKey: string | null = null;
+      let otherParty: "creator" | "fan" | null = null;
+      if (convo.type === "direct") {
+        const other = (allMembers ?? []).find(
+          (m) => m.conversation_id === convo.id && m.participant_key !== meKey,
+        );
+        otherKey = other?.participant_key ?? null;
+        otherParty = other?.party ?? null;
+        if (other) title = names.get(other.participant_key as string) ?? "Direct message";
+      }
+
+      return {
+        id: convo.id,
+        type: convo.type,
+        title,
+        otherKey,
+        otherParty,
+        lastMessage: last
+          ? {
+              body: last.body as string,
+              created_at: last.created_at as string,
+              deleted: Boolean(last.deleted_at),
+              sender_key: last.sender_key,
+            }
+          : null,
+        unread: unreadCount ?? 0,
+        muted: Boolean(memberRow.muted_at),
+        pinned: Boolean(convo.pinned),
+        announcementsOnly: Boolean(convo.announcements_only),
+        myRole: memberRow.role ?? "member",
+        memberCount: (allMembers ?? []).filter((m) => m.conversation_id === convo.id && !m.left_at).length,
+        updatedAt: convo.last_message_at ?? convo.created_at,
+      };
+    }),
+  );
+
   summaries.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
   return summaries;
 }
@@ -173,8 +198,8 @@ export async function POST(req: Request) {
       if (error || !convo) return NextResponse.json({ error: "Couldn't start conversation" }, { status: 500 });
 
       await supabase.from("conversation_members").insert([
-        { conversation_id: convo.id, participant_key: me.key, party: me.party, role: "member", last_read_at: first_message ? now : null, added_at: now },
-        { conversation_id: convo.id, participant_key: other_key, party: other_party, role: "member", added_at: now },
+        { conversation_id: convo.id, participant_key: me.key, party: me.party, role: "member", last_read_at: first_message ? now : null, left_at: null, added_at: now },
+        { conversation_id: convo.id, participant_key: other_key, party: other_party, role: "member", left_at: null, added_at: now },
       ]);
       if (first_message) await insertMessage(supabase, convo.id, me.key, first_message);
 
@@ -194,12 +219,13 @@ export async function POST(req: Request) {
     if (error || !group) return NextResponse.json({ error: "Couldn't create group" }, { status: 500 });
 
     const memberRows = [
-      { conversation_id: group.id, participant_key: me.key, party: me.party, role: "owner", added_at: now },
+      { conversation_id: group.id, participant_key: me.key, party: me.party, role: "owner", left_at: null, added_at: now },
       ...(members ?? []).map((m) => ({
         conversation_id: group.id,
         participant_key: m.key,
         party: m.party,
         role: "member",
+        left_at: null,
         added_at: now,
       })),
     ];

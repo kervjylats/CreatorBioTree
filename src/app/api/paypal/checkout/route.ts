@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validation = checkoutSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error.format() }, { status: 400 });
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
     if (!USE_MOCKS) {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { content_item_id, fan_email, creator_id, opt_in_updates } = validation.data;
+    const { content_item_id, fan_email, creator_id } = validation.data;
     const supabase = createServiceClient();
 
     let item;
@@ -87,8 +87,9 @@ export async function POST(request: NextRequest) {
     // In real mode this is where the PayPal order is created server-side.
     // v1: creator keeps 100% of sales — PayPal settlement splits land with
     // the Sheet 16 settlement engine (auto_split / manual).
+    // `opt_in_updates` is carried through the client's pending-checkout stash
+    // and persisted on completion (see /api/fan/purchases/complete).
     void fan_email;
-    void opt_in_updates;
 
     return NextResponse.json({ url, session_id: `mock_paypal_${content_item_id}` });
   } catch (err) {

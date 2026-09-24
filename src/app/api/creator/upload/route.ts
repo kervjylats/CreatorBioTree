@@ -160,6 +160,6 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[upload] Unexpected error:", message);
-    return NextResponse.json({ error: `Upload failed: ${message}` }, { status: 500 });
+    return NextResponse.json({ error: "Upload failed. Please try again." }, { status: 500 });
   }
 }

@@ -37,15 +37,13 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (lookupError || !fan) {
-      return NextResponse.json(
-        { error: "No account found. Please sign up first." },
-        { status: 401 },
-      );
+      // Same message as a wrong password — never reveal whether an email is registered.
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
     const valid = await verifyPassword(password, fan.password_hash);
     if (!valid) {
-      return NextResponse.json({ error: "Invalid password" }, { status: 401 });
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
     await supabase

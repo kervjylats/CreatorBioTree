@@ -49,6 +49,7 @@ export async function GET() {
 
     return NextResponse.json({ partnerships: enriched });
   } catch (e) {
+    console.error("[partners/list]:", e);
     return handleAuthError(e) ?? NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }

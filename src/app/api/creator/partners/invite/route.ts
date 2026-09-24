@@ -35,6 +35,7 @@ export async function GET() {
     const url = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/onboarding?invite=${code}`;
     return NextResponse.json({ code, url });
   } catch (e) {
+    console.error("[partners/invite]:", e);
     return handleAuthError(e) ?? NextResponse.json({ error: "Failed to generate invite" }, { status: 500 });
   }
 }

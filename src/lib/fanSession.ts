@@ -31,6 +31,9 @@ const SESSION_OPTIONS = {
 
 export { SESSION_OPTIONS };
 
+/** Max creators tracked in the fan_session cookie map (browser cookie ~4KB limit). */
+const MAX_SESSION_CREATORS = 20;
+
 // ─── Password hashing (SHA-256 for mock mode; real production uses bcrypt) ────
 
 export async function hashPassword(password: string): Promise<string> {
@@ -190,7 +193,17 @@ export async function setFanSession(
     .neq("token", token);
 
   const { map } = parseSessionCookie(cookieStore.get(FAN_SESSION_COOKIE)?.value);
+  // Re-insert at the end so the most recently used creator is the last evicted.
+  delete map[creatorId];
   map[creatorId] = token;
+  // Cap the map so a fan who logs into very many creators can't blow the
+  // ~4KB browser cookie limit — evict the oldest entries (LRU).
+  const keys = Object.keys(map);
+  if (keys.length > MAX_SESSION_CREATORS) {
+    for (const stale of keys.slice(0, keys.length - MAX_SESSION_CREATORS)) {
+      delete map[stale];
+    }
+  }
   response.cookies.set(FAN_SESSION_COOKIE, JSON.stringify(map), SESSION_OPTIONS);
 }
 

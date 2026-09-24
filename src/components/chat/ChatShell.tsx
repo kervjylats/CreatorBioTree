@@ -10,7 +10,7 @@
  */
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -71,14 +71,42 @@ export interface ThreadData {
   messages: ChatMessage[];
 }
 
-async function chatApi<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+async function chatApi<T = unknown>(path: string, init?: RequestInit, hostCreatorId?: string | null): Promise<T> {
   const res = await fetch(path, {
     ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(hostCreatorId ? { "x-chat-host-creator": hostCreatorId } : {}),
+      ...(init?.headers ?? {}),
+    },
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(typeof json?.error === "string" ? json.error : "Request failed");
   return json as T;
+}
+
+/**
+ * Chat host context — the creator whose app the current fan is inside.
+ * A fan has ONE fan_account per creator, so the server needs this hint to
+ * resolve the RIGHT account when the fan holds sessions on several creators
+ * (chat.ts getChatIdentity). The header only selects among the fan's own
+ * sessions — never a privilege escalation. Creators (dashboard) mount no
+ * provider → null → creator auth wins.
+ */
+const ChatHostContext = createContext<string | null>(null);
+
+/** Wrap a fan/guest surface so its chat calls carry the host creator id. */
+export function ChatHostProvider({ creatorId, children }: { creatorId: string; children: ReactNode }) {
+  return <ChatHostContext.Provider value={creatorId}>{children}</ChatHostContext.Provider>;
+}
+
+/** Bound chat fetch — injects the host creator header when a provider is present. */
+function useChatApi() {
+  const hostCreatorId = useContext(ChatHostContext);
+  return useCallback(
+    <T,>(path: string, init?: RequestInit) => chatApi<T>(path, init, hostCreatorId),
+    [hostCreatorId],
+  );
 }
 
 function timeAgo(iso: string): string {
@@ -119,12 +147,13 @@ export function useChat(): {
   const [unread, setUnread] = useState(0);
   const [myParty, setMyParty] = useState<"creator" | "fan" | null>(null);
   const [loading, setLoading] = useState(true);
+  const api = useChatApi();
 
   const refresh = useCallback(async () => {
     try {
       const [list, unreadRes] = await Promise.all([
-        chatApi<{ conversations: ChatConversation[]; myParty: "creator" | "fan" }>("/api/chat/conversations"),
-        chatApi<{ unread: number }>("/api/chat/unread"),
+        api<{ conversations: ChatConversation[]; myParty: "creator" | "fan" }>("/api/chat/conversations"),
+        api<{ unread: number }>("/api/chat/unread"),
       ]);
       setConversations(list.conversations);
       setMyParty(list.myParty);
@@ -134,7 +163,7 @@ export function useChat(): {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     void refresh();
@@ -267,6 +296,7 @@ interface ChatShellProps {
 /** The complete messaging screen — conversation list, thread, requests, privacy toggle, new group (Part 1 "Open full"). */
 export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
   const { conversations, myParty, refresh } = useChat();
+  const api = useChatApi();
   const router = useRouter();
   const [threadId, setThreadId] = useState<string | null>(initialConversationId ?? null);
   const [requests, setRequests] = useState<{ id: string; from_name: string; body: string | null }[]>([]);
@@ -277,19 +307,19 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
   useEffect(() => {
     void (async () => {
       try {
-        const r = await chatApi<{ requests: { id: string; from_name: string; body: string | null }[] }>("/api/chat/requests");
+        const r = await api<{ requests: { id: string; from_name: string; body: string | null }[] }>("/api/chat/requests");
         setRequests(r.requests);
-        const prefs = await chatApi<{ allow_messages_from_anyone: boolean }>("/api/chat/preferences");
+        const prefs = await api<{ allow_messages_from_anyone: boolean }>("/api/chat/preferences");
         setAllowAnyone(prefs.allow_messages_from_anyone);
       } catch {
         // no identity — list shows empty
       }
     })();
-  }, []);
+  }, [api]);
 
   const handleRequest = async (requestId: string, action: "approve" | "ignore") => {
     try {
-      const res = await chatApi<{ status: string; conversation_id?: string }>("/api/chat/requests", {
+      const res = await api<{ status: string; conversation_id?: string }>("/api/chat/requests", {
         method: "POST",
         body: JSON.stringify({ request_id: requestId, action }),
       });
@@ -309,7 +339,7 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
   const toggleAllowAnyone = async (next: boolean) => {
     setAllowAnyone(next);
     try {
-      await chatApi("/api/chat/preferences", {
+      await api("/api/chat/preferences", {
         method: "PATCH",
         body: JSON.stringify({ allow_messages_from_anyone: next }),
       });
@@ -323,7 +353,7 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
     const title = window.prompt("Group chat name");
     if (!title?.trim()) return;
     try {
-      const res = await chatApi<{ conversation_id: string }>("/api/chat/conversations", {
+      const res = await api<{ conversation_id: string }>("/api/chat/conversations", {
         method: "POST",
         body: JSON.stringify({ type: "group", title: title.trim() }),
       });
@@ -440,16 +470,17 @@ export function ChatThread({ conversationId, onBack, onOpenFull, compact, accent
   const [data, setData] = useState<ThreadData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const api = useChatApi();
 
   const load = useCallback(async () => {
     try {
-      const thread = await chatApi<ThreadData>(`/api/chat/conversations/${conversationId}/messages`);
+      const thread = await api<ThreadData>(`/api/chat/conversations/${conversationId}/messages`);
       setData(thread);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't load conversation");
     }
-  }, [conversationId]);
+  }, [conversationId, api]);
 
   useEffect(() => {
     void load();
@@ -464,7 +495,7 @@ export function ChatThread({ conversationId, onBack, onOpenFull, compact, accent
   // Mark read whenever new messages arrive.
   useEffect(() => {
     if (!data) return;
-    void chatApi(`/api/chat/conversations/${conversationId}/read`, { method: "POST" }).catch(() => { toast.error("Failed to mark as read"); });
+    void api(`/api/chat/conversations/${conversationId}/read`, { method: "POST" }).catch(() => { toast.error("Failed to mark as read"); });
   }, [data?.messages.length, conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -640,12 +671,13 @@ function MessageComposer({
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const api = useChatApi();
 
   const send = async (body?: string, attachment?: ChatAttachment) => {
     if ((!body || !body.trim()) && !attachment) return;
     setSending(true);
     try {
-      await chatApi(`/api/chat/conversations/${conversationId}/messages`, {
+      await api(`/api/chat/conversations/${conversationId}/messages`, {
         method: "POST",
         body: JSON.stringify({ body: (body ?? "").trim(), attachment: attachment ?? null }),
       });
@@ -672,7 +704,7 @@ function MessageComposer({
         reader.onerror = () => reject(new Error("read failed"));
         reader.readAsDataURL(file);
       });
-      const uploaded = await chatApi<ChatAttachment>("/api/chat/upload", {
+      const uploaded = await api<ChatAttachment>("/api/chat/upload", {
         method: "POST",
         body: JSON.stringify({ dataUrl, name: file.name }),
       });
@@ -754,6 +786,7 @@ export function ChatIcon({ otherKey, otherParty, name, accentColor, guest, onGue
   const [convoId, setConvoId] = useState<string | null>(null);
   const [requested, setRequested] = useState(false);
   const [starting, setStarting] = useState(false);
+  const api = useChatApi();
 
   const start = async () => {
     if (guest) {
@@ -762,7 +795,7 @@ export function ChatIcon({ otherKey, otherParty, name, accentColor, guest, onGue
     }
     setStarting(true);
     try {
-      const res = await chatApi<{ conversation_id: string; status: string }>("/api/chat/conversations", {
+      const res = await api<{ conversation_id: string; status: string }>("/api/chat/conversations", {
         method: "POST",
         body: JSON.stringify({ type: "direct", other_key: otherKey, other_party: otherParty }),
       });
@@ -851,18 +884,19 @@ export function GuestContactModal({ creatorId, creatorUsername, displayName, onC
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const api = useChatApi();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
     setBusy(true);
     try {
-      const follow = await chatApi<{ followed: boolean }>("/api/fan/follow-creator", {
+      const follow = await api<{ followed: boolean }>("/api/fan/follow-creator", {
         method: "POST",
         body: JSON.stringify({ email: email.trim().toLowerCase(), creator_username: creatorUsername }),
       });
       if (!follow.followed) throw new Error("Couldn't connect");
-      const res = await chatApi<{ status: string }>("/api/chat/conversations", {
+      const res = await api<{ status: string }>("/api/chat/conversations", {
         method: "POST",
         body: JSON.stringify({
           type: "direct",

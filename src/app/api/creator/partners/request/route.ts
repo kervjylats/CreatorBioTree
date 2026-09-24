@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ partnership: row }, { status: 201 });
   } catch (e) {
+    console.error("[partners/request]:", e);
     return handleAuthError(e) ?? NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }

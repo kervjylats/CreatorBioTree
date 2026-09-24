@@ -3,7 +3,8 @@
  * privacy): incoming first-contact requests when the recipient has "allow
  * messages from anyone" OFF. GET lists pending requests with sender names;
  * POST approves (creates the direct conversation + delivers the queued first
- * message) or ignores (deletes the request).
+ * message) or ignores (marks the request "ignored" — kept, not deleted, so a
+ * sender can't silently re-request and the record survives).
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
     if (!request || request.to_key !== me.key) return NextResponse.json({ error: "Request not found" }, { status: 404 });
 
     if (validation.data.action === "ignore") {
-      await supabase.from("message_requests").delete().eq("id", request.id);
+      await supabase.from("message_requests").update({ status: "ignored" }).eq("id", request.id);
       return NextResponse.json({ success: true, status: "ignored" });
     }
 

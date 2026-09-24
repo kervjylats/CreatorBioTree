@@ -18,7 +18,7 @@ import { CreatorHeader } from "./CreatorHeader";
 import { FollowBox } from "./FollowBox";
 import { ItemCard } from "./ItemCards";
 import { FanAuthModal } from "./FanAuthModal";
-import { GuestContactModal } from "@/components/chat/ChatShell";
+import { GuestContactModal, ChatHostProvider } from "@/components/chat/ChatShell";
 import { PoweredByFooter } from "./PoweredByFooter";
 import { buttonClass, cardRadius } from "./themeStyles";
 
@@ -110,190 +110,192 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
   };
 
   return (
-    <div
-      className="min-h-full w-full"
-      data-mock-edit-kind="background"
-      data-tl="GuestPageContent"
-      style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
-    >
-      <div className="mx-auto w-full max-w-lg">
-        {/* Creator header — hidden in Content tab (hideHeader) where we only want catalog.
-            Follow gate (Email/Follow/Contact) lives inline next to the avatar. */}
-        {!hideHeader && (
-          <CreatorHeader
-            branding={branding}
-            bio={data.bio}
-            editMode={editMode}
-            onEdit={onEdit}
-            actions={
-              showFollowGate ? (
-                data.identity ? (
-                  <FollowBox creatorUsername={data.username} branding={branding} alreadyFollowing viewOnly inline />
-                ) : (
-                  <>
-                    <FollowBox creatorUsername={data.username} branding={branding} inline />
-                    <button
-                      type="button"
-                      {...buttonClass(branding, "shrink-0 px-2 py-1 text-[11px]")}
-                      onClick={() => setContactOpen(true)}
-                    >
-                      <MessageCircle size={10} /> Contact
-                    </button>
-                  </>
-                )
-              ) : undefined
-            }
-          />
-        )}
+    <ChatHostProvider creatorId={branding.creatorId}>
+      <div
+        className="min-h-full w-full"
+        data-mock-edit-kind="background"
+        data-tl="GuestPageContent"
+        style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
+      >
+        <div className="mx-auto w-full max-w-lg">
+          {/* Creator header — hidden in Content tab (hideHeader) where we only want catalog.
+              Follow gate (Email/Follow/Contact) lives inline next to the avatar. */}
+          {!hideHeader && (
+            <CreatorHeader
+              branding={branding}
+              bio={data.bio}
+              editMode={editMode}
+              onEdit={onEdit}
+              actions={
+                showFollowGate ? (
+                  data.identity ? (
+                    <FollowBox creatorUsername={data.username} branding={branding} alreadyFollowing viewOnly inline />
+                  ) : (
+                    <>
+                      <FollowBox creatorUsername={data.username} branding={branding} inline />
+                      <button
+                        type="button"
+                        {...buttonClass(branding, "shrink-0 px-2 py-1 text-[11px]")}
+                        onClick={() => setContactOpen(true)}
+                      >
+                        <MessageCircle size={10} /> Contact
+                      </button>
+                    </>
+                  )
+                ) : undefined
+              }
+            />
+          )}
 
-        {/* Community CTA — "Join the community" card (messaging.md Part 3 decision #9) */}
-        {data.community && !data.identity && (
-          <div className="px-4 pt-4">
-            <div
-              className={cardRadius(branding, "p-4 text-center")}
-              style={{ backgroundColor: branding.cardColor }}
-            >
-              <Users size={24} className="mx-auto mb-2" style={{ color: branding.accentColor }} />
-              <h3 className="text-sm font-bold" style={{ color: branding.textColor }}>
-                Join the community
-              </h3>
-              <p className="mt-1 text-xs" style={{ color: branding.textColor + "88" }}>
-                {data.community.name}
-              </p>
-              <button
-                type="button"
-                {...buttonClass(branding, "mt-3 w-full")}
-                onClick={() => setAuthOpen(true)}
+          {/* Community CTA — "Join the community" card (messaging.md Part 3 decision #9) */}
+          {data.community && !data.identity && (
+            <div className="px-4 pt-4">
+              <div
+                className={cardRadius(branding, "p-4 text-center")}
+                style={{ backgroundColor: branding.cardColor }}
               >
-                Sign up to join
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Purchase confirmation — inline receipt for mock buyers (no session, never auto-follows) */}
-        {confirmed && (
-          <div className="px-4 pt-4">
-            <div className="rounded-2xl border border-green-300/70 bg-green-50 p-4 text-sm text-green-900">
-              <p>
-                <CheckCircle2 size={16} className="mr-1.5 inline" />
-                <span className="font-bold">Purchase confirmed</span> — {confirmed.title} · {money(confirmed.price, confirmed.currency)}.
-              </p>
-              <p className="mt-1 opacity-90">
-                A receipt is on its way to <span className="font-semibold">{confirmed.email}</span>
-                {confirmed.optedIn ? ". Receipts also live in Settings." : " — in mock mode it's logged to the dev console."}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Receipts for recognized guest-buyers / Followers (G2, 2026-09-23) —
-            Fans see the full receipts panel in the 4-tab Settings; this gives
-            buyers without a password their own list on the guest page. */}
-        {data.identity && data.purchases.length > 0 && (
-          <div className="px-4 pt-5">
-            <div className={cardRadius(branding, "p-4")} style={{ backgroundColor: branding.cardColor }}>
-              <div className="flex items-center gap-2">
-                <Receipt size={15} style={{ color: branding.accentColor }} />
-                <h2 className="text-sm font-bold" style={{ color: branding.textColor }}>
-                  Your purchases
-                </h2>
+                <Users size={24} className="mx-auto mb-2" style={{ color: branding.accentColor }} />
+                <h3 className="text-sm font-bold" style={{ color: branding.textColor }}>
+                  Join the community
+                </h3>
+                <p className="mt-1 text-xs" style={{ color: branding.textColor + "88" }}>
+                  {data.community.name}
+                </p>
+                <button
+                  type="button"
+                  {...buttonClass(branding, "mt-3 w-full")}
+                  onClick={() => setAuthOpen(true)}
+                >
+                  Sign up to join
+                </button>
               </div>
-              <div className="mt-3 flex flex-col gap-2">
-                {data.purchases.map((p) => (
-                  <div
-                    key={p.id}
-                    className="flex items-center justify-between"
-                    style={{ color: branding.textColor }}
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">
-                        {items.find((i) => i.id === p.content_item_id)?.title ?? "Purchase"}
-                      </p>
-                      <p className="text-xs" style={{ color: branding.textColor + "77" }}>
-                        {new Date(p.purchased_at).toLocaleDateString()}
-                      </p>
+            </div>
+          )}
+
+          {/* Purchase confirmation — inline receipt for mock buyers (no session, never auto-follows) */}
+          {confirmed && (
+            <div className="px-4 pt-4">
+              <div className="rounded-2xl border border-green-300/70 bg-green-50 p-4 text-sm text-green-900">
+                <p>
+                  <CheckCircle2 size={16} className="mr-1.5 inline" />
+                  <span className="font-bold">Purchase confirmed</span> — {confirmed.title} · {money(confirmed.price, confirmed.currency)}.
+                </p>
+                <p className="mt-1 opacity-90">
+                  A receipt is on its way to <span className="font-semibold">{confirmed.email}</span>
+                  {confirmed.optedIn ? ". Receipts also live in Settings." : " — in mock mode it's logged to the dev console."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Receipts for recognized guest-buyers / Followers (G2, 2026-09-23) —
+              Fans see the full receipts panel in the 4-tab Settings; this gives
+              buyers without a password their own list on the guest page. */}
+          {data.identity && data.purchases.length > 0 && (
+            <div className="px-4 pt-5">
+              <div className={cardRadius(branding, "p-4")} style={{ backgroundColor: branding.cardColor }}>
+                <div className="flex items-center gap-2">
+                  <Receipt size={15} style={{ color: branding.accentColor }} />
+                  <h2 className="text-sm font-bold" style={{ color: branding.textColor }}>
+                    Your purchases
+                  </h2>
+                </div>
+                <div className="mt-3 flex flex-col gap-2">
+                  {data.purchases.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center justify-between"
+                      style={{ color: branding.textColor }}
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          {items.find((i) => i.id === p.content_item_id)?.title ?? "Purchase"}
+                        </p>
+                        <p className="text-xs" style={{ color: branding.textColor + "77" }}>
+                          {new Date(p.purchased_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <p className="shrink-0 text-sm font-bold">{money(p.amount_paid ?? 0, p.currency)}</p>
                     </div>
-                    <p className="shrink-0 text-sm font-bold">{money(p.amount_paid ?? 0, p.currency)}</p>
+                  ))}
+                </div>
+                <p className="mt-3 text-right text-xs font-semibold" style={{ color: branding.textColor + "88" }}>
+                  Total spent: {money(data.purchases.reduce((sum, p) => sum + (p.amount_paid ?? 0), 0), data.purchases[0]?.currency)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Empty state — edit mode only, no items to show */}
+          {editMode && items.length === 0 && (
+            <div className="px-4 pt-8">
+              <div
+                className={cardRadius(branding, "p-6 text-center")}
+                style={{
+                  backgroundColor: branding.cardColor,
+                  border: `2px dashed ${branding.textColor}22`,
+                }}
+              >
+                <p className="text-sm font-semibold" style={{ color: branding.textColor + "88" }}>
+                  No items yet
+                </p>
+                <p className="mt-1 text-xs" style={{ color: branding.textColor + "66" }}>
+                  Add products, courses, or content in the Catalog tab.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Spotlight */}
+          {spotlight ? (
+            <div className="px-4 pt-5" onClick={editMode ? () => onEdit?.({ kind: "card", itemId: spotlight.id }) : undefined}>
+              <div className="overflow-hidden mb-1" style={{ backgroundColor: branding.cardColor }} data-mock-edit-kind="card">
+                <ItemCard item={spotlight} identity={data.identity} purchases={purchases} branding={branding} onUnlock={handleUnlock} onAuthPrompt={() => setAuthOpen(true)} />
+              </div>
+            </div>
+          ) : null}
+
+          {/* Catalog feed */}
+          {feed.length > 0 ? (
+            <>
+              <h2
+                className="px-4 pt-5 pb-1 text-sm font-bold uppercase tracking-wide"
+                style={{ color: branding.textColor + "99" }}
+              >
+                Catalog
+              </h2>
+              <div className="space-y-4 px-4 pb-[var(--bottom-nav-height)]">
+                {feed.map((item) => (
+                  <div key={item.id} data-mock-edit-kind="card" onClick={editMode ? () => onEdit?.({ kind: "card", itemId: item.id }) : undefined}>
+                    <ItemCard item={item} identity={data.identity} purchases={purchases} branding={branding} onUnlock={handleUnlock} onAuthPrompt={() => setAuthOpen(true)} />
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-right text-xs font-semibold" style={{ color: branding.textColor + "88" }}>
-                Total spent: {money(data.purchases.reduce((sum, p) => sum + (p.amount_paid ?? 0), 0), data.purchases[0]?.currency)}
-              </p>
-            </div>
-          </div>
+            </>
+          ) : null}
+
+          <PoweredByFooter branding={branding} hidden={editMode} />
+        </div>
+
+        {authOpen && (
+          <FanAuthModal
+            creatorId={branding.creatorId}
+            creatorUsername={data.username}
+            branding={branding}
+            onClose={() => setAuthOpen(false)}
+            onSuccess={() => window.location.reload()}
+          />
         )}
 
-        {/* Empty state — edit mode only, no items to show */}
-        {editMode && items.length === 0 && (
-          <div className="px-4 pt-8">
-            <div
-              className={cardRadius(branding, "p-6 text-center")}
-              style={{
-                backgroundColor: branding.cardColor,
-                border: `2px dashed ${branding.textColor}22`,
-              }}
-            >
-              <p className="text-sm font-semibold" style={{ color: branding.textColor + "88" }}>
-                No items yet
-              </p>
-              <p className="mt-1 text-xs" style={{ color: branding.textColor + "66" }}>
-                Add products, courses, or content in the Catalog tab.
-              </p>
-            </div>
-          </div>
+        {contactOpen && (
+          <GuestContactModal
+            creatorId={branding.creatorId}
+            creatorUsername={data.username}
+            displayName={branding.displayName}
+            onClose={() => setContactOpen(false)}
+          />
         )}
-
-        {/* Spotlight */}
-        {spotlight ? (
-          <div className="px-4 pt-5" onClick={editMode ? () => onEdit?.({ kind: "card", itemId: spotlight.id }) : undefined}>
-            <div className="overflow-hidden mb-1" style={{ backgroundColor: branding.cardColor }} data-mock-edit-kind="card">
-              <ItemCard item={spotlight} identity={data.identity} purchases={purchases} branding={branding} onUnlock={handleUnlock} onAuthPrompt={() => setAuthOpen(true)} />
-            </div>
-          </div>
-        ) : null}
-
-        {/* Catalog feed */}
-        {feed.length > 0 ? (
-          <>
-            <h2
-              className="px-4 pt-5 pb-1 text-sm font-bold uppercase tracking-wide"
-              style={{ color: branding.textColor + "99" }}
-            >
-              Catalog
-            </h2>
-            <div className="space-y-4 px-4 pb-[var(--bottom-nav-height)]">
-              {feed.map((item) => (
-                <div key={item.id} data-mock-edit-kind="card" onClick={editMode ? () => onEdit?.({ kind: "card", itemId: item.id }) : undefined}>
-                  <ItemCard item={item} identity={data.identity} purchases={purchases} branding={branding} onUnlock={handleUnlock} onAuthPrompt={() => setAuthOpen(true)} />
-                </div>
-              ))}
-            </div>
-          </>
-        ) : null}
-
-        <PoweredByFooter branding={branding} hidden={editMode} />
       </div>
-
-      {authOpen && (
-        <FanAuthModal
-          creatorId={branding.creatorId}
-          creatorUsername={data.username}
-          branding={branding}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={() => window.location.reload()}
-        />
-      )}
-
-      {contactOpen && (
-        <GuestContactModal
-          creatorId={branding.creatorId}
-          creatorUsername={data.username}
-          displayName={branding.displayName}
-          onClose={() => setContactOpen(false)}
-        />
-      )}
-    </div>
+    </ChatHostProvider>
   );
 }

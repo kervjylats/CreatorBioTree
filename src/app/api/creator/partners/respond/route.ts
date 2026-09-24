@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
     await supabase.from("partnerships").delete().eq("id", partnership_id);
     return NextResponse.json({ ok: true });
   } catch (e) {
+    console.error("[partners/respond]:", e);
     return handleAuthError(e) ?? NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }

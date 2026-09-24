@@ -2,10 +2,11 @@
  * Fan purchases complete — mock PayPal webhook (fan-shell.md Part 7). After the
  * mock PayPal bounce-back, the guest screen POSTs here: find-or-create the buyer's
  * fan_accounts row (no password — guest buyers are Followers, never auto-followed),
- * record the completed purchase, and — only when the fan explicitly opted in —
- * set the fan_session cookie. Real mode: replaced by a PayPal webhook verifier
- * (WIRING_PLAN Sheet 21). Idempotent: a completed purchase for the same item +
- * email is not duplicated.
+ * record the completed purchase, and always set the fan_session cookie so the buyer
+ * is recognized on this device (G1, 2026-09-23). The "Also send me updates?" opt-in
+ * (fan-shell.md decision #12) is persisted as `marketing_opt_in` — the only bridge
+ * to email updates. Real mode: PayPal webhook verifier (WIRING_PLAN Sheet 21).
+ * Idempotent: a completed purchase for the same item + email is not duplicated.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
@@ -40,10 +41,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validation = completeSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error.format() }, { status: 400 });
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const { content_item_id, fan_email, creator_id } = validation.data;
+    const { content_item_id, fan_email, creator_id, opt_in_updates } = validation.data;
     const supabase = createServiceClient();
     const normalizedEmail = fan_email.toLowerCase();
 
@@ -74,7 +75,13 @@ export async function POST(request: NextRequest) {
     if (!fanId) {
       const { data: inserted, error: insertError } = await supabase
         .from("fan_accounts")
-        .insert({ email: normalizedEmail, creator_id, password_hash: null, last_seen_at: new Date().toISOString() })
+        .insert({
+          email: normalizedEmail,
+          creator_id,
+          password_hash: null,
+          marketing_opt_in: opt_in_updates,
+          last_seen_at: new Date().toISOString(),
+        })
         .select("id")
         .single();
       if (insertError || !inserted) {
@@ -82,6 +89,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Couldn't record the purchase — contact the creator." }, { status: 500 });
       }
       fanId = inserted.id;
+    } else if (opt_in_updates) {
+      // The buyer opted in on this purchase — persist the email-updates consent
+      // on their existing Follower row (never downgrades an existing opt-in).
+      await supabase.from("fan_accounts").update({ marketing_opt_in: true }).eq("id", fanId);
     }
 
     // Idempotency — a completed purchase for this item + email already exists.
