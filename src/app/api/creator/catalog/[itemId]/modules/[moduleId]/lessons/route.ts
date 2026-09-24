@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Lessons CRUD within a course module */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 

@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Catalog items list/create for My App */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";

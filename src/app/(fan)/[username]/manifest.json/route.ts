@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Per-creator fan-shell install manifest (PWA #3) */
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { resolveBranding } from "@/lib/branding";

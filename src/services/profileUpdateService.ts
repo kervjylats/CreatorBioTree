@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Profile update service — allowlist-guarded updates to the creators row. */
 const ALLOWED_FIELDS = new Set([
   "display_name",
   "bio",

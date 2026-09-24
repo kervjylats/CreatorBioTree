@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Mock AI Copilot responses for the My App editor */
 /**
  * mockAI.ts
  *

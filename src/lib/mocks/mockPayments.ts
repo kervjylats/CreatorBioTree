@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Mock payment/payout distribution for PayPal + affiliate engine */
 /**
  * mockPayments.ts
  *

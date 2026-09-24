@@ -76,6 +76,14 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 
 ## Impromptu Fix Log
 
+### 2026-09-24 — Audit Remediation Phase 3: scrypt Passwords + Docstring Sweep
+
+**Third phase of the full-project audit. Gates green: typecheck 0 · lint 0 · check-docs PASS (402 files) · register/login re-smoke-tested.**
+
+- **#2 — Unsalted SHA-256 → scrypt (`src/lib/fanSession.ts`):** every fan password was hashed with one fixed SHA-256 (a leaked-table bucket attack if the DB ever leaks). Now `crypto.scryptSync` + per-user 16-byte salt, stored as `scrypt$<salt>$<derived>` (`SCRYPT_KEYLEN=64`), compared via `crypto.timingSafeEqual`. `verifyPassword` stays backward-compatible — pre-existing legacy 64-hex hashes keep verifying until that fan next sets a password. Register + login smoke: right password OK, wrong password → unified "Invalid email or password".
+- **Auth-coverage scan (77 routes):** every route verified guarded — creator routes `requireAuth()` (admin family `requireAdmin`/`getAdminAccount`), fan routes resolve the `fan_session` cookie, chat identity per #3. Unguarded = intentionally public (`check-username`, forgot/reset-password, `login`, `register`, `pageview`, `fan/*` discover, `paypal/checkout`, `push/subscribe`, guest catalog/content list). `push/subscribe` validates `fan_id` belongs to its creator; `push/send` scopes to `user.id`. No gaps.
+- **Docstring sweep (33 live files):** replaced every `TODO: Add purpose docstring` placeholder in non-archive code with real purpose docstrings (29 via deterministic script — manifests ×2, creator activity/catalog/lessons/modules/fans-export/upload, fan content comments/reactions/access/list, push send/subscribe, ServiceWorkerRegister, FollowBox, team ContextSwitcher + InviteEmail, colorExtraction, email, mockAI/mockDataStore/mockPayments/mockResend, supabase client/server — + 4 via edit: contentService, creatorService, profileUpdateService, types/index). Zero placeholders remain outside `src/old-code/`.
+
 ### 2026-09-24 — Audit Remediation Phase 2: Chat Identity + Dead Opt-In + Unread Scale + Quick Lows
 
 **Second phase of the full-project audit (19 findings) executed. Gates green: typecheck 0 · lint 0 · check-docs PASS (402 files) · curl smoke test of the full chat/unread loop.**

@@ -8,6 +8,7 @@
  */
 import type { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 export const FAN_SESSION_COOKIE = "fan_session";
 
@@ -34,22 +35,40 @@ export { SESSION_OPTIONS };
 /** Max creators tracked in the fan_session cookie map (browser cookie ~4KB limit). */
 const MAX_SESSION_CREATORS = 20;
 
-// ─── Password hashing (SHA-256 for mock mode; real production uses bcrypt) ────
+// ─── Password hashing (scrypt + per-user salt; legacy SHA-256 still verified) ─
+
+const SCRYPT_KEYLEN = 64;
+
+function sha256Hex(password: string): string {
+  return crypto.createHash("sha256").update(password).digest("hex");
+}
+
+function timingSafeEqualHex(a: string, b: string): boolean {
+  const ab = Buffer.from(a, "hex");
+  const bb = Buffer.from(b, "hex");
+  return ab.length === bb.length && crypto.timingSafeEqual(ab, bb);
+}
 
 export async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const salt = crypto.randomBytes(16).toString("hex");
+  const derived = crypto.scryptSync(password, salt, SCRYPT_KEYLEN).toString("hex");
+  return `scrypt$${salt}$${derived}`;
 }
 
 export async function verifyPassword(
   password: string,
   hash: string,
 ): Promise<boolean> {
-  const computed = await hashPassword(password);
-  return computed === hash;
+  if (!hash) return false;
+  // Legacy mock hashes were unsalted SHA-256 (64 hex chars) — verify them so
+  // any pre-existing row keeps working; new hashes use scrypt.
+  if (!hash.startsWith("scrypt$")) {
+    return timingSafeEqualHex(sha256Hex(password), hash);
+  }
+  const [, salt, expected] = hash.split("$");
+  if (!salt || !expected) return false;
+  const derived = crypto.scryptSync(password, salt, SCRYPT_KEYLEN).toString("hex");
+  return timingSafeEqualHex(derived, expected);
 }
 
 // ─── Cookie parsing (Model B map + legacy single-token fallback) ─────────────
@@ -148,8 +167,6 @@ export async function getFanAccountForCreator(
 }
 
 // ─── Session mutation ─────────────────────────────────────────────────────────
-
-import crypto from "crypto";
 
 export interface CookieStoreWritable extends CookieStoreLike {
   get(name: string): { value: string } | undefined;

@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Team account context switcher for multi-manage creators */
 /**
  * Dropdown showing own context and team contexts for multi-manage switching
  * (team.md Part 3).

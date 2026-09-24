@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Creator activity timeline for the Overview screen */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 

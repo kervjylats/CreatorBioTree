@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Team invite form (email + permission toggles) */
 /**
  * Email input with role select and send-invite button (team.md Part 2).
  */

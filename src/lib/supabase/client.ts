@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Browser Supabase client (single instance) */
 import { createBrowserClient } from "@supabase/ssr";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
 import { createMockSupabaseClient } from "@/lib/mocks/mockSupabaseClient";

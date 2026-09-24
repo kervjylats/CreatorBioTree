@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Content item service — catalog reads/writes against content_items (published filter, safe write payloads). */
 import type { ContentItem, ContentType, AccessType } from "@/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 

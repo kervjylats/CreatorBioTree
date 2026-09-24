@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Push broadcast to a creator's subscribed fans (creator-authed) */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/admin";

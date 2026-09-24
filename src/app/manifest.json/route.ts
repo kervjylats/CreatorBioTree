@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Platform PWA #1 manifest for the CreatorBioTree app */
 import { NextResponse } from "next/server";
 
 const MANIFEST = {

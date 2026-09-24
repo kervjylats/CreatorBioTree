@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Single source of truth for all domain types (row-shaped, camelCase JSONB keys). */
 /**
  * src/types/index.ts
  *

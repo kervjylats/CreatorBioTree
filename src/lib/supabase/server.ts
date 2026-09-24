@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Server-side Supabase client using cookies (mock-compatible) */
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";

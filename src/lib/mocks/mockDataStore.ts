@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Mock in-memory data store (29 tables) mirroring the Supabase schema */
 /**
  * mockDataStore.ts
  *

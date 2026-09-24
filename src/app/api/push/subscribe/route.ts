@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Device push subscription (VAPID) keyed to fan or anonymous endpoint */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { rateLimiter } from "@/lib/rate-limiter";

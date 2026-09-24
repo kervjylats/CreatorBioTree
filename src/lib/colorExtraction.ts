@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Extract accent/background colors from an image (cover palettes) */
 export function extractPaletteFromImage(imageUrl: string): Promise<{
   background: string;
   card: string;

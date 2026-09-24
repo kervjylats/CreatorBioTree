@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Fan list CSV export for the Relationships screen */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/admin";

@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Public catalog listing for a fan app / guest page */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { z } from "zod";

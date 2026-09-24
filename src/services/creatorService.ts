@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Creator profile service — lookup creators by username or id. */
 import type { Creator } from "@/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 

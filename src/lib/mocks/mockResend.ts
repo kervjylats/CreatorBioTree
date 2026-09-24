@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Mock Resend — logs emails to console + temp_emails.log */
 /**
  * mockResend.ts
  *

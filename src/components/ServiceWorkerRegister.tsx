@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Registers the platform service worker for offline/PWA support */
 "use client";
 import { useEffect } from "react";
 

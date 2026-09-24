@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Comments on a catalog item (fan-side) */
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { cookies } from "next/headers";

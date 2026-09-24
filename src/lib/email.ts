@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring. */
+/** Email delivery helper wrapping Resend (mock logs, real sends) */
 /**
  * Email Sender — Interface + Mock Implementation
  *

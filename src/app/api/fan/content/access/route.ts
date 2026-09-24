@@ -1,4 +1,4 @@
-/** TODO: Add purpose docstring — Route handler. */
+/** Unlock-gate access and signed file URLs for paid content */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { cookies } from "next/headers";
