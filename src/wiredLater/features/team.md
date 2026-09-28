@@ -122,14 +122,14 @@ An `creator_team_activity` table recording every team action — the black box f
 
 | Route | Purpose |
 |---|---|
-| `POST /api/creator/team/invite` | Create invite (owner only) |
-| `GET /api/creator/team/invites` | List invites + status |
-| `POST /api/creator/team/invites/accept` | Accept invite (token) — auto-grants access |
-| `GET /api/creator/team/members` | Team list (owner) |
-| `PATCH /api/creator/team/members/[id]` | Change permission toggles / revoke |
-| `DELETE /api/creator/team/members/[id]` | Revoke member |
-| `GET /api/creator/team/activity` | Audit log (owner only) |
-| `GET /api/creator/team/contexts` | My managed dashboards (switcher list for team members) |
+| `POST /api/creator/staff/invite` | Create invite (owner only) |
+| `GET /api/creator/staff/invites` | List invites + status |
+| `POST /api/creator/staff/invites/accept` | Accept invite (token) — auto-grants access |
+| `GET /api/creator/staff/members` | Team list (owner) |
+| `PATCH /api/creator/staff/members/[id]` | Change permission toggles / revoke |
+| `DELETE /api/creator/staff/members/[id]` | Revoke member |
+| `GET /api/creator/staff/activity` | Audit log (owner only) |
+| `GET /api/creator/staff/contexts` | My managed dashboards (switcher list for team members) |
 
 Auth: owner-only for management routes; member routes check `creator_team_members` membership + the specific permission toggle before every action.
 

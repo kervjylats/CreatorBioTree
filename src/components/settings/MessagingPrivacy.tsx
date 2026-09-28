@@ -1,6 +1,6 @@
 /**
  * MessagingPrivacy — "Allow messages from anyone" toggle.
- * Fetches from GET /api/chat/preferences, saves via PATCH /api/chat/preferences.
+ * Fetches from GET /api/messages/preferences, saves via PATCH /api/messages/preferences.
  */
 "use client";
 
@@ -16,7 +16,7 @@ export function MessagingPrivacy() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/chat/preferences")
+    fetch("/api/messages/preferences")
       .then((r) => r.json())
       .then((data) => {
         if (data && typeof data.allow_messages_from_anyone === "boolean") {
@@ -30,7 +30,7 @@ export function MessagingPrivacy() {
   const handleToggle = async (checked: boolean) => {
     setSaving(true);
     try {
-      const res = await fetch("/api/chat/preferences", {
+      const res = await fetch("/api/messages/preferences", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ allow_messages_from_anyone: checked }),

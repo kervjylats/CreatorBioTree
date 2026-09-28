@@ -145,7 +145,7 @@ Community is **Phase 3** of the messaging build (see Part 9) — it ships only a
 
 ### Files & attachments
 
-- Images, videos, docs via `/api/chat/upload` (≤8MB, 10/min; stored in the mock `chat-attachments` bucket — the catalog `/api/creator/upload` pattern)
+- Images, videos, docs via `/api/messages/upload` (≤8MB, 10/min; stored in the mock `chat-attachments` bucket — the catalog `/api/creator/upload` pattern)
 - Per-message attachments: `message_attachments` rows, rendered inline (image preview) or as download cards
 - Mock: in-memory storage via the mock storage API (`makeStorageApi()` in `src/lib/mocks/mockSupabaseClient.ts`); Production: existing S3/upload service
 - Size limits: TBD at wiring (align with catalog upload caps)
@@ -195,17 +195,17 @@ Community is **Phase 3** of the messaging build (see Part 9) — it ships only a
 
 | Route | Purpose |
 |---|---|
-| `GET/POST /api/chat/conversations` | List my conversations / create (find-or-create direct) |
-| `GET/POST /api/chat/conversations/[id]/messages` | Thread history / send message |
-| `PATCH/DELETE /api/chat/messages/[id]` | Edit / delete (tombstone) |
-| `POST /api/chat/conversations/[id]/read` | Mark read (last_read_at) |
-| `POST /api/chat/conversations/[id]/members` / `DELETE .../members/[key]` | Group add/remove |
-| `PATCH /api/chat/conversations/[id]` | Rename, pin, announcements toggle |
-| `POST /api/chat/upload` | Message attachments (reuses upload infra) |
-| `GET/POST /api/chat/requests` | Requests folder list / approve-ignore |
-| `POST /api/chat/block` / `GET /api/chat/blocks` | Block list management |
-| `GET /api/chat/unread` | Unread badge counts (polled) |
-| `PATCH /api/chat/preferences` | "Allow messages from anyone" toggle + mute prefs |
+| `GET/POST /api/messages/conversations` | List my conversations / create (find-or-create direct) |
+| `GET/POST /api/messages/conversations/[id]/messages` | Thread history / send message |
+| `PATCH/DELETE /api/messages/[id]` | Edit / delete (tombstone) |
+| `POST /api/messages/conversations/[id]/read` | Mark read (last_read_at) |
+| `POST /api/messages/conversations/[id]/members` / `DELETE .../members/[key]` | Group add/remove |
+| `PATCH /api/messages/conversations/[id]` | Rename, pin, announcements toggle |
+| `POST /api/messages/upload` | Message attachments (reuses upload infra) |
+| `GET/POST /api/messages/requests` | Requests folder list / approve-ignore |
+| `POST /api/messages/block` / `GET /api/messages/blocks` | Block list management |
+| `GET /api/messages/unread` | Unread badge counts (polled) |
+| `PATCH /api/messages/preferences` | "Allow messages from anyone" toggle + mute prefs |
 
 Auth: fan-side cookie sessions (`fan_` pattern) or creator auth (`mock_auth_uid` / Supabase), matching whichever party is making the request — same split as the rest of the app.
 
@@ -227,7 +227,7 @@ Per founder request: **one `ChatShell.tsx` file** (in `src/components/`, wired a
 ## Part 9: Build Priority
 
 ### Phase 1 — Engine + Inbox
-1. Data model + `/api/chat/*` routes (mock store: conversations/messages/attachments)
+1. Data model + `/api/messages/*` routes (mock store: conversations/messages/attachments)
 2. Floating inbox popover (dashboard + fan shell) with unread badge
 3. 1-on-1 thread view (send, list, read state) + quick chat icon entry points
 4. Requests folder + "Allow messages from anyone" toggle + block list

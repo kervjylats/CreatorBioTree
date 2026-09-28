@@ -242,7 +242,7 @@ Full affiliate data model (the immutable ledger): `monetization/creators.md` Par
 | `/api/creator/partners/list` | GET | Get my collabs |
 | `/api/creator/partners/discoverable` | GET | Get discoverable creators |
 | `/api/creator/partners/billboard` | GET/PUT | Get/save billboard settings |
-| `/api/chat/*` *(all creator↔creator chat)* | — | Shared messaging API — see `messaging.md` (Part 7). No separate per-collab chat route |
+| `/api/messages/*` *(all creator↔creator chat)* | — | Shared messaging API — see `messaging.md` (Part 7). No separate per-collab chat route |
 | `/api/creator/partners/deal` | POST | Create/update deal agreement *(future — superseded by affiliates in v1)* |
 | `/api/creator/affiliates/deals` | GET/POST | List/create MY affiliate deals (owner side; scope + trigger + type + terms) |
 | `/api/creator/affiliates/deals/[id]` | PATCH/DELETE | Edit/pause/revoke a deal |

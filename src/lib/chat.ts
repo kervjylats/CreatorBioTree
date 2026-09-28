@@ -2,7 +2,7 @@
  * chat.ts — server-side chat helpers (messaging.md Parts 1/2/4/5): party
  * identity resolution (creator via creator auth, fan via fan_session cookie),
  * display-name resolution, block checks, allow-anyone preference gate and the
- * direct-conversation find-or-create. Shared by every /api/chat/* route —
+ * direct-conversation find-or-create. Shared by every /api/messages/* route —
  * the client never knows its own key; routes return `myKey` alongside data.
  */
 import { cookies, headers } from "next/headers";

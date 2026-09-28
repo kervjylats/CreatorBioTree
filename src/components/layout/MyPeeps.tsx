@@ -45,7 +45,7 @@ export function MyPeeps() {
 
   useEffect(() => {
     const fetchCounts = () => {
-      fetch("/api/creator/relationships")
+      fetch("/api/creator/peeps")
         .then((r) => r.json())
         .then((data) => {
           if (data.partners !== undefined) setCounts(data);

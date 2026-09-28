@@ -152,8 +152,8 @@ export function useChat(): {
   const refresh = useCallback(async () => {
     try {
       const [list, unreadRes] = await Promise.all([
-        api<{ conversations: ChatConversation[]; myParty: "creator" | "fan" }>("/api/chat/conversations"),
-        api<{ unread: number }>("/api/chat/unread"),
+        api<{ conversations: ChatConversation[]; myParty: "creator" | "fan" }>("/api/messages/conversations"),
+        api<{ unread: number }>("/api/messages/unread"),
       ]);
       setConversations(list.conversations);
       setMyParty(list.myParty);
@@ -307,9 +307,9 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
   useEffect(() => {
     void (async () => {
       try {
-        const r = await api<{ requests: { id: string; from_name: string; body: string | null }[] }>("/api/chat/requests");
+        const r = await api<{ requests: { id: string; from_name: string; body: string | null }[] }>("/api/messages/requests");
         setRequests(r.requests);
-        const prefs = await api<{ allow_messages_from_anyone: boolean }>("/api/chat/preferences");
+        const prefs = await api<{ allow_messages_from_anyone: boolean }>("/api/messages/preferences");
         setAllowAnyone(prefs.allow_messages_from_anyone);
       } catch {
         // no identity — list shows empty
@@ -319,7 +319,7 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
 
   const handleRequest = async (requestId: string, action: "approve" | "ignore") => {
     try {
-      const res = await api<{ status: string; conversation_id?: string }>("/api/chat/requests", {
+      const res = await api<{ status: string; conversation_id?: string }>("/api/messages/requests", {
         method: "POST",
         body: JSON.stringify({ request_id: requestId, action }),
       });
@@ -339,7 +339,7 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
   const toggleAllowAnyone = async (next: boolean) => {
     setAllowAnyone(next);
     try {
-      await api("/api/chat/preferences", {
+      await api("/api/messages/preferences", {
         method: "PATCH",
         body: JSON.stringify({ allow_messages_from_anyone: next }),
       });
@@ -353,7 +353,7 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
     const title = window.prompt("Group chat name");
     if (!title?.trim()) return;
     try {
-      const res = await api<{ conversation_id: string }>("/api/chat/conversations", {
+      const res = await api<{ conversation_id: string }>("/api/messages/conversations", {
         method: "POST",
         body: JSON.stringify({ type: "group", title: title.trim() }),
       });
@@ -474,7 +474,7 @@ export function ChatThread({ conversationId, onBack, onOpenFull, compact, accent
 
   const load = useCallback(async () => {
     try {
-      const thread = await api<ThreadData>(`/api/chat/conversations/${conversationId}/messages`);
+      const thread = await api<ThreadData>(`/api/messages/conversations/${conversationId}/messages`);
       setData(thread);
       setError(null);
     } catch (err) {
@@ -495,7 +495,7 @@ export function ChatThread({ conversationId, onBack, onOpenFull, compact, accent
   // Mark read whenever new messages arrive.
   useEffect(() => {
     if (!data) return;
-    void api(`/api/chat/conversations/${conversationId}/read`, { method: "POST" }).catch(() => { toast.error("Failed to mark as read"); });
+    void api(`/api/messages/conversations/${conversationId}/read`, { method: "POST" }).catch(() => { toast.error("Failed to mark as read"); });
   }, [data?.messages.length, conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -677,7 +677,7 @@ function MessageComposer({
     if ((!body || !body.trim()) && !attachment) return;
     setSending(true);
     try {
-      await api(`/api/chat/conversations/${conversationId}/messages`, {
+      await api(`/api/messages/conversations/${conversationId}/messages`, {
         method: "POST",
         body: JSON.stringify({ body: (body ?? "").trim(), attachment: attachment ?? null }),
       });
@@ -704,7 +704,7 @@ function MessageComposer({
         reader.onerror = () => reject(new Error("read failed"));
         reader.readAsDataURL(file);
       });
-      const uploaded = await api<ChatAttachment>("/api/chat/upload", {
+      const uploaded = await api<ChatAttachment>("/api/messages/upload", {
         method: "POST",
         body: JSON.stringify({ dataUrl, name: file.name }),
       });
@@ -795,7 +795,7 @@ export function ChatIcon({ otherKey, otherParty, name, accentColor, guest, onGue
     }
     setStarting(true);
     try {
-      const res = await api<{ conversation_id: string; status: string }>("/api/chat/conversations", {
+      const res = await api<{ conversation_id: string; status: string }>("/api/messages/conversations", {
         method: "POST",
         body: JSON.stringify({ type: "direct", other_key: otherKey, other_party: otherParty }),
       });
@@ -896,7 +896,7 @@ export function GuestContactModal({ creatorId, creatorUsername, displayName, onC
         body: JSON.stringify({ email: email.trim().toLowerCase(), creator_username: creatorUsername }),
       });
       if (!follow.followed) throw new Error("Couldn't connect");
-      const res = await api<{ status: string }>("/api/chat/conversations", {
+      const res = await api<{ status: string }>("/api/messages/conversations", {
         method: "POST",
         body: JSON.stringify({
           type: "direct",

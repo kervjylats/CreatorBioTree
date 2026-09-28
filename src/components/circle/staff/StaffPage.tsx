@@ -46,8 +46,8 @@ export function StaffPage() {
 
   const fetchAll = useCallback(() => {
     Promise.all([
-      fetch("/api/creator/team/members").then((r) => r.json()),
-      fetch("/api/creator/team/invites").then((r) => r.json()),
+      fetch("/api/creator/staff/members").then((r) => r.json()),
+      fetch("/api/creator/staff/invites").then((r) => r.json()),
     ])
       .then(([mData, iData]) => {
         setMembers(mData.members ?? []);
@@ -63,7 +63,7 @@ export function StaffPage() {
 
   const handleSavePermissions = async () => {
     if (!editingId || !draft) return;
-    const res = await fetch(`/api/creator/team/members/${editingId}`, {
+    const res = await fetch(`/api/creator/staff/members/${editingId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ permissions: draft }),
@@ -79,7 +79,7 @@ export function StaffPage() {
   };
 
   const handleRemove = async (memberId: string) => {
-    const res = await fetch(`/api/creator/team/members/${memberId}`, {
+    const res = await fetch(`/api/creator/staff/members/${memberId}`, {
       method: "DELETE",
     });
     if (res.ok) {

@@ -105,12 +105,12 @@ src/
 │   │
 │   └── api/                      # REST API routes (89 api routes + 2 manifest routes)
 │       ├── admin/                # Platform admin APIs (RBAC)
-│       ├── chat/                 # Messaging engine (12 routes — WIRED)
-│       ├── creator/              # Creator CRUD, upload, catalog, my-app, fans, partners, team, affiliates, AI
+│       ├── messages/                 # Messaging engine (19 routes — WIRED)
+│       ├── creator/              # Creator CRUD, upload, catalog, my-app, fans, partners, staff, affiliates, AI
 │       ├── fan/                  # Fan auth, content, follow, purchases
 │       ├── paypal/               # Mock PayPal checkout (v1 rail)
 │       ├── push/                 # Push notification subscribe/send
-│       ├── search/               # Creator search API (Network hub Discover + deal form)
+│       ├── discover/               # Creator search API (Network hub Discover + deal form)
 │       └── webhooks/             # Paddle webhook
 │   │
 ├── screens/                      # ⚠️ THE MIDDLEMAN — one folder per screen (index.ts barrel + Screen.tsx)
@@ -233,10 +233,10 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `fans/list/` | GET | List your fans (id, email, total_spent, consent flags) |
 | `fans/[id]/` | GET | Single fan profile |
 | `fans/export/` | GET | Export fans as CSV |
-| `relationships/` | GET | My Peeps data: counts + pending requests/invites + per-group unread (drives dock badges) |
+| `peeps/` | GET | My Peeps data: counts + pending requests/invites + per-group unread (drives dock badges) |
 | `partners/*` | — | 6 routes: billboard, discoverable, invite, onboarding, request, respond |
 | `partners/list/` | GET | All non-ended partnerships + computed `direction` (incoming/outgoing) |
-| `team/*` | — | 8 routes: members, invites, accept, activity, contexts |
+| `staff/*` | — | 7 routes: members, invites, accept, activity, contexts |
 | `affiliates/*` | — | 9 routes: deals, links, discover, earnings |
 | `pageview/` | POST | Record a page view (rate-limited 5/IP/min, silent 200) |
 | `social/scrape/` | POST | Scrape social media metadata (UNWIRED 503 stub — kept for rebuild 2026-09-28; old code in `old-code/integrations/`) |
@@ -244,7 +244,7 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 
 > ⚠️ **Removed at wiring prep (2026-08-07):** `content/upload/` (duplicate of `upload`), `api/fan/session` (stale CSV dup). The old `partners/*` archive is superseded by the current stubs (rebuilt from `partnership.md` during Phase F).
 
-### 5.1b Chat API (`/api/chat/**`) — WIRED (Sheet 12)
+### 5.1b Chat API (`/api/messages/**`) — WIRED (Sheet 12)
 
 | Route | Method | Purpose |
 |---|---|---|
@@ -253,7 +253,7 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `conversations/[id]/messages/` | GET/POST | List messages / send (announcements-only rule + block check both directions) |
 | `conversations/[id]/read/` | POST | Mark thread read |
 | `conversations/[id]/members/` | GET/DELETE | Members / leave or remove (body `{ member_key }`) |
-| `messages/[id]/` | PATCH/DELETE | Edit / delete (tombstones + `edited_at`) |
+| `[id]/` | PATCH/DELETE | Edit / delete (tombstones + `edited_at`) |
 | `requests/` | GET/POST | List requests / approve + ignore (approve delivers the queued first message) |
 | `block/` · `blocks/` | POST/GET | Block a user / list blocked |
 | `unread/` | GET | Unread count for the floating badge |
@@ -278,7 +278,6 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `content/access/` | GET | Check if fan can access an item |
 | `content/[id]/comments/` | GET/POST | Comments on content |
 | `content/[id]/reactions/` | GET/POST | Reactions on content |
-| `dashboard/` | GET | Fan's personal dashboard |
 
 ### 5.3 Admin API (`/api/admin/**`)
 
@@ -386,7 +385,7 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 | `features/team.md` | Creator staff access — permission toggles, audit log. Wiring home: My Peeps → Staffs row |
 | `features/partnership.md` | Outside-app invite flow (`?invite=CODE`). Wiring home: My Peeps → Partners row |
 | `features/partner-page.md` | Fan-only partner modal (Connect tab) |
-| `features/search.md` | Search — Network hub Discover + landing placements (standalone `/search` page removed 2026-09-28; `GET /api/search/creators` stays live) |
+| `features/search.md` | Search — Network hub Discover + landing placements (standalone `/search` page removed 2026-09-28; `GET /api/discover/creators` stays live) |
 | `features/catalog-roadmap.md`, `funnel.md`, `integrations.md`, `email-campaigns.md`, `media-kit.md`, `affiliates.md` | Merged My App/Network-tab stubs (reference only) |
 
 **Other:** `monetization/index.md` + `owner.md` + `creators.md` (money specs — split 2026-08-05) · `ai/ai-features.md` + `ai/ai-agents.md` (post-launch)
@@ -451,7 +450,7 @@ Services sit between API routes and Supabase. They contain reusable business log
 | Service | Methods | Purpose |
 |---|---|---|
 | `contentService` | `getForCreator()`, `getAllForCreator()`, `getById()`, `save()`, `delete()` | Full CRUD for content items |
-| `fanService` | `getDashboardData()`, `trackInstall()` | Fan dashboard + install tracking |
+| `fanService` | `trackInstall()` | Fire-and-forget PWA install tracking |
 
 > ⚠️ **2026-09-28 cleanup:** 8 unused services removed (affiliate, chat, creator, partnership, profileUpdate, relationships, search, team) — routes call Supabase directly. Only `contentService` + `fanService` remain; archived copies live in `src/old-code/` where they existed.
 

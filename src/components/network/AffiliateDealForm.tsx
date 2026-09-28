@@ -90,7 +90,7 @@ export function AffiliateDealForm({ onSubmit, onCancel }: AffiliateDealFormProps
     }
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/search/creators?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/discover/creators?q=${encodeURIComponent(q)}`);
       const data = res.ok ? await res.json() : {};
       const match = (data.results ?? []).find(
         (r: { username?: string }) => r.username?.toLowerCase() === q.toLowerCase()

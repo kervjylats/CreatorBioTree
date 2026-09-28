@@ -26,7 +26,7 @@ export function FanCommunitySection({ data }: FanCommunitySectionProps) {
   const handleJoin = async () => {
     setJoining(true);
     try {
-      const res = await fetch("/api/chat/communities/join", {
+      const res = await fetch("/api/messages/communities/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ community_id: community.id }),
@@ -34,7 +34,7 @@ export function FanCommunitySection({ data }: FanCommunitySectionProps) {
       if (res.ok) {
         setMember(true);
         // Re-fetch channels to get the full list after joining.
-        const chRes = await fetch(`/api/chat/communities/${community.id}/channels`);
+        const chRes = await fetch(`/api/messages/communities/${community.id}/channels`);
         const chData = await chRes.json();
         setChannels(chData.channels ?? []);
       }
@@ -46,7 +46,7 @@ export function FanCommunitySection({ data }: FanCommunitySectionProps) {
   const handleLeave = async () => {
     setJoining(true);
     try {
-      const res = await fetch(`/api/chat/communities/${community.id}/leave`, {
+      const res = await fetch(`/api/messages/communities/${community.id}/leave`, {
         method: "POST",
       });
       if (res.ok) {

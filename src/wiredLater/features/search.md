@@ -1,6 +1,6 @@
 # Search — Vision & Spec
 
-> **STATUS (2026-09-28): the standalone `/search` page was REMOVED from live code.** The Network hub's Discover center (Sheet 18) is the live search home — `GET /api/search/creators` still powers it (plus the affiliate deal form's `@username` lookup). This spec remains the blueprint for the **landing-page search section** (Part 1a, ships with the landing page / Sheet 23); Part 1b (standalone page) is retired.
+> **STATUS (2026-09-28): the standalone `/search` page was REMOVED from live code.** The Network hub's Discover center (Sheet 18) is the live search home — `GET /api/discover/creators` still powers it (plus the affiliate deal form's `@username` lookup). This spec remains the blueprint for the **landing-page search section** (Part 1a, ships with the landing page / Sheet 23); Part 1b (standalone page) is retired.
 
 ## Concept
 

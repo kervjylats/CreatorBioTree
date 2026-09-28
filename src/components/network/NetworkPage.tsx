@@ -170,7 +170,7 @@ export function NetworkPage() {
     timerRef.current = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const res = await fetch(`/api/search/creators?q=${encodeURIComponent(q.trim())}`);
+        const res = await fetch(`/api/discover/creators?q=${encodeURIComponent(q.trim())}`);
         const data = await res.json();
         setSearchResults(data.results ?? []);
       } catch {

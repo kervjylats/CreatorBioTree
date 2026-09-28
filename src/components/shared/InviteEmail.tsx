@@ -20,7 +20,7 @@ interface InviteEmailProps {
   onInvited?: () => void;
 }
 
-/** Email input with role select and send-invite button. Calls POST /api/creator/team/invite (team.md Part 2). */
+/** Email input with role select and send-invite button. Calls POST /api/creator/staff/invite (team.md Part 2). */
 export function InviteEmail({ onInvited }: InviteEmailProps) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
@@ -33,7 +33,7 @@ export function InviteEmail({ onInvited }: InviteEmailProps) {
     setError(null);
 
     try {
-      const res = await fetch("/api/creator/team/invite", {
+      const res = await fetch("/api/creator/staff/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), role }),

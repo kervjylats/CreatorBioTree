@@ -136,7 +136,7 @@ No new tables in v1 — everything derives from `fan_accounts` + `fan_purchases`
 | `GET /api/creator/fans/[id]` | Fan profile (purchases, subscription, installs, last-seen) |
 | `PATCH /api/creator/fans/[id]` | Update `do_not_contact`, `notes` |
 | `GET /api/creator/fans/export` | CSV export (respects filters) — exists, extend columns |
-| `GET /api/creator/relationships` | My Peeps umbrella: partners/fans/staffs counts + lists (Part 1) |
+| `GET /api/creator/peeps` | My Peeps umbrella: partners/fans/staffs counts + lists (Part 1) |
 
 Auth: creator-only (`mock_auth_uid` / Supabase) — fans never see this data.
 
