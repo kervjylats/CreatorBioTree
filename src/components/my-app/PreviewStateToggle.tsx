@@ -1,8 +1,9 @@
 /**
  * PreviewStateToggle — Draft / Live toggle + Deploy button.
- * Renders as a thin bar that sits directly above the phone frame,
- * matching its width and border styling. Uses w-full so the bar
- * automatically matches the phone width (max 390px from parent).
+ * Renders as the top bezel strip of the phone frame (border-8 border-b-0),
+ * sitting directly above PhonePreview so the two form one continuous phone.
+ * Width follows the frame (w-full); paddings are tuned so the pills + Deploy
+ * fit in a single row even at the ~229px worst-case frame width (iPhone SE).
  */
 "use client";
 
@@ -25,15 +26,15 @@ export function PreviewStateToggle({ state, onChange, hasChanges, deploying, onD
   return (
     <div className="w-full">
       <div
-        className="flex items-center justify-between border-8 border-b-0 border-foreground/85 rounded-t-[2rem] bg-background px-3 py-2"
+        className="flex items-center justify-between gap-1 border-8 border-b-0 border-foreground/85 rounded-t-[2rem] bg-background px-2 py-2"
       >
-        <div className="flex rounded-full border border-input p-0.5">
+        <div className="flex shrink-0 rounded-full border border-input p-0.5">
           {(["draft", "live"] as const).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => onChange(s)}
-              className={`relative rounded-full px-3 py-1 text-xs font-semibold capitalize transition-colors ${
+              className={`relative rounded-full px-2 py-2 text-xs font-semibold capitalize transition-colors ${
                 state === s ? "bg-foreground text-background" : "text-muted-foreground"
               }`}
             >
@@ -56,9 +57,12 @@ export function PreviewStateToggle({ state, onChange, hasChanges, deploying, onD
               setError("Deploy failed — try again.");
             }
           }}
-          className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white disabled:opacity-40"
+          className="inline-flex min-h-11 min-w-0 shrink items-center gap-1.5 rounded-full bg-emerald-600 px-2 text-xs font-semibold text-white disabled:opacity-40"
         >
-          <CloudUpload size={12} /> {deploying ? "Deploying…" : hasChanges ? "Deploy" : "Deployed"}
+          <CloudUpload size={12} className="shrink-0" />
+          <span className="truncate">
+            {deploying ? "Deploying…" : hasChanges ? "Deploy" : "Deployed"}
+          </span>
         </button>
       </div>
       {error && (

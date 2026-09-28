@@ -1,11 +1,11 @@
 /**
- * MyAppForm — the My App editor.
- * Renders a Draft/Live/Deployed bar + phone frame inside a centered,
- * fluid container (max-w-[390px], up to 420px on desktop). The phone
- * frame uses CSS width:100% + aspect-ratio:390/844 (true phone ratio)
- * to fit any screen automatically. No JavaScript scaling — pure CSS.
- * Vertical centering uses my-auto so an over-tall frame scrolls
- * instead of clipping its top on short viewports.
+ * MyAppForm — the My App editor (preview-first: the frame is the only surface).
+ * Draft/Live bar + phone frame in a centered container. Never-scroll fit:
+ * max-width = min(420px, max(220px, (100dvh - chrome) × 390/844)); chrome is
+ * 172px on phones / 116px at ≥768px (breakpoint token in globals.css). Pure
+ * CSS — reads available space, not device names. my-auto centers; the 220px
+ * floor only engages on extreme viewports (landscape / very short windows)
+ * where a hair of scroll beats an unusable sliver.
  */
 "use client";
 
@@ -20,6 +20,9 @@ import { PreviewStateToggle, type PreviewState } from "./PreviewStateToggle";
 interface MyAppFormProps {
   initialTab?: string;
 }
+
+const FIT_MAX_WIDTH =
+  "min(var(--phone-max-w), max(var(--phone-min-w), calc((100dvh - var(--preview-chrome)) * var(--phone-ratio-w) / var(--phone-ratio-h))))";
 
 export function MyAppForm({ initialTab }: MyAppFormProps) {
   const { loading, baseCreator, serverItems, draft, hasChanges, deploy, deploying } = useMyAppForm();
@@ -51,15 +54,15 @@ export function MyAppForm({ initialTab }: MyAppFormProps) {
 
   if (loading || !previewData) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+      <div className="flex min-h-screen-safe items-center justify-center text-sm text-muted-foreground">
         Loading My App...
       </div>
     );
   }
 
   return (
-    <div data-tl="MyAppForm" className="flex min-h-screen flex-col items-center bg-background py-6 pb-[var(--bottom-nav-height)] md:pb-6">
-      <div className="w-full max-w-[var(--phone-width)] lg:max-w-[420px] mx-auto my-auto">
+    <div data-tl="MyAppForm" className="flex min-h-screen-safe flex-col items-center bg-background py-6 pb-[var(--bottom-nav-height)] md:pb-6">
+      <div className="mx-auto my-auto w-full" style={{ maxWidth: FIT_MAX_WIDTH }}>
         <PreviewStateToggle
           state={state}
           onChange={setState}

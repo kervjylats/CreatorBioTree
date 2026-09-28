@@ -109,7 +109,7 @@ One line summary style — not a full analytics page. Deep-dive lives elsewhere 
 | Edit My App | → `/dashboard/my-app` — the full-screen My App editor (guest-first, swipeable, tap-to-edit). **This replaces the old "View my fan page" quick action** — My App is now the one surface for both seeing and editing the fan shell (founder decision 2026-08-05; see `my-app.md` Part 1). Popping out to the real live `/{username}` still works via the "Deployed — view it live" link after a deploy, and via the share action |
 | Install my fan app | **Optional.** Same install flow as a fan (`/[username]/manifest.json`) → installs their branded fan-shell PWA next to the Dashboard PWA → **2 apps on their phone** (Dashboard = workbench, fan app = what fans get). This is how creators dogfood their own app. See `fan-shell.md` |
 | Add content | → `/dashboard/my-app` (opens the editor sheet with the Catalog tab — Part 1c mapping) |
-| Messages | → `/dashboard/messages` — inbox for fan/guest conversations, replies happen here (see `messaging.md` Part 2) |
+| Messages | → `/dashboard/circle/messages` — inbox for fan/guest conversations, replies happen here (see `messaging.md` Part 2) |
 
 ### Persistent sidebar actions
 

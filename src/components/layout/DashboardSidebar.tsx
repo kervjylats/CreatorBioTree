@@ -117,8 +117,7 @@ export function DashboardSidebar({
         })}
       </nav>
 
-      {/* Mobile bottom spacing */}
-      <div className="h-14 shrink-0 md:hidden" />
+      {/* Mobile bottom spacing — main already reserves pb-20 on phones */}
     </>
   );
 }

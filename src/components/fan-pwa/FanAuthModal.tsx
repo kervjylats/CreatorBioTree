@@ -138,7 +138,7 @@ export function FanAuthModal({ creatorId, creatorUsername, branding, onSuccess, 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
       <div
-        className={cardRadius(branding, "w-full max-w-md p-6 shadow-2xl")}
+        className={cardRadius(branding, "w-full max-w-md p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl")}
         style={{ backgroundColor: branding.cardColor }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -165,7 +165,7 @@ export function FanAuthModal({ creatorId, creatorUsername, branding, onSuccess, 
                   key={label}
                   type="button"
                   disabled={loading}
-                  className={`${buttonShape(branding)} border py-2 text-sm font-medium disabled:opacity-50`}
+                  className={`${buttonShape(branding)} min-h-11 border text-sm font-medium disabled:opacity-50`}
                   style={{ borderColor: branding.textColor + "33", color: branding.textColor }}
                   onClick={() => handleSocial(label)}
                 >

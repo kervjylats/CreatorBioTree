@@ -14,7 +14,7 @@ export function InAppBrowserWarning() {
   if (installState !== "in-app") return null;
 
   return (
-    <div className="rounded-xl border border-amber-300/50 bg-amber-50 p-4 text-sm text-amber-900">
+    <div className="mx-auto w-full max-w-lg rounded-xl border border-amber-300/50 bg-amber-50 px-4 py-3 text-sm text-amber-900">
       <p className="font-semibold">Open this link in {isIOS() ? "Safari" : "Chrome"} to install the app and log in.</p>
       {isIOS() ? (
         <ol className="mt-2 list-decimal pl-4 text-xs opacity-80">

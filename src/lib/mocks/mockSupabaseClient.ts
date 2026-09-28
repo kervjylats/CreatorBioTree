@@ -1275,17 +1275,23 @@ const MOCK_TEST_CREATOR_ID = "mock-test-creator";
 const MOCK_TEST_CREATOR_EMAIL = "test@creatorpwa.app";
 
 export function seedMockTestCreator(): void {
-  if ([...authUsers.values()].some((u) => u.email === MOCK_TEST_CREATOR_EMAIL)) return;
-
-  authUsers.set(MOCK_TEST_CREATOR_ID, {
-    id: MOCK_TEST_CREATOR_ID,
-    email: MOCK_TEST_CREATOR_EMAIL,
-    user_metadata: { display_name: "Test Creator" },
-  });
+  if (![...authUsers.values()].some((u) => u.email === MOCK_TEST_CREATOR_EMAIL)) {
+    authUsers.set(MOCK_TEST_CREATOR_ID, {
+      id: MOCK_TEST_CREATOR_ID,
+      email: MOCK_TEST_CREATOR_EMAIL,
+      user_metadata: { display_name: "Test Creator" },
+    });
+  }
 
   const creators = getTable<Creator>("creators");
-  if (!creators.some((c) => c.id === MOCK_TEST_CREATOR_ID)) {
-    creators.push(buildMockCreatorRow(MOCK_TEST_CREATOR_ID, MOCK_TEST_CREATOR_EMAIL, "Test Creator"));
+  const existing = creators.find((c) => c.id === MOCK_TEST_CREATOR_ID);
+  if (existing) {
+    existing.is_discoverable = true;
+  } else {
+    creators.push({
+      ...buildMockCreatorRow(MOCK_TEST_CREATOR_ID, MOCK_TEST_CREATOR_EMAIL, "Test Creator"),
+      is_discoverable: true,
+    });
     setTable("creators", creators);
   }
 }

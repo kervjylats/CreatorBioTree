@@ -3,6 +3,8 @@
  * In the My App preview, showGuest adds a Guest tab (red accent) so creators
  * can preview the landing page vs the 4 authenticated fan tabs.
  * In the real fan shell, showGuest is never true — only 4 tabs.
+ * Labels truncate instead of overflowing; inside the preview frame's
+ * @container they drop to 9px when the frame is under 300px wide.
  * Tab definitions live in src/lib/nav-config.ts (single source of truth).
  */
 "use client";
@@ -38,7 +40,7 @@ export function FanBottomNav({ activeTab, onTabChange, branding, showGuest, clas
             key={id}
             type="button"
             onClick={() => onTabChange(id)}
-            className="flex flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium"
+            className="flex min-w-0 flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium"
             style={{
               color: isGuest
                 ? active ? GUEST_TAB_COLOR : GUEST_TAB_COLOR + "88"
@@ -46,7 +48,9 @@ export function FanBottomNav({ activeTab, onTabChange, branding, showGuest, clas
             }}
           >
             <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
-            {label}
+            <span className="w-full truncate px-0.5 text-center leading-none @max-[299px]:text-[9px]">
+              {label}
+            </span>
             <span
               className="h-1 w-1 rounded-full"
               style={{

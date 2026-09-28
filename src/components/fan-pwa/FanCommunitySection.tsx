@@ -77,7 +77,7 @@ export function FanCommunitySection({ data }: FanCommunitySectionProps) {
               type="button"
               onClick={handleLeave}
               disabled={joining}
-              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-opacity disabled:opacity-50"
+              className="flex min-h-11 items-center gap-1 rounded-full px-3 text-xs font-semibold transition-opacity disabled:opacity-50"
               style={{ backgroundColor: branding.textColor + "11", color: branding.textColor }}
             >
               <UserMinus size={13} /> Leave
@@ -87,7 +87,7 @@ export function FanCommunitySection({ data }: FanCommunitySectionProps) {
               type="button"
               onClick={handleJoin}
               disabled={joining}
-              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-opacity disabled:opacity-50"
+              className="flex min-h-11 items-center gap-1 rounded-full px-3 text-xs font-semibold transition-opacity disabled:opacity-50"
               style={{ backgroundColor: branding.accentColor, color: contrastText(branding.accentColor) }}
             >
               <UserPlus size={13} /> {joining ? "Joining…" : "Join"}

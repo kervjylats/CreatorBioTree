@@ -14,7 +14,7 @@ export function PoweredByFooter({ branding, hidden }: PoweredByFooterProps) {
   if (hidden) return null;
   const textColor = branding ? branding.textColor + "66" : undefined;
   return (
-    <footer className="pb-[var(--bottom-nav-height)] pt-6 text-center">
+    <footer className="pt-6 text-center">
       <a
         href="/"
         target="_blank"

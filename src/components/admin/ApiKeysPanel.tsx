@@ -82,10 +82,10 @@ export function ApiKeysPanel() {
           {keys.map((k) => (
             <div
               key={k.id}
-              className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3"
+              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3"
             >
-              <div className="space-y-1">
-                <p className="font-mono text-xs text-foreground">
+              <div className="min-w-0 flex-1 space-y-1">
+                <p className="break-all font-mono text-xs text-foreground">
                   {k.api_key ?? "no key"}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -95,6 +95,7 @@ export function ApiKeysPanel() {
               <Button
                 size="icon-xs"
                 variant="ghost"
+                className="shrink-0"
                 onClick={() => void copyKey(k.api_key ?? "", k.id)}
               >
                 {copiedId === k.id ? (

@@ -122,7 +122,7 @@ export function FollowBox({ creatorUsername, branding, alreadyFollowing, viewOnl
       <button
         type="submit"
         disabled={loading}
-        {...buttonClass(branding, inline ? "px-2 py-1 text-[11px]" : compact ? "px-2.5 py-1.5 text-xs" : "")}
+        {...buttonClass(branding, inline ? "shrink-0 px-2! py-1! text-[11px]!" : compact ? "px-2.5! py-1.5! text-xs!" : "")}
       >
         <Heart size={inline ? 10 : compact ? 12 : 14} /> {loading ? "…" : "Follow"}
       </button>

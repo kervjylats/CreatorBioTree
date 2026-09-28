@@ -18,7 +18,7 @@ import { CreatorHeader } from "./CreatorHeader";
 import { FollowBox } from "./FollowBox";
 import { ItemCard } from "./ItemCards";
 import { FanAuthModal } from "./FanAuthModal";
-import { GuestContactModal, ChatHostProvider } from "@/components/chat/ChatShell";
+import { GuestContactModal, ChatHostProvider } from "@/components/messages/ChatShell";
 import { PoweredByFooter } from "./PoweredByFooter";
 import { buttonClass, cardRadius } from "./themeStyles";
 
@@ -112,7 +112,7 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
   return (
     <ChatHostProvider creatorId={branding.creatorId}>
       <div
-        className="min-h-full w-full"
+        className="min-h-full w-full pb-[var(--bottom-nav-height)]"
         data-mock-edit-kind="background"
         data-tl="GuestPageContent"
         style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
@@ -135,7 +135,7 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
                       <FollowBox creatorUsername={data.username} branding={branding} inline />
                       <button
                         type="button"
-                        {...buttonClass(branding, "shrink-0 px-2 py-1 text-[11px]")}
+                        {...buttonClass(branding, "shrink-0 px-2! py-1! text-[11px]!")}
                         onClick={() => setContactOpen(true)}
                       >
                         <MessageCircle size={10} /> Contact
@@ -264,7 +264,7 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
               >
                 Catalog
               </h2>
-              <div className="space-y-4 px-4 pb-[var(--bottom-nav-height)]">
+              <div className="space-y-4 px-4">
                 {feed.map((item) => (
                   <div key={item.id} data-mock-edit-kind="card" onClick={editMode ? () => onEdit?.({ kind: "card", itemId: item.id }) : undefined}>
                     <ItemCard item={item} identity={data.identity} purchases={purchases} branding={branding} onUnlock={handleUnlock} onAuthPrompt={() => setAuthOpen(true)} />

@@ -69,7 +69,7 @@ export function CreatorHeader({ branding, bio, editMode, onEdit, actions }: Crea
           {/* DisplayName — centered top */}
           <div className="relative flex justify-center pt-4">
             <span
-              className={`text-base font-bold text-white drop-shadow-md ${editMode ? "cursor-pointer" : ""}`}
+              className={`break-words text-base font-bold text-white drop-shadow-md line-clamp-2 text-center leading-snug ${editMode ? "cursor-pointer" : ""}`}
               onClick={editMode ? (e) => { e.stopPropagation(); onEdit?.({ kind: "header" }); } : undefined}
             >
               {branding.displayName}
@@ -80,7 +80,7 @@ export function CreatorHeader({ branding, bio, editMode, onEdit, actions }: Crea
           <div className="relative flex justify-center pb-3">
             {bio ? (
               <span
-                className={`text-xs text-white/80 drop-shadow-md leading-relaxed max-w-[80%] text-center ${editMode ? "cursor-pointer" : ""}`}
+                className={`break-words text-xs text-white/80 drop-shadow-md leading-relaxed max-w-[80%] text-center line-clamp-2 ${editMode ? "cursor-pointer" : ""}`}
                 onClick={editMode ? (e) => { e.stopPropagation(); onEdit?.({ kind: "bio" }); } : undefined}
               >
                 {bio}
@@ -105,7 +105,7 @@ export function CreatorHeader({ branding, bio, editMode, onEdit, actions }: Crea
       </div>
 
       {/* ─── SECTION 2: Avatar + Actions row — below banner, avatar overlaps ─── */}
-      <div className="flex items-center gap-3 px-4 -mt-4 pb-3">
+      <div className="flex flex-wrap items-center gap-3 px-4 -mt-4 pb-3">
         {/* Avatar — shrink-0, overlaps banner bottom */}
         <div className="shrink-0">
           {hasAvatar ? (
@@ -146,9 +146,12 @@ export function CreatorHeader({ branding, bio, editMode, onEdit, actions }: Crea
           )}
         </div>
 
-        {/* Actions — inline next to avatar (Email/Follow/Contact for Guest tab) */}
+        {/* Actions — inline next to avatar (Email/Follow/Contact for Guest tab).
+            flex-wrap lets Contact drop to a second line when the frame is
+            narrower than a phone (My App preview at 229-300px); the row wraps
+            the actions below the avatar when even the email row can't fit. */}
         {actions && (
-          <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2 min-w-0 flex-auto">
             {actions}
           </div>
         )}

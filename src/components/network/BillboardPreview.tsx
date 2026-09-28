@@ -46,7 +46,7 @@ export function BillboardPreview({
         <button
           type="button"
           onClick={onToggleVisibility}
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-micro font-semibold transition-colors ${
+          className={`inline-flex min-h-9 items-center gap-1 rounded-full px-3 text-micro font-semibold transition-colors ${
             isVisible
               ? "bg-green-100 text-green-700 hover:bg-green-200"
               : "bg-muted text-muted-foreground hover:bg-muted/80"

@@ -25,20 +25,20 @@ Stats cards (views, installs, content, fans, revenue), activity timeline (brandi
 **Full spec: `screens/creator-dashboard/overview/overview.md`**
 
 Parts archive (old code) available:
-- [DashboardTimeline.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\DashboardTimeline.tsx)
-- [AnalyticsWidgets.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\AnalyticsWidgets.tsx)
-- [CreatorManagementWidgets.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\CreatorManagementWidgets.tsx)
-- Backup: [dashboard-overview/page-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\dashboard-overview\page-old.tsx)
+- [DashboardTimeline.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\DashboardTimeline.tsx)
+- [AnalyticsWidgets.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\AnalyticsWidgets.tsx)
+- [CreatorManagementWidgets.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\CreatorManagementWidgets.tsx)
+- Backup: [dashboard-overview/page-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\dashboard-overview\page-old.tsx)
 
 ---
 
 ## Dashboard Network `/dashboard/network`
 
-**WIRED 2026-09-26 → hub + dock + 3 sub-screens** (built per `NETWORK_REDESIGN_PLAN.md`, overriding the earlier 3-section layout; spec `network.md` is the feature vision):
+**WIRED 2026-09-26 → hub + dock + 3 dock pages** (built per `docs/archive/NETWORK_REDESIGN_PLAN.md`, overriding the earlier 3-section layout; spec `network.md` is the feature vision). **2026-09-27: the dock's pages moved to `/dashboard/circle/*`** (global chrome → global segment; Network keeps the hub only):
 
-- **Hub (`/dashboard/network`)** — 2 columns at `lg`: LEFT rail (Billboard preview + editor + Affiliates: EarningsSummary/AffiliateDiscover) · CENTER = **Discover grid** (search box + result cards with Visit + Connect buttons). Mobile order: Discover → Billboard → Affiliates.
-- **3 sub-screens** — `/dashboard/network/partners` (collab Requests inbox with Accept/Decline + outgoing Pending + active Collabs list/detail + "Invite a partner" card), `/dashboard/network/fans` (full-width `FanListTable` + `FanProfileDrawer`), `/dashboard/network/staff` (pending team invites + members + `PermissionsToggles`).
-- **My Peeps = unified dock stack** (ONE component, `src/components/relationships/MyPeeps.tsx`) — the single floating stack at bottom-right on every `/dashboard/*` page: **Partners · Fans · Staff · 💬 Messages** (top→bottom) as uniform round icon buttons. Active page highlights; each chip carries ONE combined red badge (Partners = pending requests + unread, Fans = unread, Staff = pending invites + unread). Counts from `GET /api/creator/relationships` (30s poll). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement.
+- **Hub (`/dashboard/network`)** — 2 columns at `md+`: LEFT rail (Billboard preview + editor + Affiliates: `＋ New deal` form → Your deals card → EarningsSummary/AffiliateDiscover/AffiliateLinks) · CENTER = **Discover grid** (search box + result cards with Visit + Connect buttons). Mobile (<`md`) order: Discover → Billboard → Affiliates; at `md+` the rail is `order-1` (left track), Discover `order-2` (center), result cards go 2-up from `lg`.
+- **3 dock pages** (entered via the My Peeps dock) — `/dashboard/circle/partners` (collab Requests inbox with Accept/Decline + outgoing Pending + active Collabs list/detail + "Invite a partner" card), `/dashboard/circle/fans` (full-width `FanListTable` + `FanProfileDrawer`), `/dashboard/circle/staff` (pending team invites + members + `PermissionsToggles`).
+- **My Peeps = unified dock stack** (ONE component, `src/components/layout/MyPeeps.tsx`) — the single floating stack at bottom-right on every `/dashboard/*` page: **Partners · Fans · Staff · 💬 Messages** (top→bottom) as uniform round icon buttons. Active page highlights; each chip carries ONE combined red badge (Partners = pending requests + unread, Fans = unread, Staff = pending invites + unread). Counts from `GET /api/creator/relationships` (30s poll). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement.
 - **💬 ChatIcon** on collab detail + fan drawer + staff rows (creator↔creator / creator↔fan threads).
 
 **Full spec: `screens/creator-dashboard/network/network.md`** (friend-request style, discovery directory, discoverability toggle, affiliates §7)
@@ -46,12 +46,12 @@ Parts archive (old code) available:
 Cross-cutting features that live here: **Partnership** → Partners sub-screen (`features/partnership.md`), **Relationships/My Peeps** → dock + sub-screens (`features/relationships.md`), **Team** → Staff sub-screen (`features/team.md`).
 
 Parts archive (old code) available for the discovery directory:
-- [CreatorCard.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\CreatorCard.tsx)
-- [CreatorSearchInput.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\CreatorSearchInput.tsx)
-- [DiscoverCreators.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\DiscoverCreators.tsx)
-- [useCreatorSearch.ts](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\useCreatorSearch.ts)
-- [search-utils.ts](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\search-utils.ts)
-- Backups: [network/page-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\page-old.tsx), [network-page-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\network-page-old.tsx), [PartnerInviteCard-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\PartnerInviteCard-old.tsx), [partnershipService-old.ts](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\partnershipService-old.ts), `src/old-code/allScreens/network/api/*-route-old.ts`
+- [CreatorCard.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\CreatorCard.tsx)
+- [CreatorSearchInput.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\CreatorSearchInput.tsx)
+- [DiscoverCreators.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\DiscoverCreators.tsx)
+- [useCreatorSearch.ts](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\useCreatorSearch.ts)
+- [search-utils.ts](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\search-utils.ts)
+- Backups: [network/page-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\network\page-old.tsx), [network-page-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\network\network-page-old.tsx), [PartnerInviteCard-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\network\PartnerInviteCard-old.tsx), [partnershipService-old.ts](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\circle\partnershipService-old.ts), `src/old-code/allScreens/network/api/*-route-old.ts`
 
 ---
 
@@ -67,7 +67,7 @@ Parts archive (old code) available for the discovery directory:
 
 **Cross-cutting: Branding** — the Design tab is the editor; the full theme system (2-layer model, 9 presets, resolver, 4 safety rules, 7 v1 extensions, 5 later extensions, 7-day lock) lives in `features/branding.md` (single home for the entire rebrand system).
 
-My App editor-tab stub specs (merged, reference only — in `features/`): [catalog-roadmap.md](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\wiredLater\features\catalog-roadmap.md), [funnel.md](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\wiredLater\features\funnel.md), [integrations.md](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\wiredLater\features\integrations.md), [email-campaigns.md](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\wiredLater\features\email-campaigns.md), [media-kit.md](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\wiredLater\features\media-kit.md)
+My App editor-tab stub specs (merged, reference only — in `features/`): [catalog-roadmap.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\catalog-roadmap.md), [funnel.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\funnel.md), [integrations.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\integrations.md), [email-campaigns.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\email-campaigns.md), [media-kit.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\media-kit.md)
 
 ---
 
@@ -78,7 +78,7 @@ Money, identity, and permissions — never page design (branding/content live in
 **Full spec: `screens/creator-dashboard/settings/settings.md`** (account/security, payments/payouts, billing, notifications, messaging & privacy, your page, integrations stub, danger zone)
 
 Parts archive (old code) available:
-- [StripeConnectPanel.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\StripeConnectPanel.tsx)
+- [StripeConnectPanel.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\StripeConnectPanel.tsx)
 
 ---
 
@@ -95,7 +95,7 @@ Built during Phase E. Three tabs: Overview, Admins, API Keys.
 Staff access for creators (their own team members) is a separate cross-cutting feature: `features/team.md`.
 
 Parts archive (old code) available:
-- Backup: [dashboard-admin/page-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\dashboard-admin\page-old.tsx)
+- Backup: [dashboard-admin/page-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\dashboard-admin\page-old.tsx)
 
 ---
 
@@ -117,8 +117,8 @@ Auth view: 4-tab PWA (Home activity hub, Content catalog feed, Connect partners 
 **Partner page:** the Connect tab opens the partner modal — see `features/partner-page.md`.
 
 Parts archive (old code) available:
-- Generic utilities: [SocialLinks.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\SocialLinks.tsx), [LoadingSpinner.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\LoadingSpinner.tsx), [EmptyState.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\EmptyState.tsx), [ErrorBoundary.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\ErrorBoundary.tsx)
-- Fan components: [FanAppShell-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\fan-page\FanAppShell-old.tsx), [PublicCreatorPage-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\fan-page\PublicCreatorPage-old.tsx), [page-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\fan-page\page-old.tsx), `tabs/` (`HomeTab-old`, `ContentTab-old`, `ConnectTab-old`, `SettingsTab-old`) — plus generic parts: [FanAuthModal.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\FanAuthModal.tsx), [FanBottomNav.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\FanBottomNav.tsx), [CreatorHeader.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\CreatorHeader.tsx), [GuestPageContent.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\GuestPageContent.tsx), [FollowButton.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\FollowButton.tsx), [PoweredByFooter.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\PoweredByFooter.tsx), [FanStatsCard.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\FanStatsCard.tsx)
+- Generic utilities: [SocialLinks.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\SocialLinks.tsx), [LoadingSpinner.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\LoadingSpinner.tsx), [EmptyState.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\EmptyState.tsx), [ErrorBoundary.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\ErrorBoundary.tsx)
+- Fan components: [FanAppShell-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\fan-page\FanAppShell-old.tsx), [PublicCreatorPage-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\fan-page\PublicCreatorPage-old.tsx), [page-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\fan-page\page-old.tsx), `tabs/` (`HomeTab-old`, `ContentTab-old`, `ConnectTab-old`, `SettingsTab-old`) — plus generic parts: [FanAuthModal.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\FanAuthModal.tsx), [FanBottomNav.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\FanBottomNav.tsx), [CreatorHeader.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\CreatorHeader.tsx), [GuestPageContent.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\GuestPageContent.tsx), [FollowButton.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\FollowButton.tsx), [PoweredByFooter.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\PoweredByFooter.tsx), [FanStatsCard.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\FanStatsCard.tsx)
 
 ---
 
@@ -131,13 +131,13 @@ Sections needed: Header, Hero, Features, Testimonials, Demo, CTA, Footer
 **Full spec: `screens/public/landing.md`** — **DEFERRED** (post-launch polish pass). The first screen people who haven't joined see when clicking a creator's link or visiting the site. Embeds the shared search component (`features/search.md`).
 
 WiredLater files available:
-- [LandingHeader.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\LandingHeader.tsx)
-- [HeroSection.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\HeroSection.tsx)
-- [FeaturesSection.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\FeaturesSection.tsx)
-- [TestimonialsSection.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\TestimonialsSection.tsx)
-- [DemoSection.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\DemoSection.tsx)
-- [CTASection.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\CTASection.tsx)
-- [Footer.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\Footer.tsx)
+- [LandingHeader.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\LandingHeader.tsx)
+- [HeroSection.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\HeroSection.tsx)
+- [FeaturesSection.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\FeaturesSection.tsx)
+- [TestimonialsSection.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\TestimonialsSection.tsx)
+- [DemoSection.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\DemoSection.tsx)
+- [CTASection.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\CTASection.tsx)
+- [Footer.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\Footer.tsx)
 
 ---
 
@@ -148,8 +148,8 @@ Creator sign-in with email + password. Uses Supabase auth; mock mode sets `mock_
 **Full spec: `screens/public/login.md`** — one door for everyone (owner, staff, creators, fans use separate fan auth).
 
 Live files:
-- [AuthCard.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\components\auth\AuthCard.tsx)
-- [LoginForm.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\components\auth\LoginForm.tsx)
+- [AuthCard.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\components\auth\AuthCard.tsx)
+- [LoginForm.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\components\auth\LoginForm.tsx)
 - `src/screens/public/login/Screen.tsx` (server component)
 
 ---
@@ -159,8 +159,8 @@ Live files:
 **WIRED 2026-08-10 (Sheet 7)** — Link Address (permanent, never changeable) with live debounced availability check, display name, email, password, permanence confirm dialog. Supports `?invite=` param for partnership invites (spec: `features/partnership.md`). **Design/education copy deferred** to the post-launch polish pass, like the landing page.
 
 Live files:
-- [OnboardingForm.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\components\auth\OnboardingForm.tsx)
-- [AuthCard.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\components\auth\AuthCard.tsx)
+- [OnboardingForm.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\components\auth\OnboardingForm.tsx)
+- [AuthCard.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\components\auth\AuthCard.tsx)
 - `POST /api/creator/register` · `GET /api/creator/check-username`
 
 ---
@@ -177,7 +177,7 @@ Each of these lives inside one or more of the screens above. Wiring home per fea
 
 ## Search (feature)
 
-Public creator discovery: unique Link Address handle (user-facing name; code/docs keep `username` — permanent, set once at signup) + display name, discoverable-only, featured first, "Did you mean?" typo suggestions on zero results. Full spec in `features/search.md`. **One component, three placements:** the `/search` page, the landing page (built later with the deferred landing), and the Network search. Landing page embeds the same search component.
+Public creator discovery: unique Link Address handle (user-facing name; code/docs keep `username` — permanent, set once at signup) + display name, discoverable-only, featured first, "Did you mean?" typo suggestions on zero results. Full spec in `features/search.md`. **One engine, placements:** the Network hub Discover center (live — `GET /api/search/creators`) and the landing page (built later with the deferred landing). The standalone `/search` page was removed 2026-09-28 (cleanup pass).
 
 ---
 
@@ -186,13 +186,13 @@ Public creator discovery: unique Link Address handle (user-facing name; code/doc
 **Full spec: `features/messaging.md`** — FREE WhatsApp-style chat for every party.
 
 Surfaces:
-- **Dashboard** `/dashboard/messages` — creator inbox (fan/guest/collab conversations, unread-count badge in the sidebar; see `overview.md` Part 7)
+- **Dashboard** `/dashboard/circle/messages` — creator inbox (fan/guest/collab conversations, unread-count badge in the sidebar; see `overview.md` Part 7)
 - **Fan shell** — header chat icon (top-right) + floating bottom-right 💬 inbox on every screen (see `fan-shell.md` FanAppShell); guest contact button for logged-out visitors
 - **Network** — chat icons next to creator names (creator↔creator, before/after collabbing; see `network.md` §5)
 - **Partner page** — chat icon next to partner names (fan↔partner)
 - **Offline** — messages queue locally and sync (see `screens/public/offline.md`)
 
-No new screen route beyond `/dashboard/messages` — the rest lives inside the fan shell frame and existing screens. Full data model, requests/block/toggles, group chats + announcements, Community (Part 3), and the single-file `ChatShell.tsx` plan are all in `messaging.md`. **Status: WIRED 2026-08-17 (Sheet 12)** — `src/components/chat/ChatShell.tsx` + `src/lib/chat.ts` + 12 `/api/chat/*` routes; Community (Part 3) remains unbuilt.
+No new screen route beyond `/dashboard/circle/messages` — the rest lives inside the fan shell frame and existing screens. Full data model, requests/block/toggles, group chats + announcements, Community (Part 3), and the single-file `ChatShell.tsx` plan are all in `messaging.md`. **Status: WIRED 2026-08-17 (Sheet 12)** — `src/components/messages/ChatShell.tsx` + `src/lib/chat.ts` + 12 `/api/chat/*` routes; Community (Part 3) remains unbuilt.
 
 ---
 
@@ -201,14 +201,14 @@ No new screen route beyond `/dashboard/messages` — the rest lives inside the f
 **Full spec: `features/relationships.md`** — **"My Peeps"**: the single floating dock stack on every `/dashboard/*` page (**Partners · Fans · Staff · 💬**, uniform round icon buttons, top→bottom), an umbrella over Partners / Fans / Staffs, each opening a Network sub-screen.
 
 - **Dock** — ONE component (`MyPeeps.tsx`): 3 icon buttons + the 💬 bubble in one vertical stack, combined red badges (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread; 30s poll of `GET /api/creator/relationships`)
-- **Partners (`/dashboard/network/partners`)** — collab Requests inbox (Accept/Decline + outgoing Pending) + active collabs list/detail + "Invite a partner" card
-- **Fans (`/dashboard/network/fans`)** — full-width fan table (email, joined, referred-by, status chip, lifetime value, last purchase + filters + CSV export) + `FanProfileDrawer` (purchases, subscription, installs/activity, **message history via ChatShell**, consent flags)
-- **Staff (`/dashboard/network/staff`)** — pending team invites + members + permission toggles (see Team below)
+- **Partners (`/dashboard/circle/partners`)** — collab Requests inbox (Accept/Decline + outgoing Pending) + active collabs list/detail + "Invite a partner" card
+- **Fans (`/dashboard/circle/fans`)** — full-width fan table (email, joined, referred-by, status chip, lifetime value, last purchase + filters + CSV export) + `FanProfileDrawer` (purchases, subscription, installs/activity, **message history via ChatShell**, consent flags)
+- **Staff (`/dashboard/circle/staff`)** — pending team invites + members + permission toggles (see Team below)
 - Collabs → `network.md`; community members → `messaging.md` Part 3
 
 **Wired 2026-09-26** — replaces the DECIDED (2026-08-05) "anchored right rail (Layout B)" placement.
 
-Old code (reference): [FanStatsCard.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\FanStatsCard.tsx) (old fan modal table), [CreatorManagementWidgets.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\CreatorManagementWidgets.tsx) (`FanExportButton`), backup [dashboard-overview/page-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\dashboard-overview\page-old.tsx).
+Old code (reference): [FanStatsCard.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\FanStatsCard.tsx) (old fan modal table), [CreatorManagementWidgets.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\CreatorManagementWidgets.tsx) (`FanExportButton`), backup [dashboard-overview/page-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\dashboard-overview\page-old.tsx).
 
 ---
 
@@ -220,7 +220,7 @@ Old code (reference): [FanStatsCard.tsx](vscode://file/C:\Users\rowlu\Documents\
 - **Permission toggles** — Content · Stats · Relationships · Messages · Community · Network · Settings · Money — all OFF by default, owner ticks per person
 - **Context switcher** — team members switch between their own dashboard and managed ones (members can be creators themselves)
 - **Audit log** — `creator_team_activity`, owner-only visibility
-- **Home** — `/dashboard/network/staff` (from the My Peeps dock) — invites + members + toggles for the owner
+- **Home** — `/dashboard/circle/staff` (from the My Peeps dock) — invites + members + toggles for the owner
 
 No parts-archive reference — this feature was never built, wires fresh from the spec.
 
@@ -230,14 +230,14 @@ No parts-archive reference — this feature was never built, wires fresh from th
 
 **Full spec: `features/partnership.md`** — inviting creators from OUTSIDE the app to become partners.
 
-- **Invite** — creator generates a 7-day single-use `?invite=CODE` link (`/dashboard/network/partners`, "Invite a partner" card)
+- **Invite** — creator generates a 7-day single-use `?invite=CODE` link (`/dashboard/circle/partners`, "Invite a partner" card)
 - **Join** — outsider completes normal onboarding ("Join your partner") → post-signup route auto-connects them (`partnerships` row, `source: "invited"`)
 - **No request/accept** — the link IS the mechanism
 - **One shared data model** — `partnerships` + `source` flag (`collab` | `invited`); `partner_invites` table
 - **Terminology split (founder decision)** — outside-app invite = **Partnership**; in-app creator↔creator = **Collabs** (`network.md`)
-- **Home** — `/dashboard/network/partners` (requests + collabs + invite card, from the My Peeps dock)
+- **Home** — `/dashboard/circle/partners` (requests + collabs + invite card, from the My Peeps dock)
 
-Old code (reference): [PartnerInviteCard-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\PartnerInviteCard-old.tsx), [creator-partners-invite-route-old.ts](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\api\creator-partners-invite-route-old.ts), [creator-partners-onboarding-route-old.ts](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\network\api\creator-partners-onboarding-route-old.ts).
+Old code (reference): [PartnerInviteCard-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\network\PartnerInviteCard-old.tsx), [creator-partners-invite-route-old.ts](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\network\api\creator-partners-invite-route-old.ts), [creator-partners-onboarding-route-old.ts](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\network\api\creator-partners-onboarding-route-old.ts).
 
 ---
 
@@ -247,4 +247,4 @@ Old code (reference): [PartnerInviteCard-old.tsx](vscode://file/C:\Users\rowlu\D
 
 Also: `screens/fan-shell/fan-shell.md` Part 3 (3 similar layouts) + Part 4c (Connect tab — the connection hub: Billboard rotating deal partners at 2× + names of all partners, All Partners / Followed columns, Community + Artist Links, creator-configurable empty state).
 
-Currently a naked skeleton. Old placeholder kept at [src/old-code/allScreens/partner-page/page-old.tsx](vscode://file/C:\Users\rowlu\Documents\creatorpwa\src\old-code\allScreens\partner-page\page-old.tsx) (reuse its fan-auth gate + branding resolution).
+Currently a naked skeleton. Old placeholder kept at [src/old-code/allScreens/partner-page/page-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\partner-page\page-old.tsx) (reuse its fan-auth gate + branding resolution).

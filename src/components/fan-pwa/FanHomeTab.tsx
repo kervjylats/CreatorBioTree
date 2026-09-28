@@ -117,8 +117,8 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
                 className={cardRadius(branding, "flex items-center justify-between px-4 py-3")}
                 style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
               >
-                <span className="text-sm font-semibold">{item.title}</span>
-                <ArrowRight size={16} style={{ color: branding.accentColor }} />
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold">{item.title}</span>
+                <ArrowRight size={16} className="shrink-0" style={{ color: branding.accentColor }} />
               </Link>
             ))}
           </div>
@@ -279,8 +279,6 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
           </div>
         </section>
       )}
-
-      <div className="pb-[var(--bottom-nav-height)]" />
       </div>
     </div>
   );

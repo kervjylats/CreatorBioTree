@@ -64,8 +64,8 @@ export function MessagingPrivacy() {
         <CardTitle>Messaging &amp; Privacy</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
             <MessageSquare size={16} className="text-muted-foreground" />
             <div>
               <p className="text-sm font-medium text-foreground">

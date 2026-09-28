@@ -9,7 +9,7 @@ interface AuthCardProps {
 
 export function AuthCard({ title, subtitle, children }: AuthCardProps) {
   return (
-    <div className="min-h-screen flex items-start md:items-center justify-center bg-background px-4 py-12 md:py-0 text-foreground">
+    <div className="min-h-screen-safe flex items-start md:items-center justify-center bg-background px-4 py-12 md:py-0 text-foreground">
       <div className="max-w-md w-full p-6 sm:p-10 bg-card border border-border shadow-sm rounded-3xl text-center">
         <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-6 text-white shadow-sm">
           <Trees size={32} />

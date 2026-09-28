@@ -28,8 +28,19 @@
   --card-foreground:   #3D3A35;
   --shell-width:       512px;
   --bottom-nav-height: 80px;
-  --phone-width:       390px;
-  --phone-height:      844px;
+  --phone-ratio-w:     390;
+  --phone-ratio-h:     844;
+  --phone-max-w:       420px;
+  --phone-min-w:       220px;
+  /* Space around the My App frame: py-6 top + Draft/Live bar (~68px) +
+     bottom padding (80px phone bottom-nav clearance / 24px at md+). */
+  --preview-chrome:    172px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --preview-chrome: 116px;
+  }
 }
 
 @theme inline {

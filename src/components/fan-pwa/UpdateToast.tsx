@@ -37,11 +37,11 @@ export function UpdateToast({ branding, accentColor }: { branding?: CreatorBrand
   if (!show) return null;
 
   return (
-    <div className="fixed inset-x-4 bottom-16 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl bg-foreground p-3 text-sm text-background shadow-xl">
+    <div className="fixed inset-x-4 bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+0.5rem)] z-50 mx-auto flex w-[min(calc(100%-2rem),var(--shell-width))] items-center justify-between gap-3 rounded-2xl bg-foreground p-3 text-sm text-background shadow-xl">
       <span>⚡ New version available</span>
       <button
         type="button"
-        className={`${branding ? buttonShape(branding) : "rounded-full"} px-3 py-1.5 text-xs font-semibold`}
+        className={`${branding ? buttonShape(branding) : "rounded-full"} min-h-11 px-4 text-xs font-semibold`}
         style={{ backgroundColor: color, color: contrastText(color) }}
         onClick={() => {
           navigator.serviceWorker.ready.then((reg) => reg.waiting?.postMessage({ type: "SKIP_WAITING" }));

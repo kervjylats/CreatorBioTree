@@ -78,11 +78,11 @@ Full spec: `src/wiredLater/screens/creator-dashboard/my-app/my-app.md`.
 
 **Full spec: `src/wiredLater/screens/creator-dashboard/network/network.md`. WIRED (Sheet 18, 2026-08-30).**
 
-Creator-to-creator discovery + collab + people hub (B2B — fans never see it). **REBUILT 2026-09-26 (hub + dock + 3 sub-screens, per `NETWORK_REDESIGN_PLAN.md`):**
-- **Hub (`/dashboard/network`)** — 2 columns: left rail (Billboard + Affiliates: EarningsSummary/AffiliateDiscover) · center = **Discover** (search box + result cards with Visit + Connect). The old 3-section layout's right rail is gone.
-- **3 sub-screens** (each with a route under `/dashboard/network/…`): `/partners` (collab requests → active collabs → invite card), `/fans` (full-width fan table + profile drawer), `/staff` (team invites + members + permissions).
+Creator-to-creator discovery + collab + people hub (B2B — fans never see it). **REBUILT 2026-09-26 (hub + dock + 3 sub-screens, per `docs/archive/NETWORK_REDESIGN_PLAN.md`):**
+- **Hub (`/dashboard/network`)** — 2 columns: left rail (Billboard + Affiliates: `＋ New deal` deal form → Your deals card → EarningsSummary/AffiliateDiscover/AffiliateLinks) · center = **Discover** (search box + result cards with Visit + Connect). The old 3-section layout's right rail is gone.
+- **3 dock pages** (routes under `/dashboard/circle/…` since 2026-09-27): `/partners` (collab requests → active collabs → invite card), `/fans` (full-width fan table + profile drawer), `/staff` (team invites + members + permissions).
 - **My Peeps = unified dock stack** — ONE component in the single floating stack bottom-right (`Partners · Fans · Staff · 💬`, top→bottom): 3 icon buttons (Partners / Fans / Staff), active page highlights, each gets a single red combined-badge (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread). Counts come from `GET /api/creator/relationships` (polled 30s). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement (no hardcoded offsets).
-- Original feature set (kept): visibility switch (`is_discoverable`), billboard (tagline/tags/collab-style/bio/rate-card/media-kit message), search, friend-request collabs, affiliates (Section 7) — economics in `monetization/creators.md` Part 2; My Earnings / Discover / My Links live in the hub left rail.
+- Original feature set (kept): visibility switch (`is_discoverable`), billboard (tagline/tags/collab-style/bio/rate-card/media-kit message), search, friend-request collabs, affiliates (Section 7) — economics in `monetization/creators.md` Part 2; deal maker + Your deals card + My Earnings / Discover / My Links live in the hub left rail (affiliate mount 2026-09-27).
 - **Deal Maker deferred to end of development** (messaging is already wired — see Section on chat; it no longer belongs to Network's deferred list).
 
 ### 4.5 Settings (`/dashboard/settings`)
@@ -164,7 +164,7 @@ Collab is ACTIVE (connected)
 
 ## 6b. Messaging (WIRED — Sheet 12, 2026-08-17)
 
-Free WhatsApp-style chat engine (spec: `features/messaging.md`). **Creators:** floating 💬 inbox on every `/dashboard/*` page + full screen at `/dashboard/messages`. **Fans:** header chat icon + floating inbox in the fan shell. **Guests:** "Contact {creator}" email capture → creates a Follower row + a direct conversation.
+Free WhatsApp-style chat engine (spec: `features/messaging.md`). **Creators:** floating 💬 inbox on every `/dashboard/*` page + full screen at `/dashboard/circle/messages`. **Fans:** header chat icon + floating inbox in the fan shell. **Guests:** "Contact {creator}" email capture → creates a Follower row + a direct conversation.
 
 - Conversations (newest-first), threads, unread badges (6s polling in mock), edit/delete with tombstones, file attachments (≤8MB via `/api/chat/upload`)
 - **Requests folder** + "Allow anyone" toggle (per-party privacy, TT/Reddit-style); **block** in both directions
@@ -206,11 +206,11 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 | Dashboard Overview (`/dashboard/overview`) | ✅ Wired (Sheet 10) | `screens/creator-dashboard/overview/overview.md` (full) |
 | My App (`/dashboard/my-app`, formerly Playground) | ✅ Wired (Sheet 19-V1) — full editor, 16 types, uploads, draft/deploy | `screens/creator-dashboard/my-app/my-app.md` (full) |
 | Dashboard Network | ✅ Wired (Sheet 18) | `screens/creator-dashboard/network/network.md` (full) |
-| Dashboard Messages (`/dashboard/messages`) | ✅ Wired (Sheet 12) — full chat screen + floating inbox | `features/messaging.md` (full) |
+| Dashboard Messages (`/dashboard/circle/messages`) | ✅ Wired (Sheet 12) — full chat screen + floating inbox | `features/messaging.md` (full) |
 | Admin (`/admin`) | ✅ Wired (Sheet 8) — 5-tab panel | `screens/admin/admin.md` (full) |
 | Dashboard Settings | ✅ Wired (Sheet 9) | `screens/creator-dashboard/settings/settings.md` (full) |
 | Fan page (`/{username}` guest/home/content/connect/settings) | ✅ Wired (Sheet 21-V1) — guest 3-layer + 4-tab app + mock PayPal checkout | `screens/fan-shell/fan-shell.md` (full) |
-| Search page (`/search`) | ✅ Wired (Sheet 11) | `features/search.md` (full) |
+| Search page (`/search`) | ❌ Removed 2026-09-28 — Network hub Discover is the search home (Sheet 11; `GET /api/search/creators` stays live) | `features/search.md` (spec kept) |
 | Offline (`/offline`) | ✅ Wired (Sheet 22) | `screens/public/offline.md` (full — fallback + App Shell) |
 | Push notifications | Subscribe saves to DB; broadcast send is a no-op | — |
 | Analytics | Removed as its own page — part of Overview / Media Kit | — |
@@ -380,7 +380,6 @@ Every mock file has `// PRODUCTION-NOTE:` comments marking what the real service
 | `/{username}/guest` → `/{username}/settings` (fan tabs) | ✅ | ✅ | ✅ | fan session |
 | `/{username}/app` (auth, legacy) | ✅ | ✅ | ✅ | ❌ |
 | `/{username}/partner/[partnerUsername]` | ✅ | ✅ | ✅ | ✅ |
-| `/search` | ✅ | ✅ | ✅ | ✅ |
 
 ---
 

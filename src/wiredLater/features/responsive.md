@@ -21,6 +21,7 @@
 4. **Platform UI uses tokens; fan UI uses creator branding.** Landing, login, search, offline, dashboard, admin = platform tokens from `globals.css`. Fan shell = `resolveBranding()` inline styles.
 5. **Touch-first.** Consumer/fan/primary buttons ≥ 44px tap target. Dense admin controls stay compact but padded.
 6. **Safe areas everywhere.** `env(safe-area-inset-*)` on all fixed/sticky bars. `100dvh` for full-height sections.
+7. **Screen-inside-a-screen (2026-09-25).** The My App preview is a *narrower container* rendering the *same* fan components as the real shell — a phone frame inside a bigger browser window. Fan content must therefore adapt to its **container width** via flex-wrap (`flex-wrap`, `min-w-0`, `truncate`, `flex-auto`) or container queries (`@container` + `@max-[…]:`), **never** viewport breakpoints: browser width ≠ frame width (the browser can be 1920px wide while the frame is 229px). Rows must wrap before they clip, and elements designed for 390px phones (fixed `w-24` inputs, `buttonClass` padding) must never exceed the narrowest frame (220px). Preview and real shell share ONE copy of these components, so a width-agnostic fix lands in both automatically.
 
 ---
 
@@ -78,14 +79,14 @@ Rules:
 | Phone (<`md`) | Bottom bar (Overview/Network/My App/Settings) | `flex-1 pt-14 md:pt-0` |
 | Tablet/Desktop (≥`md`) | Sidebar (w-60, full nav + Admin for admins) | `flex-1` |
 
-- Mobile bottom bar shows 4 tabs only (no More button — Sign out lives in Settings).
+- Mobile bottom bar renders the visible nav items (4 for creators; admins get a 5th "Admin" cell — deliberate, per 2026-09-25). Sign out lives in Settings.
 - Sidebar shows at `md:` (≥768px).
-- Chat FAB repositions above the bottom nav on mobile: `bottom-[calc(4.5rem+env(safe-area-inset-bottom))]`.
+- Chat FAB/dock repositions above the bottom nav on mobile: `bottom-[calc(4.5rem+env(safe-area-inset-bottom))]`.
 
 ### 3c. AdminShell — same as CreatorShell
 
-- Admin at `/admin` gets the same shell via `src/app/(admin)/layout.tsx`.
-- Admin content inside uses `AdminClient` with its own `max-w-6xl` container + 5-tab strip.
+- Admin at `/admin` gets the same shell via the `(shell)` layout + `DashboardSidebar` (admin sees the sidebar at `md:`, a bottom bar below `md`).
+- Admin content inside uses `AdminClient` with its own `max-w-6xl` container + 5-tab strip (`TabsList` wraps at phone widths).
 
 ### 3d. PublicShell — centered fluid column
 
@@ -105,7 +106,7 @@ Rules:
 | `max-w-6xl` (1152px) | Dashboard content cap | Overview, My App, Admin |
 | `max-w-7xl` (1280px) | Wide dashboard grids (large monitors) | Network, optional future |
 | Sidebar width | `w-60` (240px) | Dashboard sidebar |
-| Rail widths (Network) | `250px` left, `300px` right | NetworkPage at `lg` |
+| Network rail (2026-09-26 hub) | `220px` at `md`, `250px` at `lg`, LEFT only | NetworkPage 2-col — `grid-cols-1 md:grid-cols-[220px_1fr] lg:grid-cols-[250px_1fr]`; Discover center; no right rail (My Peeps moved to the dock). Inline items wrap/flex-wrap inside the rail; earnings/rate stats `flex-wrap min-w-[100px]` so 3-up collapses to rows when the rail is narrow. |
 
 ---
 
@@ -113,10 +114,11 @@ Rules:
 
 | Surface | Minimum height | Approach |
 |---|---|---|
-| Consumer/fan CTAs (follow, buy, install, auth submit) | 44px | `size="lg"` (h-11) on `ui/button.tsx` |
+| Consumer/fan CTAs (follow, buy, install, auth submit) | 44px | `min-h-11` on the button / `buttonClass()` already carries `min-h-[44px]` |
+| Fan icon buttons (chat, bell, dismiss) | 44px | `h-11 w-11` / `touch-target` |
 | Fan bottom nav tabs | ≥44px | `py-2` + icon (already sufficient) |
-| Admin table controls | ~36px acceptable | Compact `size="sm"` or `size="default"` |
-| Modal/dialog buttons | ≥44px for primary | `size="lg"` for confirm actions |
+| Admin/dashboard/editor controls | ~36–40px | Compact pills (`min-h-9`), tab lists `min-h-11`, auth inputs `min-h-11` |
+| Modal/dialog buttons | ≥44px for primary | `min-h-11` for confirm actions (social login, Done, Log out, tip amounts) |
 
 The `.touch-target` utility class (`min-h-11 min-w-11`) should be applied to any interactive element that doesn't naturally reach 44px via its Tailwind sizing.
 
@@ -133,23 +135,61 @@ The `.touch-target` utility class (`min-h-11 min-w-11`) should be applied to any
 
 ---
 
-## 7. My App Device Preview Toggle
+## 7. My App Preview — Fluid Phone Frame (preview-first, 2026-09-24)
 
-Added to `PhonePreview.tsx` / `MyAppForm.tsx`:
-- 3-button control: **Phone** (390px) / **Tablet** (820px) / **Desktop** (1280px).
-- Preview renders the **real** `FanAppShell` + content components (not an iframe).
-- On Desktop, the real `FanAppShell` shows the top nav → preview = reality.
-- Widths match the TweakLens `src/lib/devices.js` presets for consistency.
-- CSS `transform: scale()` fits the preview into the editor column; 1:1 on Phone.
-- Default: Phone.
+The My App editor is **preview-first**: the ONLY surface is a phone frame (the
+editor/catalog UI is deferred). No Phone/Tablet/Desktop toggle, no
+`src/lib/devices.js` (that was a stale plan — neither ever shipped).
+
+**Smart fit, never scroll, no device detection.** The frame keeps a true
+390:844 phone ratio via a **unitless** aspect-ratio token and is sized to FIT
+the available space on any device with pure CSS (`min()`/`max()`):
+
+```css
+--phone-ratio-w: 390;            /* unitless — aspect-ratio rejects px! */
+--phone-ratio-h: 844;
+--phone-max-w:   420px;           /* largest usable frame on desktop */
+--phone-min-w:   220px;           /* extreme-viewport floor (landscape/short) */
+--preview-chrome: 172px;          /* py-6 top + Draft/Live bar + bottom pad */
+@media (min-width: 768px) { :root { --preview-chrome: 116px; } }  /* pb-6 */
+```
+
+```tsx
+maxWidth: "min(var(--phone-max-w), max(var(--phone-min-w), calc((100dvh - var(--preview-chrome)) * var(--phone-ratio-w) / var(--phone-ratio-h))))"
+```
+
+Resulting frame widths (fit = available height × 390/844, capped both ends):
+
+| Viewport | Frame |
+|---|---|
+| iPhone SE (dvh 667) | ≈229px — fills it, zero scroll |
+| iPhone (dvh 844) | ≈310px |
+| iPhone 15 Pro Max (932) | ≈351px |
+| Laptop (800, ≥768 wide) | ≈316px |
+| Desktop (1080) | 420px (cap), zero scroll |
+| Landscape / very short | 220px floor — a hair of scroll beats an unusable sliver; `my-auto` centers so nothing clips |
+
+**Preview nav labels (legibility rule):** the frame is a `@container`; labels
+inside `FanBottomNav` use `@max-[299px]:text-[9px]` so the 5 preview tabs stay
+separated at ~229px, plus a hard `truncate` + `min-w-0` guarantee — labels
+elide cleanly, never merge into each other. The real fan shell has no narrow
+container, so it always keeps 10px labels. Draft/Live/Deploy paddings are
+tuned to fit one row at the 229px worst case.
+
+`aspect-ratio` ONLY accepts a unitless number pair — writing `390px / 844px`
+is an INVALID declaration that the browser silently drops (this was the
+"shrunken/funny" bug: the ratio fell back to `auto` and the frame collapsed
+to its content height). The ratio value must always come from the unitless
+`--phone-ratio-*` tokens.
 
 ---
 
 ## 8. Overlay Alignment Rule
 
 All fan-shell overlays (install banners, update toast, chat popover) must align to the shell column, not the viewport:
-- Fixed overlays use `left-1/2 -translate-x-1/2 w-[min(100%,var(--shell-width))]`.
-- Chat bubble (viewport-anchored): `right-[max(1rem,calc(50%-var(--shell-width)/2+1rem))]` so it sits at the column's right edge on desktop and at `1rem` on mobile.
+- Fixed overlays use `left-1/2 -translate-x-1/2 w-[min(calc(100%-2rem),var(--shell-width))]` and sit ABOVE the bottom nav: `bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+0.5rem)]`.
+- Chat bubble (viewport-anchored): `bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)]` on phones and `right-[max(1rem,calc(50%-var(--shell-width)/2+1rem))]` so it sits at the column's right edge on desktop and at `1rem` on mobile.
+- The dashboard dock (My Peeps + 💬) clears the mobile bottom bar: `bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6` — the `md:` variant aligns with the sidebar switch (keep `sm:`/`md:` variants in sync with the nav breakpoint, never skip it).
 - This ensures overlays visually sit on top of the app content, not scattered across the viewport.
 
 ---
@@ -163,9 +203,9 @@ After every responsive pass, test each surface at:
 | 360px | Small phone | bottom nav, 1-col | bottom nav, 1-col | bottom nav, 1-col | 1-col hero, stacked | centered card |
 | 390px | Medium phone | bottom nav, 1-col | bottom nav, 1-col | bottom nav, 1-col | 1-col hero, stacked | centered card |
 | 430px | Large phone | bottom nav, 1-col | bottom nav, 1-col | bottom nav, 1-col | 1-col hero, stacked | centered card |
-| 768px | Tablet | bottom nav, 1-col | sidebar, 2-col possible | sidebar | 2-col features | centered card |
-| 1024px | Desktop | **top nav**, 1-col | sidebar, 3-col network | sidebar, 5-tab strip | 3-col features | centered card |
-| 1440px | Wide | top nav, 1-col | sidebar, 3-col network | sidebar, 5-tab | 3-col, max-width capped | centered card |
+| 768px | Tablet | bottom nav, 1-col | sidebar, 2-col network | sidebar | 2-col features | centered card |
+| 1024px | Desktop | **top nav**, 1-col | sidebar, 2-col network | sidebar, 5-tab strip | 3-col features | centered card |
+| 1440px | Wide | top nav, 1-col | sidebar, 2-col network | sidebar, 5-tab | 3-col, max-width capped | centered card |
 
 No horizontal page scroll at any width. No content hidden behind fixed bars. All primary buttons ≥ 44px. Safe areas respected on notched iPhones.
 
@@ -181,7 +221,7 @@ CSS media queries respond to **screen width**, not device identity. A `@media (m
 
 ### TweakLens testing presets
 
-TweakLens (`src/lib/devices.js`) provides 8 presets mapped to the 5 categories:
+TweakLens provides 8 emulation presets mapped to the 5 categories:
 
 | Category | TweakLens device | Width | Coverage |
 |---|---|---|---|

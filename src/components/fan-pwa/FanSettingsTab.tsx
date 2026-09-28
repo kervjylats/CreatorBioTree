@@ -109,7 +109,7 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
           <button
             type="button"
             onClick={handleLogout}
-            className={`${buttonShape(branding)} mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold`}
+            className={`${buttonShape(branding)} mt-3 inline-flex min-h-11 items-center gap-1.5 px-4 text-sm font-semibold`}
             style={{ backgroundColor: branding.textColor + "11", color: branding.textColor }}
           >
             <LogOut size={14} /> Log out
@@ -151,7 +151,7 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
           </div>
           <div className="flex flex-col gap-3">
             {NOTIFICATION_KEYS.map((t) => (
-              <div key={t.key} className="flex items-center justify-between">
+              <div key={t.key} className="flex min-h-11 items-center justify-between">
                 <div>
                   <p className="text-sm font-medium" style={{ color: branding.textColor }}>{t.label}</p>
                   <p className="text-caption" style={{ color: branding.textColor + "77" }}>{t.desc}</p>
@@ -195,13 +195,13 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
                 className={cardRadius(branding, "flex items-center justify-between px-4 py-3")}
                 style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
               >
-                <div>
-                  <p className="text-sm font-semibold">{titleFor(p.content_item_id) ?? "Purchase"}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{titleFor(p.content_item_id) ?? "Purchase"}</p>
                   <p className="text-xs" style={{ color: branding.textColor + "77" }}>
                     {new Date(p.purchased_at).toLocaleDateString()}
                   </p>
                 </div>
-                <p className="text-sm font-bold">{money(p.amount_paid ?? 0, p.currency)}</p>
+                <p className="shrink-0 text-sm font-bold">{money(p.amount_paid ?? 0, p.currency)}</p>
               </div>
             ))}
             <p className="text-right text-xs font-semibold" style={{ color: branding.textColor + "88" }}>
@@ -225,7 +225,7 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
       </section>
 
       {/* PWA */}
-      <section className="px-4 pt-5 pb-[var(--bottom-nav-height)]">
+      <section className="px-4 pt-5">
         <div className={cardRadius(branding, "px-4 py-3")} style={{ backgroundColor: branding.cardColor }}>
           <p className="text-sm font-semibold" style={{ color: branding.textColor }}>
             Install {branding.displayName}&apos;s app

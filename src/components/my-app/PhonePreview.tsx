@@ -1,12 +1,10 @@
 /**
  * PhonePreview — the fluid phone frame for the My App editor.
- * Uses CSS width:100% + aspect-ratio:390/844 (true phone ratio) so the
- * frame automatically fits any screen. Max width 390px (420px desktop).
- * Layout mirrors FanAppShell: branded header → scrollable content (pb-20)
- * → absolute bottom nav that overlays content (matches real fixed nav).
- * Guest tab is shown as the first bottom nav tab (red accent).
- * Swipeable between tabs; Guest shows the public landing page,
- * the other 4 tabs show the authenticated fan experience.
+ * True 390/844 phone ratio via unitless aspect-ratio tokens; parent
+ * (MyAppForm) sizes the width to fit available space (never scrolls).
+ * Layout mirrors FanAppShell; frame is swipeable across the 5 tabs.
+ * Marks itself @container so FanBottomNav labels can drop to 9px when
+ * the frame itself is under 300px wide (keeps all 5 labels legible).
  */
 "use client";
 
@@ -38,7 +36,8 @@ export function PhonePreview({ data, activeTab, onTabChange }: PhonePreviewProps
   const surface: ReactNode = (() => {
     switch (activeTab) {
       case "guest":
-        return <GuestPageContent data={data} showFollowGate={false} />;
+        // Visitor view with the Follow gate on — matches the live /{username} page.
+        return <GuestPageContent data={data} />;
       case "home":
         return <FanHomeTab data={data} />;
       case "content":
@@ -60,8 +59,8 @@ export function PhonePreview({ data, activeTab, onTabChange }: PhonePreviewProps
   return (
     <div
       data-tl="PhonePreview"
-      className="overflow-hidden rounded-b-[2rem] border-8 border-t-0 border-foreground/85 bg-background shadow-2xl w-full"
-      style={{ aspectRatio: "var(--phone-width) / var(--phone-height)" }}
+      className="@container overflow-hidden rounded-b-[2rem] border-8 border-t-0 border-foreground/85 bg-background shadow-2xl w-full"
+      style={{ aspectRatio: "var(--phone-ratio-w) / var(--phone-ratio-h)" }}
     >
       <div
         className="relative flex flex-col h-full"
@@ -81,10 +80,13 @@ export function PhonePreview({ data, activeTab, onTabChange }: PhonePreviewProps
 
         {/* Branded header — matches FanAppShell (simplified: no ChatIcon/Bell in preview) */}
         <header
-          className="shrink-0 px-4 py-3"
+          className="flex shrink-0 px-4 py-3"
           style={{ backgroundColor: branding.backgroundColor + "DD" }}
         >
-          <span className="text-sm font-bold" style={{ color: branding.textColor }}>
+          <span
+            className="min-w-0 truncate text-sm font-bold"
+            style={{ color: branding.textColor }}
+          >
             {branding.appName}
           </span>
         </header>

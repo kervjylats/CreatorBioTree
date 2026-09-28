@@ -179,19 +179,19 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 
 ## 10. Partnerships (Persona 10)
 
-- [ ] Creator A → `/dashboard/network/partners` (My Peeps dock → Partners) → "Invite partner" → gets invite link (`?invite=CODE`).
+- [ ] Creator A → `/dashboard/circle/partners` (My Peeps dock → Partners) → "Invite partner" → gets invite link (`?invite=CODE`).
 - [ ] Creator B opens invite link → signup → auto-connected.
 - [ ] Both see each other in Partners list.
 
 ## 11. Collabs (Persona 11)
 
 - [ ] Creator A → `/dashboard/network` hub → Discover center → search Creator B → "Connect" (sends request).
-- [ ] Creator B → `/dashboard/network/partners` (dock → Partners) → Requests → "Accept" → collab formed.
+- [ ] Creator B → `/dashboard/circle/partners` (dock → Partners) → Requests → "Accept" → collab formed.
 - [ ] Both see each other in CollabList.
 
 ## 12. Team (Persona 9)
 
-- [ ] Creator → `/dashboard/network/staff` (My Peeps dock → Staff) → "Invite" → enter email + role.
+- [ ] Creator → `/dashboard/circle/staff` (My Peeps dock → Staff) → "Invite" → enter email + role.
 - [ ] Staff member receives invite → accepts → becomes team member.
 - [ ] Creator toggles permissions (Content ON, Settings OFF, etc.).
 - [ ] Team member can access toggled-on sections.
@@ -227,9 +227,9 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 - [ ] Mobile (<`lg`): order = Discover → Billboard → Affiliates (no sidebar, bottom nav).
 - [ ] **Unified dock stack** (bottom-right, ONE vertical column, visible on every `/dashboard/*` page): `Partners · Fans · Staff · 💬 Messages` (top→bottom) — four uniform round icon buttons (icon-only on all screen sizes, hover tooltips). Active sub-screen's button fills dark. Each button shows ONE combined red badge (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread); hidden when 0. Stack is a single evenly-spaced group (no drift between the My Peeps buttons and the chat bubble).
 - [ ] Dock badges update when a collab request arrives, a team invite is pending, or a chat thread has unread (30s poll).
-- [ ] `/dashboard/network/partners`: Requests inbox (incoming Accept/Decline + outgoing "Pending") → Active collabs list → in-page CollabDetail (back button, Visit their page link, 💬 ChatIcon) → "Invite a partner" card (7-day code).
-- [ ] `/dashboard/network/fans`: full-width FanListTable (filters + status chips + CSV export) → FanProfileDrawer (identity, purchases, subscription, 💬 ChatIcon, do-not-contact toggle).
-- [ ] `/dashboard/network/staff`: pending team invites section + members list (TeamRow) → PermissionsToggles edit panel → InviteEmail on top; 💬 ChatIcon per member row.
+- [ ] `/dashboard/circle/partners`: Requests inbox (incoming Accept/Decline + outgoing "Pending") → Active collabs list → in-page CollabDetail (back button, Visit their page link, 💬 ChatIcon) → "Invite a partner" card (7-day code).
+- [ ] `/dashboard/circle/fans`: full-width FanListTable (filters + status chips + CSV export) → FanProfileDrawer (identity, purchases, subscription, 💬 ChatIcon, do-not-contact toggle).
+- [ ] `/dashboard/circle/staff`: pending team invites section + members list (TeamRow) → PermissionsToggles edit panel → InviteEmail on top; 💬 ChatIcon per member row.
 - [ ] Billboard editor: tagline/tags/collab-style + **bio, rate card (post/story/video), media-kit message** persist after save.
 
 ## 16. Offline

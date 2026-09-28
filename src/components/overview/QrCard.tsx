@@ -82,6 +82,7 @@ export function QrCard() {
       <CardContent className="flex flex-col items-center space-y-4">
         <svg
           ref={svgRef}
+          className="h-auto w-full max-w-[168px]"
           width={qrSize}
           height={qrSize}
           viewBox={`0 0 ${qrSize} ${qrSize}`}

@@ -22,7 +22,7 @@ export default function OverviewScreen() {
         <FanExportButton />
       </div>
       <StatCards />
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <ActivityTimeline />
           <QuickActions />

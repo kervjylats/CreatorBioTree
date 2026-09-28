@@ -150,7 +150,7 @@ export function AccountsTable() {
             <tbody>
               {accounts.map((a) => (
                 <tr key={a.id} className="border-b border-border last:border-0 hover:bg-accent/30">
-                  <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">{a.user_id}</td>
+                  <td className="px-4 py-2.5 break-all font-mono text-xs text-muted-foreground">{a.user_id}</td>
                   <td className="px-4 py-2.5">
                     {editingId === a.id ? (
                       <div className="flex items-center gap-2">

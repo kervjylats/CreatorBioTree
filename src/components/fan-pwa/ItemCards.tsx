@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import type { ContentItem } from "@/types";
 import type { CreatorBranding } from "@/lib/branding";
 import { TYPE_ICONS } from "@/types/contentTypes";
-import { ChatIcon } from "@/components/chat/ChatShell";
+import { ChatIcon } from "@/components/messages/ChatShell";
 import type { FanIdentity, ItemGate } from "./fanData";
 import { money, computeItemGate } from "./fanData";
 import { buttonClass, buttonShape, cardRadius, contrastText } from "./themeStyles";
@@ -114,7 +114,7 @@ export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuth
               {TYPE_ICONS[item.type]} {item.type}
               {item.is_featured ? " · featured" : ""}
             </div>
-            <h3 className="font-bold leading-snug" style={{ color: branding.textColor }}>
+            <h3 className="break-words font-bold leading-snug" style={{ color: branding.textColor }}>
               {item.title}
             </h3>
           </div>
@@ -388,7 +388,7 @@ function TipJarInline({
           <button
             key={a}
             type="button"
-            className={`${buttonShape(branding)} px-3 py-1 text-xs font-semibold`}
+            className={`${buttonShape(branding)} min-h-11 px-4 text-xs font-semibold`}
             style={{
               backgroundColor: a === selected ? branding.accentColor : branding.accentColor + "22",
               color: a === selected ? contrastText(branding.accentColor) : branding.accentColor,
@@ -475,11 +475,11 @@ export function CheckoutModal({ item, branding, defaultEmail, onClose }: Checkou
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
       <div
-        className={cardRadius(branding, "w-full max-w-md p-6 shadow-2xl")}
+        className={cardRadius(branding, "w-full max-w-md p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl")}
         style={{ backgroundColor: branding.cardColor }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-bold" style={{ color: branding.textColor }}>
+        <h3 className="break-words text-lg font-bold" style={{ color: branding.textColor }}>
           Buy — {item.title}
         </h3>
         <p className="mt-1 text-sm" style={{ color: branding.textColor + "77" }}>

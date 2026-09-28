@@ -23,7 +23,7 @@ export function IOSInstallGuide({ branding }: { branding: CreatorBranding }) {
     return (
       <button
         type="button"
-        className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-md rounded-2xl p-3 text-left shadow-xl"
+        className="fixed inset-x-4 bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+0.5rem)] z-50 mx-auto w-[min(calc(100%-2rem),var(--shell-width))] rounded-2xl p-3 text-left shadow-xl"
         style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
         onClick={() => setVisible(true)}
       >
@@ -42,7 +42,7 @@ export function IOSInstallGuide({ branding }: { branding: CreatorBranding }) {
       }}
     >
       <div
-        className="w-full max-w-lg rounded-t-3xl p-6 shadow-2xl"
+        className="w-full max-w-lg rounded-t-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl"
         style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -67,7 +67,7 @@ export function IOSInstallGuide({ branding }: { branding: CreatorBranding }) {
         </ol>
         <button
           type="button"
-          className="mt-5 w-full rounded-full py-2.5 text-sm font-semibold"
+          className="mt-5 flex min-h-11 w-full items-center justify-center rounded-full text-sm font-semibold"
           style={{ backgroundColor: branding.accentColor, color: contrastText(branding.accentColor) }}
           onClick={() => {
             setVisible(false);

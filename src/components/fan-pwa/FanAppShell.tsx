@@ -21,7 +21,7 @@ import { InstallBanner } from "./InstallBanner";
 import { IOSInstallGuide } from "./IOSInstallGuide";
 import { InAppBrowserWarning } from "./InAppBrowserWarning";
 import { UpdateToast } from "./UpdateToast";
-import { ChatIcon, ChatInboxPopover, ChatHostProvider } from "@/components/chat/ChatShell";
+import { ChatIcon, ChatInboxPopover, ChatHostProvider } from "@/components/messages/ChatShell";
 import { PoweredByFooter } from "./PoweredByFooter";
 import { buttonShape } from "./themeStyles";
 
@@ -72,7 +72,7 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
                   window.localStorage.setItem(`fan_notify_${creatorId}`, next ? "1" : "0");
                   toast(next ? "Notifications on" : "Notifications muted");
                 }}
-                className={`${buttonShape(branding)} p-2`}
+                className={`${buttonShape(branding)} flex h-11 w-11 items-center justify-center`}
                 style={{ color: notify ? branding.accentColor : branding.textColor + "88" }}
               >
                 {notify ? <Bell size={18} /> : <BellOff size={18} />}
@@ -117,7 +117,7 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
 
         <UpdateToast branding={branding} />
         <PageViewTracker creatorId={creatorId} />
-        <div className="fixed bottom-20 right-4 z-50 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)] right-[max(1rem,calc(50%-var(--shell-width)/2+1rem))] z-50 lg:bottom-6">
           <ChatInboxPopover />
         </div>
         <FanBottomNav

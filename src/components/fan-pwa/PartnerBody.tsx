@@ -113,7 +113,7 @@ export function PartnerBody({ branding, items, socialLinks }: PartnerBodyProps) 
                 className="rounded-xl p-4"
                 style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
               >
-                <h3 className="text-sm font-bold">{item.title}</h3>
+                <h3 className="break-words text-sm font-bold">{item.title}</h3>
                 {item.description && (
                   <p className="mt-1 text-xs" style={{ color: branding.textColor + "aa" }}>
                     {item.description}

@@ -9,7 +9,7 @@ import Link from "next/link";
 
 export default function OfflineScreen() {
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center px-4 text-center">
+    <main className="min-h-screen-safe bg-background flex flex-col items-center justify-center px-4 text-center">
       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-6">
         <svg
           width="32"

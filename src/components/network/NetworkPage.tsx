@@ -12,8 +12,11 @@ import Link from "next/link";
 
 import { BillboardPreview } from "./BillboardPreview";
 import { BillboardEditor, type BillboardSettings } from "./BillboardEditor";
-import { AffiliateDiscover } from "@/components/affiliates/AffiliateDiscover";
-import { EarningsSummary } from "@/components/affiliates/EarningsSummary";
+import { AffiliateDiscover } from "@/components/network/AffiliateDiscover";
+import { EarningsSummary } from "@/components/network/EarningsSummary";
+import { AffiliateLinks } from "@/components/network/AffiliateLinks";
+import { AffiliateDealForm, type DealFormData } from "@/components/network/AffiliateDealForm";
+import { YourDealsCard } from "@/components/network/YourDealsCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -44,6 +47,9 @@ export function NetworkPage() {
   const [billboard, setBillboard] = useState<BillboardSettings>(EMPTY_BILLBOARD);
   const [billboardLoading, setBillboardLoading] = useState(true);
   const [billboardSaving, setBillboardSaving] = useState(false);
+
+  const [showDealForm, setShowDealForm] = useState(false);
+  const [dealsKey, setDealsKey] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -120,6 +126,21 @@ export function NetworkPage() {
     });
   }, [billboard.is_discoverable]);
 
+  const handleDealSubmit = useCallback(async (deal: DealFormData) => {
+    const res = await fetch("/api/creator/affiliates/deals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(deal),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(typeof d.error === "string" ? d.error : "Couldn't create the deal.");
+    }
+    toast.success("Deal created");
+    setShowDealForm(false);
+    setDealsKey((k) => k + 1);
+  }, []);
+
   const handleConnect = useCallback(async (creator: SearchResult) => {
     if (connectState[creator.id] === "loading") return;
     setConnectState((prev) => ({ ...prev, [creator.id]: "loading" }));
@@ -169,9 +190,9 @@ export function NetworkPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_1fr]">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[220px_1fr] lg:grid-cols-[250px_1fr]">
         {/* LEFT RAIL — Billboard + Affiliates */}
-        <aside className="order-2 space-y-6 lg:order-1">
+        <aside className="order-2 space-y-6 md:order-1">
           {billboardLoading ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 size={16} className="animate-spin text-muted-foreground" />
@@ -194,12 +215,30 @@ export function NetworkPage() {
             onSave={handleBillboardSave}
             saving={billboardSaving}
           />
-          <AffiliateDiscover />
+          {/* Affiliate block (network.md §7): deal maker → your deals → earnings → discover → links */}
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Affiliates
+            </h2>
+            <Button
+              size="sm"
+              variant={showDealForm ? "secondary" : "default"}
+              onClick={() => setShowDealForm((v) => !v)}
+            >
+              {showDealForm ? "Cancel" : "+ New deal"}
+            </Button>
+          </div>
+          {showDealForm && (
+            <AffiliateDealForm onSubmit={handleDealSubmit} onCancel={() => setShowDealForm(false)} />
+          )}
+          <YourDealsCard refreshKey={dealsKey} />
           <EarningsSummary />
+          <AffiliateDiscover />
+          <AffiliateLinks />
         </aside>
 
         {/* CENTER — Discover grid */}
-        <section className="order-1 lg:order-2">
+        <section className="order-1 md:order-2">
           <div className="relative mb-4">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -232,7 +271,7 @@ export function NetworkPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               {searchResults.map((c) => {
                 const state = connectState[c.id] ?? "";
                 return (

@@ -41,7 +41,7 @@ export function AdminClient() {
 
   if (authorized === null) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen-safe items-center justify-center bg-background">
         <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );

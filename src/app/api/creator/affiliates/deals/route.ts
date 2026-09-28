@@ -1,15 +1,17 @@
 /**
  * GET/POST /api/creator/affiliates/deals — list affiliate deals where the
- * authenticated creator is owner or promoter, and create new deals (network.md
- * §7, monetization/creators.md Part 2). Deals are immutable after creation;
- * status updates go through PATCH /deals/[id].
+ * authenticated creator is owner or promoter (each row flagged `is_owner`),
+ * and create new deals (network.md §7, monetization/creators.md Part 2).
+ * `owner_id` is optional on create and defaults to the session user.
+ * Deals are immutable after creation; status updates go through PATCH
+ * /deals/[id].
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, handleAuthError } from "@/lib/requireAuth";
 
 const createDealSchema = z.object({
-  owner_id: z.string().min(1),
+  owner_id: z.string().min(1).optional(),
   promoter_id: z.string().min(1),
   scope: z.enum(["item", "creator"]),
   item_id: z.string().min(1).optional(),
@@ -36,7 +38,10 @@ export async function GET() {
       .eq("promoter_id", user.id)
       .neq("owner_id", user.id);
 
-    const deals = [...(owned ?? []), ...(promoted ?? [])];
+    const deals = [...(owned ?? []), ...(promoted ?? [])].map((d) => ({
+      ...d,
+      is_owner: d.owner_id === user.id,
+    }));
     deals.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
 
     return NextResponse.json({ deals });
@@ -55,10 +60,11 @@ export async function POST(req: Request) {
     }
 
     const data = validation.data;
+    const ownerId = data.owner_id || user.id;
     if (data.scope === "item" && !data.item_id) {
       return NextResponse.json({ error: "item_id is required for per-item deals" }, { status: 400 });
     }
-    if (data.owner_id !== user.id) {
+    if (ownerId !== user.id) {
       return NextResponse.json({ error: "You can only create deals where you are the owner" }, { status: 403 });
     }
 
@@ -67,6 +73,7 @@ export async function POST(req: Request) {
       .from("affiliate_deals")
       .insert({
         ...data,
+        owner_id: ownerId,
         status: "active",
         created_at: now,
       })

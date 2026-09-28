@@ -54,7 +54,7 @@ Every folder in `src/` is a different part of a mall:
 
 | Folder | Mall Analogy | What Goes In There |
 |---|---|---|
-| `src/app/` | **Mall blueprints + store layouts** | Every **route and page** (`/login`, `/dashboard`, `/search`). Also **plumbing** (API routes under `/api/`). |
+| `src/app/` | **Mall blueprints + store layouts** | Every **route and page** (`/login`, `/dashboard`, `/[username]`). Also **plumbing** (API routes under `/api/`). |
 | `src/components/` | **Pre-built store fixtures** (shelves, counters, signs) | Reusable UI pieces — buttons, sidebars, cards, filters. Subfolders group by *who uses them*. |
 | `src/hooks/` | **Power tools** (drills, saws) | Reusable logic that multiple components can use. |
 | `src/lib/` | **Utility closet** — wires, pipes, fuse box | Library code — mocks, DB clients, external services, helpers. |
@@ -79,17 +79,16 @@ src/
 │   │   ├── login/                # /login (wired)
 │   │   ├── onboarding/           # /onboarding (wired)
 │   │   ├── forgot-password/      # /forgot-password (wired)
-│   │   ├── offline/              # /offline
-│   │   └── search/               # /search
+│   │   └── offline/              # /offline
 │   │
 │   ├── (creator)/dashboard/      # Creator Dashboard (PWA #2)
 │   │   ├── layout.tsx            # Auth guard (no user → /login, no creator → /onboarding) + floating ChatInboxPopover
 │   │   ├── page.tsx              # REDIRECT → /dashboard/overview
 │   │   ├── overview/             # /dashboard/overview (wired)
 │   │   ├── my-app/               # /dashboard/my-app (see + edit fan shell — WIRED)
-│   │   ├── messages/             # /dashboard/messages (full chat screen — WIRED)
-│   │   ├── network/               # /dashboard/network (hub + 3 sub-screens: partners/, fans/, staff/) — WIRED
-│   │   └── settings/              # /dashboard/settings (wired)
+│   │   ├── circle/               # /dashboard/circle (My Peeps dock pages: partners/, fans/, staff/, messages/ — WIRED)
+│   │   ├── network/              # /dashboard/network (Discover hub — WIRED)
+│   │   └── settings/             # /dashboard/settings (wired)
 │   │
 │   ├── (fan)/[username]/         # Per-creator fan app (PWA #3) — WIRED
 │   │   ├── page.tsx              # REDIRECT → ./guest
@@ -104,30 +103,37 @@ src/
 │   │
 │   ├── (admin)/admin/            # /admin — platform control room (wired, 5-tab panel)
 │   │
-│   └── api/                      # REST API routes (84 route files — 84 api + 2 manifests)
+│   └── api/                      # REST API routes (89 api routes + 2 manifest routes)
 │       ├── admin/                # Platform admin APIs (RBAC)
 │       ├── chat/                 # Messaging engine (12 routes — WIRED)
 │       ├── creator/              # Creator CRUD, upload, catalog, my-app, fans, partners, team, affiliates, AI
 │       ├── fan/                  # Fan auth, content, follow, purchases
 │       ├── paypal/               # Mock PayPal checkout (v1 rail)
 │       ├── push/                 # Push notification subscribe/send
-│       ├── search/               # Creator search
-│       ├── stripe/               # Stripe checkout, connect, webhooks (deferred Atlas reference)
+│       ├── search/               # Creator search API (Network hub Discover + deal form)
 │       └── webhooks/             # Paddle webhook
 │   │
 ├── screens/                      # ⚠️ THE MIDDLEMAN — one folder per screen (index.ts barrel + Screen.tsx)
-│   ├── public/                   # landing, login, onboarding, forgot-password, offline, search
+│   ├── public/                   # landing, login, onboarding, forgot-password, offline
 │   ├── fan/                      # guest, home, content, connect, settings, partner-page
 │   ├── creator/                  # overview, network, my-app, settings
 │   └── admin/                    # admin
 │                                 # (login/onboarding/forgot-password + fan screens + dashboard screens are wired; landing is deferred)
 │
-├── components/                   # Reusable UI components
-│   ├── ui/                       # shadcn/ui components (12 files)
+├── components/                   # Reusable UI components — FOLDER NAME = THE BUTTON USERS SEE
+│   │                             #   Rule: single-screen file → nest under that screen's folder (mirrors the URL);
+│   │                             #   shared across screens → own product-named folder; odds-and-ends → shared/
+│   ├── ui/                       # shadcn/ui components (11 files)
 │   ├── auth/                     # AuthCard, LoginForm, ForgotPasswordForm, OnboardingForm (wired)
-│   ├── chat/                     # ChatShell.tsx — the whole messaging engine (wired)
+│   ├── network/                  # Network hub only: NetworkPage, Billboards, Affiliate×4 + YourDealsCard
+│   ├── circle/                   # Dock pages, mirrors /dashboard/circle/*: partners/ · fans/ · staff/
+│   │                             #   (pages + their guts: Collab trio + invite card · fan tables · staff rows)
+│   ├── messages/                 # ChatShell.tsx — the whole messaging engine (dashboard + fan shell + guest)
+│   ├── layout/                   # Shell chrome: DashboardSidebar, MyPeeps (the dock)
+│   ├── shared/                   # Used by 2+ different features: InviteEmail (staff + admin)
+│   ├── overview/ settings/ admin/ analytics/  # Screen-owned widgets (e.g. FanExportButton → overview/)
 │   ├── fan-pwa/                  # Fan app: shells, tabs, cards, guest page (wired — 20 files)
-│   ├── my-app/                   # Editor: PhonePreview, DesignTab, ItemEditor, AddItemPicker, FileUploadField…
+│   ├── my-app/                   # Preview-first: MyAppForm, PhonePreview, PreviewStateToggle, previewData, catalog/
 │   └── ServiceWorkerRegister.tsx  # SW registration
 │
 ├── wiredLater/                   # ⚠️ SPECS ONLY — .md blueprints (read before anything else)
@@ -152,15 +158,14 @@ src/
 │   ├── integrations/             # Social scrape route backup
 │   └── *.ts(x)                   # 56 reusable components/hooks (Sidebar, PhonePreview, useAutoSave…)
 │
-├── hooks/                        # Custom React hooks (6 live: useMediaQuery, useMyAppForm, useAutoSave, usePWAInstall, useFanSession, useCreatorSearch)
+├── hooks/                        # Custom React hooks (3 live: useAutoSave, useMyAppForm, usePWAInstall)
 ├── lib/                          # Libraries, utilities, and ALL mocks
 │   ├── mocks/                    # Mock system (fake external services)
 │   ├── supabase/                 # Supabase client variants
-│   ├── api-utils.ts              # Shared API response helpers (adopted G6)
 │   ├── api-error.ts              # Typed error classes (adopted G6)
 │   ├── requireAuth.ts            # Auth guards (adopted G6)
 │   ├── admin-permissions.ts      # Role permission helpers (live)
-│   └── *.ts                      # Utilities (branding, fanSession, stripe, etc.)
+│   └── *.ts                      # Utilities (branding, fanSession, nav-config, etc.)
 │
 ├── services/                     # Business logic layer
 ├── styles/                       # Global CSS
@@ -187,14 +192,13 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `/dashboard` | REDIRECT → `/dashboard/overview` | Yes (creator/admin) |
 | `/dashboard/overview` | Dashboard home (stats, activity, checklist) — **wired** | Yes (creator/admin) |
 | `/dashboard/my-app` | See + edit your fan shell — full-screen, tap-to-edit (wired) | Yes (creator/admin) |
-| `/dashboard/messages` | Full chat screen (wired) | Yes (creator/admin) |
-| `/dashboard/network` | Partner management (Discover hub + My Peeps dock + 3 sub-screens) — **wired** | Yes (creator/admin) |
-| `/dashboard/network/partners` | Collab requests + active collabs + invite card — **wired** | Yes (creator/admin) |
-| `/dashboard/network/fans` | Full-width fan table + profile drawer — **wired** | Yes (creator/admin) |
-| `/dashboard/network/staff` | Team invites + members + permissions — **wired** | Yes (creator/admin) |
+| `/dashboard/circle/messages` | Full chat screen (wired) | Yes (creator/admin) |
+| `/dashboard/network` | Discover hub (Billboard + Affiliates rail, creator search) — **wired**; My Peeps dock pages live at `/dashboard/circle/*` | Yes (creator/admin) |
+| `/dashboard/circle/partners` | Collab requests + active collabs + invite card — **wired** (My Peeps dock) | Yes (creator/admin) |
+| `/dashboard/circle/fans` | Full-width fan table + profile drawer — **wired** (My Peeps dock) | Yes (creator/admin) |
+| `/dashboard/circle/staff` | Team invites + members + permissions — **wired** (My Peeps dock) | Yes (creator/admin) |
 | `/dashboard/settings` | Payout setup — **wired** | Yes (creator/admin) |
 | `/admin` | Platform management (was `/dashboard/admin`) — **wired** (5-tab panel) | Yes (admin only) |
-| `/search` | Creator search | No |
 | `/[username]` | REDIRECT → `/{username}/guest` | No/fan session |
 | `/{username}/guest` | Fan guest page (identical to fan view) | No |
 | `/{username}/home` | Fan Home tab (activity hub) | Fan session |
@@ -235,7 +239,7 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `team/*` | — | 8 routes: members, invites, accept, activity, contexts |
 | `affiliates/*` | — | 9 routes: deals, links, discover, earnings |
 | `pageview/` | POST | Record a page view (rate-limited 5/IP/min, silent 200) |
-| `social/scrape/` | POST | Scrape social media metadata (removed — did not exist) |
+| `social/scrape/` | POST | Scrape social media metadata (UNWIRED 503 stub — kept for rebuild 2026-09-28; old code in `old-code/integrations/`) |
 | `upload/` | POST | Upload file to storage (50MB cap, per-type MIME validation, mock storage → `public/mock-uploads/`) |
 
 > ⚠️ **Removed at wiring prep (2026-08-07):** `content/upload/` (duplicate of `upload`), `api/fan/session` (stale CSV dup). The old `partners/*` archive is superseded by the current stubs (rebuilt from `partnership.md` during Phase F).
@@ -310,11 +314,11 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 
 ## 6. Components (`src/components/`)
 
-> **Phase F wiring is in progress** — the parts archive `src/old-code/` is reference-only; specs in `src/wiredLater/` (index: `wiredLater.md`). Live component families: `ui/` (shadcn), `auth/`, `chat/`, `fan-pwa/`, `my-app/`.
+> **Phase F wiring is in progress** — the parts archive `src/old-code/` is reference-only; specs in `src/wiredLater/` (index: `wiredLater.md`). Live component families: `ui/` (shadcn), `auth/`, `messages/`, `circle/`, `network/`, `fan-pwa/`, `my-app/`.
 
-### 6.1 ui/ — shadcn UI Primitives (12 files — LIVE)
+### 6.1 ui/ — shadcn UI Primitives (11 files — LIVE)
 
-Button, Input, Textarea, Select, Switch, Sonner (toast), Tooltip, Avatar, Card, Badge, Dialog, Tabs. Generated by `npx shadcn`. Some have been edited with custom props (`styleColor`, `styleTextColor`, `error`, `label`, `onChange` alias).
+Button, Input, Textarea, Select, Switch, Separator, Tooltip, Card, Badge, Dialog, Tabs. Generated by `npx shadcn`. Some have been edited with custom props (`styleColor`, `styleTextColor`, `error`, `label`, `onChange` alias). (Toasts use the `sonner` package directly; `ui/sonner` + `ui/avatar` wrappers removed in the 2026-09-28 cleanup.)
 
 ### 6.2 auth/ — Login & Onboarding (WIRED, Sheets 6-7)
 
@@ -343,7 +347,7 @@ Server-side resolver: `src/lib/fanShellData.ts` (creator → branding → items 
 
 ### 6.5 my-app/ — My App Editor (WIRED, Sheet 19-V1)
 
-`PhonePreview` (full phone frame, real fan components via `previewData.ts`), `ElementPopover` (tap-to-edit), `PreviewStateToggle` (Draft/Live + orange dot + Deploy), editor sheet Option A (`IdentityTab`/`DesignTab`/`CatalogTab`/`ArtistLinksTab`; Integrations/Email/MediaKit/Spotlight = "soon"), `catalog/` — `AddItemPicker` (3 sections: Upload from your device / Links / Everything else), `ItemEditor` (per-type + `PricingEditor` + scheduling + external-link quarantine), `FileUploadField` (device uploads → `/api/creator/upload`).
+`MyAppForm` (draft buffer + deploy), `PhonePreview` (full phone frame, real fan components via `previewData.ts`), `PreviewStateToggle` (Draft/Live + orange dot + Deploy), `catalog/` — `AddItemPicker` (3 sections: Upload from your device / Links / Everything else), `ItemEditor` (per-type + `PricingEditor` + scheduling + external-link quarantine), `FileUploadField` (device uploads → `/api/creator/upload`). Tap-to-edit `ElementPopover` + the Design/Identity/Catalog/ArtistLinks editor tabs removed 2026-09-24 (preview-first).
 
 ### 6.6 Parts archive (all in `src/old-code/` — old code, reference only)
 
@@ -352,7 +356,7 @@ Server-side resolver: `src/lib/fanShellData.ts` (creator → branding → items 
 - **allScreens/:** 27 old screen/API backups — `allScreens/<name>/page-old.tsx` (pre-skeleton page versions), `*-old.tsx` (components), `allScreens/network/api/*-route-old.ts` (API routes)
 - **integrations/:** social-scrape-route-old.ts (unwired — live returns 503)
 
-> 📤 **Adopted into live code (2026-08-07):** `api-error.ts`, `api-utils.ts`, `requireAuth.ts` → now live in `src/lib/` (G6 — use them in new routes instead of inline `NextResponse.json`).
+> 📤 **Adopted into live code (2026-08-07):** `api-error.ts`, `requireAuth.ts` → now live in `src/lib/` (G6 — use them in new routes instead of inline `NextResponse.json`; `api-utils.ts` removed in the 2026-09-28 cleanup).
 > 📤 **Promoted to live (Phase F, 2026-08-10→):** AuthCard, LoginForm, OnboardingForm, ForgotPasswordForm, useMyAppForm, useAutoSave, usePWAInstall, PhonePreview, UpdateToast, CreatorHeader, GuestPageContent, FanAuthModal, FanBottomNav, PageViewTracker — see their wired homes above. Archive copies remain as reference.
 
 ### 6.7 Spec files (blueprints — `src/wiredLater/`, specs ONLY)
@@ -382,7 +386,7 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 | `features/team.md` | Creator staff access — permission toggles, audit log. Wiring home: My Peeps → Staffs row |
 | `features/partnership.md` | Outside-app invite flow (`?invite=CODE`). Wiring home: My Peeps → Partners row |
 | `features/partner-page.md` | Fan-only partner modal (Connect tab) |
-| `features/search.md` | Search — `/search` page + landing + Network placements |
+| `features/search.md` | Search — Network hub Discover + landing placements (standalone `/search` page removed 2026-09-28; `GET /api/search/creators` stays live) |
 | `features/catalog-roadmap.md`, `funnel.md`, `integrations.md`, `email-campaigns.md`, `media-kit.md`, `affiliates.md` | Merged My App/Network-tab stubs (reference only) |
 
 **Other:** `monetization/index.md` + `owner.md` + `creators.md` (money specs — split 2026-08-05) · `ai/ai-features.md` + `ai/ai-agents.md` (post-launch)
@@ -393,12 +397,9 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 
 | Hook | Purpose |
 |---|---|
-| `useMediaQuery` | Reactive `matchMedia` wrapper |
 | `useMyAppForm` | My App draft buffer (`my-app_draft_${creatorId}`, 3s debounce) + deploy + hasChanges |
 | `useAutoSave` | Debounced save helper used by `useMyAppForm` |
 | `usePWAInstall` | Install state / triggerInstall / dismiss |
-| `useFanSession` | Fan session helpers |
-| `useCreatorSearch` | Creator search hook |
 
 ---
 
@@ -434,20 +435,11 @@ All three check `USE_MOCKS` and return the mock client when enabled.
 | File | Purpose |
 |---|---|
 | `branding.ts` | Resolves creator brand settings (colors, fonts, icon). Exports `BRAND_PRESETS` (9) + `presetById()`. |
-| `themePresets.ts` | My App design preset definitions |
 | `fanSession.ts` | Fan auth system: reads `fan_session` cookie → looks up token in DB |
 | `fanShellData.ts` | Server resolver for the fan shell (creator → branding → items → identity → purchases) |
-| `previewData.ts` | My App phone-preview data (creator data → fan components) |
 | `chat.ts` | Messaging helpers: chat identity, participant names, block checks, prefs, existing conversations |
-| `search-utils.ts` | Creator search utilities |
-| `stripe.ts` | Stripe SDK wrapper — checks USE_MOCKS first (deferred Atlas reference) |
-| `paddle.ts` | Paddle SDK wrapper for subscriptions |
 | `email.ts` | Resend email sender — checks USE_MOCKS first |
-| `queue.ts` | Background job queue for async tasks |
 | `rate-limiter.ts` | Rate limiting for API routes (InMemory mock; Upstash for production) |
-| `vapid.ts` | Converts VAPID keys for browser Push API |
-| `colorExtraction.ts` | Extracts color palettes from images |
-| `urls.ts` | URL helpers (creator page URLs, absolute URLs) |
 | `utils.ts` | `cn()` helper for Tailwind class merging |
 
 ---
@@ -458,12 +450,10 @@ Services sit between API routes and Supabase. They contain reusable business log
 
 | Service | Methods | Purpose |
 |---|---|---|
-| `creatorService` | `getByUsername()`, `getById()` | Look up creators (throws on error and not-found) |
 | `contentService` | `getForCreator()`, `getAllForCreator()`, `getById()`, `save()`, `delete()` | Full CRUD for content items |
 | `fanService` | `getDashboardData()`, `trackInstall()` | Fan dashboard + install tracking |
-| `profileUpdateService` | `updateProfile()` | Safe profile field updater (whitelisted fields, throws on error) |
 
-> ⚠️ `partnershipService` moved to the archive (`src/old-code/partnershipService-old.ts`) — rebuilt from `features/partnership.md` during Phase F.
+> ⚠️ **2026-09-28 cleanup:** 8 unused services removed (affiliate, chat, creator, partnership, profileUpdate, relationships, search, team) — routes call Supabase directly. Only `contentService` + `fanService` remain; archived copies live in `src/old-code/` where they existed.
 
 ---
 
@@ -491,7 +481,7 @@ Browser (React components)
     │  fetch("/api/...")
     ▼
 API Routes (Next.js)
-    │  validate with Zod, call services
+    │  validate with Zod, then call services (where present)
     ▼
 Services (business logic)
     │  call supabase client
@@ -524,8 +514,8 @@ mockDataStore.ts (in-memory Map)
 ```
 
 - **Components**: The UI. Call `fetch()` to hit API routes.
-- **API Routes**: The waiters. Receive HTTP requests, validate input with Zod, call services.
-- **Services**: The chefs. Business logic (look up creator, save content, strip system fields).
+- **API Routes**: The waiters. Receive HTTP requests, validate input with Zod, then call a service (when one exists) or Supabase directly.
+- **Services**: The chefs. Shared business logic (content CRUD, fan dashboard). Most routes now call Supabase directly.
 - **Supabase**: The pantry. Mock (in-memory) or real database.
 - **mockDataStore.ts**: The mock pantry. In-memory Map on `globalThis`.
 
@@ -582,7 +572,7 @@ Page reloads → FanAppShell renders (authenticated view)
 - All old screens backed up to `src/old-code/allScreens/<name>/page-old.tsx`; every page became a naked skeleton
 - All 101 code files moved out of `wiredLater/` to `src/old-code/` (parts archive) — `wiredLater/` is now specs only (index: `wiredLater.md`)
 - Specs written for every screen (my-app → formerly Playground, network, admin, landing, screens index)
-- Social scrape route removed (did not exist)
+- Social scrape route did not exist (re-added later as an UNWIRED 503 stub for rebuild)
 - **A1/A1.5/A2 restructure (2026-08-07):** `src/app/` became a thin address book — route groups `(public)/`, `(fan)/[username]/`, `(creator)/dashboard/`, `(admin)/admin/` — and a new `src/screens/` middleman was created (17 screen folders, one `index.ts` + `Screen.tsx` each). Every page.tsx is a 2-line re-export. Planning + audit docs at repo root: `WIRING_PLAN.md`, `CODEBASE_AUDIT.md`, `CODEBASE_INVENTORY.md`.
 - **Foundation prep (2026-08-07):** adopted `api-utils`/`api-error`/`requireAuth` into `src/lib/`; added messaging/team/affiliate types + 14 mock tables + 9 brand presets; killed 5 dead files; added 5 missing rate limits.
 - **Wiring (2026-08-10 → 2026-08-31):** Sheets 6-7 (login/onboarding/forgot-password), Sheet 19-V1 (My App — 16 item types + device uploads), Sheet 21-V1 (fan shell + mock PayPal checkout), Sheet 12 (messaging engine — 12 routes + ChatShell), Sheets 8-11 + 13-16 + 18 + 20 + 22 (admin, settings, overview, search, partnerships, relationships, team, affiliates, network, partner page, offline — all wired 2026-08-30). 18 API routes rewritten from mock store to Supabase clients. Dead code removed (Stripe, Paddle, playground/ai, ai-summary, unused deps).
@@ -591,15 +581,15 @@ Page reloads → FanAppShell renders (authenticated view)
 
 | Area | Live | Extracted (old-code parts archive) |
 |---|---|---|
-| Pages | login, onboarding, forgot-password, my-app, messages, fan shell (6 tabs), overview, network, settings, search, admin, dashboard layout + chat popover | `allScreens/<name>/page-backup.tsx` backups |
-| UI primitives | `components/ui/` (12 shadcn) | — |
+| Pages | login, onboarding, forgot-password, my-app, messages, fan shell (6 tabs), overview, network, settings, admin, dashboard layout + chat popover | `allScreens/<name>/page-backup.tsx` backups |
+| UI primitives | `components/ui/` (11 shadcn) | — |
 | Fan shell | `components/fan-pwa/` (20 files — full implementation) | Pre-wiring versions |
-| My App editor | `components/my-app/` (PhonePreview, DesignTab, editors, FileUploadField…) + hooks | Old playground versions |
-| Messaging | `components/chat/ChatShell.tsx` + `lib/chat.ts` + 12 routes | — (wired fresh from spec) |
+| My App editor | `components/my-app/` (MyAppForm, PhonePreview, PreviewStateToggle, catalog/ editors…) + hooks | Old playground versions |
+| Messaging | `components/messages/ChatShell.tsx` + `lib/chat.ts` + 12 routes | — (wired fresh from spec) |
 | Catalog | CRUD + my-app + upload routes; 16 editors live in `catalog/` | 17 old editors + manager |
-| Hooks | 6 live (useMediaQuery, useMyAppForm, useAutoSave, usePWAInstall, useFanSession, useCreatorSearch) | Archive copies |
+| Hooks | 3 live (useAutoSave, useMyAppForm, usePWAInstall) | Archive copies |
 | Admin RBAC | Roles, permissions, API routes, `admin-permissions.ts` + 5-tab admin UI | — |
-| API helpers (G6) | `src/lib/api-utils.ts`, `api-error.ts`, `requireAuth.ts` (adopted) | — |
+| API helpers (G6) | `src/lib/api-error.ts`, `requireAuth.ts` (adopted; `api-utils.ts` removed 2026-09-28) | — |
 | External services | All mocked | `docs/EXTERNAL_SERVICES.md` = the migration checklist |
 
 ### Deferred items (LATER)

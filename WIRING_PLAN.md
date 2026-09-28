@@ -4,7 +4,7 @@
 >
 > **The rule (AGENTS.md):** we wire from the `src/wiredLater/` spec ONLY. Old code is opened only where a sheet says "see old-code for the pattern." After EVERY wired piece: `npm run typecheck` + `npm run lint` + `python scripts/check-docs.py` must stay green.
 >
-> **When (the phase gate):** this plan executes in ONE pass at the very END — **Phase F** (docs/ROADMAP.md), after EVERY spec is written AND approved. Nothing in these sheets gets wired before that. "Go on sheet N" means the final wiring pass has started.
+> **When (the phase gate):** this plan executes in ONE pass at the very END — **Phase F** (docs/archive/ROADMAP.md), after EVERY spec is written AND approved. Nothing in these sheets gets wired before that. "Go on sheet N" means the final wiring pass has started.
 >
 > **Status legend:**
 > - `LIVE` — already working, keep as-is
@@ -62,7 +62,7 @@
 | **8** | **Admin** `/admin` | screen — ✅ done 2026-08-30 |
 | **9** | **Settings** `/dashboard/settings` | screen — ✅ done 2026-08-30 |
 | **10** | **Overview** `/dashboard/overview` | screen — ✅ done 2026-08-30 |
-| **11** | **Search** `/search` | screen — ✅ done 2026-08-30 |
+| **11** | **Search** `/search` | screen — ✅ done 2026-08-30 · ❌ **page removed 2026-09-28** (Network hub Discover is the search home; `GET /api/search/creators` stays) |
 | **12** | **Messaging** — `ChatShell` + 12 routes + 7 tables | feature — ✅ done 2026-08-17 (engine + inbox) · ✅ **Part 3 Community wired 2026-08-31** (fan Home section + guest CTA + Connect card + channels + join/leave) |
 | **13** | **Partnerships** — 2 routes + invite card + `source` column | feature — ✅ done 2026-08-30 |
 | **14** | **Relationships / My Peeps** — 3 routes + 3 fan_accounts cols | feature — ✅ done 2026-08-30 |
@@ -301,13 +301,15 @@ MERGE       CreatorSearchInput vs SearchFilters → ONE (SearchFilters wins)
 DEPENDS ON  1 2 3 — landing search section deferred (Sheet 23)
 ```
 
+> **REMOVED 2026-09-28 (cleanup pass):** the standalone `/search` page stack (`app/(public)/search/`, `screens/public/search/`, `components/search/` incl. SearchBar + CreatorResultCard) was deleted — the Network hub's Discover center (Sheet 18) is the search home now, and the deal form resolves `@usernames` directly. `GET /api/search/creators` (this sheet's route) stays live. `search-utils.ts` (PROMOTE item) was also removed as unused; `features/search.md` remains the spec for a possible landing-page search section (Sheet 23).
+
 ---
 
 ## SHEET 12 — Messaging (engine, consumed everywhere) — ✅ DONE 2026-08-17 (Part 3 Community wired 2026-08-31)
 
 > **Purpose:** THE WhatsApp-style inbox: floating 💬 on every screen, 1-on-1 between all parties, requests + block + toggles, group + announcements, Community (Home tab). Build the engine first; screens reuse it.
 
-> **DONE 2026-08-17 (Stage B of the Connected Loop Pass):** `src/components/chat/ChatShell.tsx` (single file: useChat, useUnreadBadge, ChatInboxPopover, ChatShell, ChatThread, MessageList, MessageBubble, MessageComposer, AttachmentPreview, ChatIcon, GuestContactModal) + 12 routes under `/api/chat/*` + `chat_prefs` table (added to the 7 spec tables) + `src/lib/chat.ts` helpers (getChatIdentity, resolveParticipantNames, isBlocked, getPrefs/setPrefs). Wired: dashboard layout floating inbox + `/dashboard/messages`; fan shell header ChatIcon + floating inbox; fan-page messaging catalog item → ChatIcon (identity) / email-capture unlock box (guest); guest "Contact" button → GuestContactModal (email capture → follow row → direct chat). Verified end-to-end via curl: direct chat fan↔creator, unread + read receipts, allow-anyone gate → Requests folder → approve (queued first message delivered), block both directions, group + announcements-only, upload route. Also fixed two real mock bugs (auth singleton leak across requests; chat_prefs writes silently dropped).
+> **DONE 2026-08-17 (Stage B of the Connected Loop Pass):** `src/components/messages/ChatShell.tsx` (single file: useChat, useUnreadBadge, ChatInboxPopover, ChatShell, ChatThread, MessageList, MessageBubble, MessageComposer, AttachmentPreview, ChatIcon, GuestContactModal) + 12 routes under `/api/chat/*` + `chat_prefs` table (added to the 7 spec tables) + `src/lib/chat.ts` helpers (getChatIdentity, resolveParticipantNames, isBlocked, getPrefs/setPrefs). Wired: dashboard layout floating inbox + `/dashboard/circle/messages`; fan shell header ChatIcon + floating inbox; fan-page messaging catalog item → ChatIcon (identity) / email-capture unlock box (guest); guest "Contact" button → GuestContactModal (email capture → follow row → direct chat). Verified end-to-end via curl: direct chat fan↔creator, unread + read receipts, allow-anyone gate → Requests folder → approve (queued first message delivered), block both directions, group + announcements-only, upload route. Also fixed two real mock bugs (auth singleton leak across requests; chat_prefs writes silently dropped).
 > **✅ Part 3 Community wired 2026-08-31:** `FanCommunitySection.tsx` (Home tab section with join/leave + channel list), guest-page "Join the community" card → FanAuthModal, Connect-tab community card → deep-link Home. `fanShellData.ts` now fetches community + channels + fan membership status server-side. Community join/leave routes already existed from the engine build.
 
 ```
@@ -409,6 +411,8 @@ RULE (G15)   fan_scap — deal weights, rates, take never shown to fans
 DEPENDED     #2 3 4 12 (chat on creator cards) · wiring home = Network left/center (18)
 ```
 
+> **MOUNTED 2026-09-27 (Network hub rail):** all 4 components live in `src/components/network/` (folder = product-name rule) and render on `/dashboard/network`'s left rail: `＋ New deal` (button-gated AffiliateDealForm — @username promoter resolver + catalog item picker, external-link items filtered) → **YourDealsCard** (NEW: status pills + Pause/Resume/Revoke, `is_owner` from GET) → EarningsSummary → AffiliateDiscover → AffiliateLinks. POST `owner_id` optional (defaults to session); owner-only PATCH/DELETE unchanged.
+
 ---
 
 ## SHEET 17 — Branding display utilities (apply theme)
@@ -445,11 +449,11 @@ DEPENDED  EVERYTHING: 1–5, 11 (search) 12 (chat icons) 13 14 15 16 (rails) 17 
 ORDER     18/23 — the most shelf-heavy (Need Themes like).
 ```
 
-> **✅ DONE 2026-08-30 + ADDENDUM (2026-09-26, `NETWORK_REDESIGN_PLAN.md`) — layout OVERRIDDEN.**
+> **✅ DONE 2026-08-30 + ADDENDUM (2026-09-26, `docs/archive/NETWORK_REDESIGN_PLAN.md`) — layout OVERRIDDEN.**
 > The 3-section anchored layout is superseded by **hub + floating dock + 3 sub-screens**:
-> - **Hub `/dashboard/network`** — 2-col at `lg`: LEFT rail (BillboardPreview/Editor + AffiliateDiscover + EarningsSummary) · CENTER = **Discover grid** (`/api/search/creators?q=` + result cards with Visit + Connect buttons). Right rail removed. Mobile order: Discover → Billboard → Affiliates.
-> - **3 sub-screens:** `/dashboard/network/partners` (InboxRequests pending-only + CollabList active-only + CollabDetail w/ ChatIcon + PartnerInviteCard) · `/dashboard/network/fans` (FanListTable full-width + FanProfileDrawer w/ ChatIcon) · `/dashboard/network/staff` (pending invites + TeamRow members + PermissionsToggles + InviteEmail + ChatIcon per row). Route chain per sub-screen: `page.tsx` re-export → `screens/creator/network/<name>/Screen.tsx` → `components/network/<Name>Page.tsx`.
-> - **My Peeps + 💬 = ONE unified dock stack** (`components/relationships/MyPeeps.tsx` + `ChatInboxPopover`), mounted in `app/(shell)/layout.tsx` inside the **single** floating wrapper `fixed bottom-20 right-4 z-50 flex flex-col items-center gap-2 sm:bottom-6 sm:right-6` — vertical order top→bottom = Partners · Fans · Staff · Messages. Both components are **position-less** (MyPeeps = fragment of 3 buttons; ChatInboxPopover root = `relative`) — the mount site owns placement, so there is no hardcoded offset to keep in sync. All four buttons are uniform `h-11 w-11` round icon buttons (icon-only every breakpoint, `title` tooltips); active page from `usePathname()`; red combined pill per chip (Partners = pending_requests + unread · Fans = unread · Staff = pending_invites + unread; "99+" cap; hidden at 0); 30s poll. Fan shell wraps its bubble independently in `FanAppShell.tsx` (different surface, not a sync pair).
+> - **Hub `/dashboard/network`** — 2-col at `lg`: LEFT rail (BillboardPreview/Editor + affiliate block: `＋ New deal` → AffiliateDealForm → YourDealsCard → EarningsSummary → AffiliateDiscover → AffiliateLinks — mounted 2026-09-27, components in `src/components/network/`) · CENTER = **Discover grid** (`/api/search/creators?q=` + result cards with Visit + Connect buttons). Right rail removed. Mobile order: Discover → Billboard → Affiliates.
+> - **3 sub-screens:** `/dashboard/circle/partners` (InboxRequests pending-only + CollabList active-only + CollabDetail w/ ChatIcon + PartnerInviteCard) · `/dashboard/circle/fans` (FanListTable full-width + FanProfileDrawer w/ ChatIcon) · `/dashboard/circle/staff` (pending invites + TeamRow members + PermissionsToggles + InviteEmail + ChatIcon per row). Route chain per sub-screen: `page.tsx` re-export → `screens/creator/circle/<name>/Screen.tsx` → `components/circle/<Name>Page.tsx`.
+> - **My Peeps + 💬 = ONE unified dock stack** (`components/layout/MyPeeps.tsx` + `ChatInboxPopover`), mounted in `app/(shell)/layout.tsx` inside the **single** floating wrapper `fixed bottom-20 right-4 z-50 flex flex-col items-center gap-2 sm:bottom-6 sm:right-6` — vertical order top→bottom = Partners · Fans · Staff · Messages. Both components are **position-less** (MyPeeps = fragment of 3 buttons; ChatInboxPopover root = `relative`) — the mount site owns placement, so there is no hardcoded offset to keep in sync. All four buttons are uniform `h-11 w-11` round icon buttons (icon-only every breakpoint, `title` tooltips); active page from `usePathname()`; red combined pill per chip (Partners = pending_requests + unread · Fans = unread · Staff = pending_invites + unread; "99+" cap; hidden at 0); 30s poll. Fan shell wraps its bubble independently in `FanAppShell.tsx` (different surface, not a sync pair).
 > - **`GET /api/creator/relationships` re-shaped:** `{ partners, fans, staff, pending_requests, pending_invites, unread: { partners, fans, staff } }` — unread classifies each active direct convo's other participant (fan_accounts → fans · creator_team_members → staff · non-ended partnership → partners), skipping muted + deleted + own messages.
 > - **`GET /api/creator/partners/list`** now returns ALL non-ended rows (active + pending) + computed `direction` (`"incoming"` when `creator_b === user.id`, else `"outgoing"`).
 > - **`GET /api/creator/fans/list`** now returns `id`, `do_not_contact`, computed `total_spent` (sum of completed `fan_purchases.amount_paid` per fan).
@@ -580,7 +584,7 @@ NEW APIs            fan/follow-creator (email-only → no-password row + sets fa
                      settlement runs post-capture via Sheet 16 engine (invisible to fans)
                      🆕 (V1) fan/purchases GET (session email receipts) · fan/purchases/complete
                      POST (mock webhook: records fan_purchases) · fan/logout POST (clearFanSession)
-ROUTES (fan APIs)   fan/dashboard GET (fan personal view)
+ROUTES (fan APIs)   (fan/dashboard GET removed 2026-09-28 — fanShellData.ts serves the fan view)
 NEW hooks           useFanSession? or reuse fanSession cookie
 TABLES              fan_accounts (password_hash NULL = Follower) · fan_session ·
                     fan_purchases · content_items · fan_follows · subscriptions ·

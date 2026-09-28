@@ -37,7 +37,7 @@ export function PartnerPageContent({
       style={{ backgroundColor: branding.backgroundColor, fontFamily: branding.fontFamily }}
     >
       {/* Header */}
-      <div className="sticky top-0 z-10 border-b px-4 py-3" style={{ borderColor: branding.textColor + "22" }}>
+      <div className="sticky top-0 z-10 border-b px-4 py-3 safe-top backdrop-blur-md" style={{ borderColor: branding.textColor + "22", backgroundColor: branding.backgroundColor + "DD" }}>
         <div className="flex items-center justify-between">
           <a
             href={`/${hostUsername}`}

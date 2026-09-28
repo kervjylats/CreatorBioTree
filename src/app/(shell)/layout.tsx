@@ -12,9 +12,9 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminAccount } from "@/lib/admin-permissions";
-import { ChatInboxPopover } from "@/components/chat/ChatShell";
+import { ChatInboxPopover } from "@/components/messages/ChatShell";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
-import { MyPeeps } from "@/components/relationships/MyPeeps";
+import { MyPeeps } from "@/components/layout/MyPeeps";
 
 export const metadata: Metadata = {
   manifest: "/dashboard-manifest.json",
@@ -51,14 +51,14 @@ export default async function ShellLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen-safe bg-background">
       <DashboardSidebar
         creator={creator}
         userEmail={user.email ?? ""}
         isAdmin={!!adminAccount}
       />
-      <main className="min-h-screen flex-1 pb-20 md:pb-0">{children}</main>
-      <div className="fixed bottom-20 right-4 z-50 flex flex-col items-center gap-2 sm:bottom-6 sm:right-6">
+      <main className="min-h-screen-safe min-w-0 flex-1 pb-20 md:pb-0">{children}</main>
+      <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-50 flex flex-col items-center gap-2 md:bottom-6 md:right-6">
         <MyPeeps />
         <ChatInboxPopover />
       </div>

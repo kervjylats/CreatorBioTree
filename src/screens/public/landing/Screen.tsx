@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function LandingScreen() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen-safe bg-background text-foreground flex flex-col">
       {/* NAV */}
       <nav className="flex items-center justify-between px-4 sm:px-10 py-4 sm:py-6 max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-3">
@@ -31,7 +31,7 @@ export default function LandingScreen() {
         <div className="flex items-center gap-4">
           <Link
             href="/login"
-            className="rounded-lg bg-foreground px-5 py-2.5 text-sm font-bold text-primary-foreground hover:opacity-90 transition-colors shadow-sm"
+            className="inline-flex min-h-11 items-center rounded-lg bg-foreground px-5 text-sm font-bold text-primary-foreground hover:opacity-90 transition-colors shadow-sm"
           >
             Sign in
           </Link>

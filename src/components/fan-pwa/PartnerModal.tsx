@@ -83,9 +83,9 @@ export function PartnerModal({ partnerUsername, hostUsername, data, onClose }: P
       {/* Bottom sheet */}
       <div
         ref={sheetRef}
-        className="relative z-10 flex w-full max-w-lg flex-col rounded-t-2xl overflow-hidden"
+        className="relative z-10 flex w-full max-w-lg flex-col rounded-t-2xl overflow-hidden pb-[env(safe-area-inset-bottom)]"
         style={{
-          height: "75vh",
+          height: "75dvh",
           backgroundColor: pb.backgroundColor,
           fontFamily: pb.fontFamily,
         }}

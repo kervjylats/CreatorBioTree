@@ -13,12 +13,12 @@ export function InstallBanner({ branding }: { branding: CreatorBranding }) {
   if (installState !== "android-ready") return null;
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center gap-3 rounded-2xl p-3 shadow-xl"
+    <div className="fixed bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+0.5rem)] left-1/2 z-50 flex w-[min(calc(100%-2rem),var(--shell-width))] -translate-x-1/2 items-center gap-3 rounded-2xl p-3 shadow-xl"
       style={{ backgroundColor: branding.cardColor, color: branding.textColor }}>
       <button
         type="button"
         aria-label="Dismiss"
-        className="shrink-0 rounded-full p-1 opacity-60 hover:opacity-100"
+        className="shrink-0 rounded-full p-2 opacity-60 hover:opacity-100"
         onClick={dismiss}
       >
         <X size={16} />
