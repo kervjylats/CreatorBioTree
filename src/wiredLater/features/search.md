@@ -1,5 +1,7 @@
 # Search — Vision & Spec
 
+> **STATUS (2026-09-28): the standalone `/search` page was REMOVED from live code.** The Network hub's Discover center (Sheet 18) is the live search home — `GET /api/search/creators` still powers it (plus the affiliate deal form's `@username` lookup). This spec remains the blueprint for the **landing-page search section** (Part 1a, ships with the landing page / Sheet 23); Part 1b (standalone page) is retired.
+
 ## Concept
 
 Public creator discovery. Anyone can search for creators by display name or Link Address, browse discoverable creators, and land on their fan page. The search is the platform's answer to "find your favorite creator on CreatorBioTree" — a differentiator, since the link-in-bio competitors (Stan Store, Linktree, Beacon) have **no** creator search at all; only marketplace-style platforms (Patreon, Gumroad) do.

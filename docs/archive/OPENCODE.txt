@@ -1,0 +1,23 @@
+MOBILE APP   ---- CREATORBIOLINKTREE:
+
+opencode --session ses_0b9a86f72ffeEgr8MaE8Eb9IAR
+http://localhost:3000/test-login
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+BUSINESS PLAN 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+Prompt :
+
+2. We would need to do something very professional and different to be honest. I can't really explain how I want we tackle all these but I will try to explain and hopefully you will understand me well.
+
+So basically you will act both like someone new to all this, like a friend developer who I gave all the wiredlater folder completely with all the md files. and also I will tell you that the old ones is in the other folders/subfolders/files.
+
+As per my understanding all the screens is fully naked (no wiring).
+
+Then due to the new md files, you will view all the old files (what can stay unchanged, what needs to be modified etc....). And then you will need to modify them the best way possible, I mean what screens/files etc.. should be done first and then next to the others. So basically the roadmap.md might be misleading.
+
+It's like I gave you a new design for my house, and you will go through the old ones, what you can keep/modify, and also what should we start tackling first so that all will be done (the next steps), peacefully in harmony.
+
+The only thing that will be done later on at the end as you might know is 

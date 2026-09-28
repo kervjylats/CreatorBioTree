@@ -11,7 +11,7 @@ Open items from manual testing. Not wired yet — design/product decisions pendi
 
 ## Overview Screen (dashboard/overview)
 
-- [ ] **Remove setup checklist** — duplicates content already in sidebar (Set up profile → Settings, Create first item → My App, Customize your design → My App, Share your page → QR section below). Delete the entire checklist section.
+- [x] **Remove setup checklist** — **DONE:** the Overview no longer renders it (component unreferenced) and `components/overview/SetupChecklist.tsx` was deleted in the 2026-09-28 cleanup.
 - [ ] **Remove quick actions except "Edit My App"** — View my page is already in the sidebar, Install my fan app is already in the sidebar, Share your page is already in the QR section. Only "Edit My App" should remain. Move it to take the space where the setup checklist was.
 
 ## My App Editor — Identity Tab
@@ -25,4 +25,4 @@ Open items from manual testing. Not wired yet — design/product decisions pendi
 
 ## Search
 
-- [x] **Search should be accessible from Network tab** — **DONE 2026-09-26:** the Network hub's center is now a Discover grid (search input + result cards), per `NETWORK_REDESIGN_PLAN.md` Phase B.
+- [x] **Search should be accessible from Network tab** — **DONE 2026-09-26:** the Network hub's center is now a Discover grid (search input + result cards), per `docs/archive/NETWORK_REDESIGN_PLAN.md` Phase B.

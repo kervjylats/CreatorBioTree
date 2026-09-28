@@ -31,16 +31,16 @@
   - LEFT rail: BillboardPreview + BillboardEditor + AffiliateDiscover + EarningsSummary (unchanged).
   - CENTER: **Discover grid** (search box + result cards with Visit + Connect buttons).
   - RIGHT rail removed entirely. Mobile order: Discover → Billboard → Affiliates.
-- **3 sub-screens** (route chain: `page.tsx` re-export → `src/screens/creator/network/<name>/Screen.tsx`):
-  - `/dashboard/network/partners` — Requests section (incoming Accept/Decline + outgoing Pending), Active Collabs list → in-page detail panel (back button, Visit their page, 💬), Invite a partner card.
-  - `/dashboard/network/fans` — full-width FanListTable (filters + CSV + status chips) + FanProfileDrawer + 💬 per fan.
-  - `/dashboard/network/staff` — pending invites section + members list → permissions panel, mounts TeamRow / InviteEmail / PermissionsToggles + 💬 per member.
+- **3 sub-screens** (route chain: `page.tsx` re-export → `src/screens/creator/circle/<name>/Screen.tsx`):
+  - `/dashboard/circle/partners` — Requests section (incoming Accept/Decline + outgoing Pending), Active Collabs list → in-page detail panel (back button, Visit their page, 💬), Invite a partner card.
+  - `/dashboard/circle/fans` — full-width FanListTable (filters + CSV + status chips) + FanProfileDrawer + 💬 per fan.
+  - `/dashboard/circle/staff` — pending invites section + members list → permissions panel, mounts TeamRow / InviteEmail / PermissionsToggles + 💬 per member.
 - **Badges = ONE red pill, combined count** per chip:
   - Partners = pending requests (incoming) + unread convos with partners.
   - Fans = unread convos with fans only (starts at 0). Fans have no requests concept.
   - Staff = pending invites + unread convos with staff.
   - Data comes from extending `GET /api/creator/relationships`.
-- **ChatIcon** (existing export from `src/components/chat/ChatShell.tsx`) mounted on:
+- **ChatIcon** (existing export from `src/components/messages/ChatShell.tsx`) mounted on:
   collab detail, fan drawer, staff rows.
   ChatIconProps = `{ otherKey, otherParty: "creator"|"fan", name, accentColor?, guest?, onGuestContact? }`.
 
@@ -92,22 +92,22 @@
       and **Connect** (Phase A1). Cards show avatar / display name / @username / tagline /
       featured badge.
 - [x] **B3. Partners sub-screen.**
-      `src/app/(shell)/dashboard/network/partners/page.tsx` (re-export) →
-      `src/screens/creator/network/partners/index.ts` + `Screen.tsx` (server, metadata
-      "Partners", renders `src/components/network/PartnersPage.tsx`).
+      `src/app/(shell)/dashboard/circle/partners/page.tsx` (re-export) →
+      `src/screens/creator/circle/partners/index.ts` + `Screen.tsx` (server, metadata
+      "Partners", renders `src/components/circle/PartnersPage.tsx`).
       Content: Requests section (reuses/replaces `InboxRequests` — incoming Accept/Decline,
       outgoing Pending badge) → Active Collabs list (`CollabList` + `CollabDetail` panel,
       ChatIcon on detail, back button, "Visit their page" link) → `PartnerInviteCard`.
 - [x] **B4. Fans sub-screen.**
-      `src/app/(shell)/dashboard/network/fans/page.tsx` → `src/screens/creator/network/fans/{index,Screen}.tsx`
+      `src/app/(shell)/dashboard/circle/fans/page.tsx` → `src/screens/creator/circle/fans/{index,Screen}.tsx`
       (metadata "Fans", renders the fans content). Full-width `FanListTable` + `FanProfileDrawer`
       + ChatIcon per row (drawer). No side columns.
 - [x] **B5. Staff sub-screen.**
-      `src/app/(shell)/dashboard/network/staff/page.tsx` → `src/screens/creator/network/staff/{index,Screen}.tsx`
+      `src/app/(shell)/dashboard/circle/staff/page.tsx` → `src/screens/creator/circle/staff/{index,Screen}.tsx`
       (metadata "Staff"). Pending invites section (from `GET /api/creator/team/invites`),
       members list (`TeamRow` from `GET /api/creator/team/members`), edit panel
       (`PermissionsToggles`, PATCH `team/members/[id]`), `InviteEmail` on top, ChatIcon per member.
-- [x] **B6. Convert `MyPeeps` → bottom-right dock** (`src/components/relationships/MyPeeps.tsx`).
+- [x] **B6. Convert `MyPeeps` → bottom-right dock** (`src/components/layout/MyPeeps.tsx`).
       ONE component, position-less (fragment of 3 buttons) — mounted in the shell layout's
       single floating row next to the 💬 bubble (superseded by the dock-unification addendum
       at the top of this file). Uniform `h-11 w-11` icon buttons + red count badge at every

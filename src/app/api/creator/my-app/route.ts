@@ -3,7 +3,7 @@
  * (my-app.md Part 2/4b). GET returns the creator row (theme + identity +
  * social links) and the catalog; PUT persists a deploy: display_name, bio,
  * avatar_url, banner_url, custom_theme, connect_empty_text, social_links. Both are
- * auth-guarded — the write mirrors profileUpdateService's ALLOWED_FIELDS.
+ * auth-guarded — the write whitelists only the allowed profile/theme fields.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

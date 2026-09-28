@@ -65,8 +65,7 @@ export async function POST(req: Request) {
     let creator = creatorData;
     if (!creator) {
       if (USE_MOCKS) {
-        const { v4: uuid } = await import("uuid");
-        const newId = uuid();
+        const newId = crypto.randomUUID();
         const now = new Date().toISOString();
         await serviceClient.from("creators").insert({
           id: newId,

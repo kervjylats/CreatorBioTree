@@ -63,7 +63,7 @@ The theme controls the **creator's page** (`/{username}`) and everything inside 
 | **Dashboard** (`/dashboard/*`) | The creator's workbench is a platform tool, not a fan page | Platform UI, no per-creator theming |
 | **Login** (`/login`) | One door for everyone | Platform UI |
 | **Landing** (`/`) | Marketing site for CreatorBioTree | Platform UI |
-| **Search** (`/search`) | Platform-wide search | Platform UI |
+| **Search** (Network hub Discover) | Platform-wide search | Platform UI |
 | **Offline** (`/offline`) | Generic offline fallback (unless branded — see Part 9) | Platform UI, with optional creator rebrand |
 | **Admin** (`/admin`) | Internal tool | Platform UI |
 | **Network search** (within `/dashboard/network`) | Cross-creator directory | Platform UI; individual creator cards show THAT creator's brand |
@@ -182,7 +182,7 @@ The full editor lives in `screens/creator-dashboard/my-app/my-app.md` Part 2b. T
 | Control | What it sets | Notes |
 |---|---|---|
 | **Fill type** | Solid / Gradient / Image | Switches which sub-controls appear |
-| **Color picker (background + accent)** | `colors.background`, `colors.accent` | `react-colorful@5.7.0` (installed) — Figma-style RGB/HSL/hex/alpha/eyedropper. Already free choice, not just presets |
+| **Color picker (background + accent)** | `colors.background`, `colors.accent` | `react-colorful@5.7.0` (reinstall when wiring — briefly removed in the 2026-09-28 cleanup) — Figma-style RGB/HSL/hex/alpha/eyedropper. Already free choice, not just presets |
 | **9 theme presets** | Resets `custom_theme` to the preset | Pick from Part 7 list above |
 | **Gradient controls** | Linear/Radial toggle, angle slider, live preview | Sets `colors.backgroundGradient`, `colors.gradientType`, `colors.gradientAngle` |
 | **Background image upload** | `colors.backgroundImage` | Pre-upload validation: image format + size cap + dimension check (Part 11) |
@@ -360,7 +360,7 @@ The brand powers the **installed PWA** on the fan's phone (and the creator's own
 | `src/types/index.ts` (lines 36-78, 117-118, 275-289) | `MyAppTheme`, `MyAppColors`, `MyAppProfile`, `Theme`, `ThemeConfig`, `ThemeColors`, `ThemeFonts`, `FontStyle`, `ButtonStyle`, `BorderRadius`, `Creator.custom_theme`, `Creator.theme_id`, `Creator.remove_branding` | Source of truth for the data shape. Extend with Part 9 fields |
 | `src/old-code/GlobalSettingsEditor.tsx` (parts archive) | Old Design tab editor with the **9 preset definitions** in code (lines 14-22) | Reuse the 7 missing preset definitions; rebuild the editor per `my-app.md` 2b |
 | `src/old-code/MyAppForm*` (parts archive) | Old draft + auto-save hooks (`useAutoSave`, `useMyAppForm`) | Reuse `useAutoSave` pattern for the Design tab |
-| `package.json` (line 31) | `react-colorful@5.7.0` already installed | Reuse for the Figma-style color picker |
+| `package.json` | `react-colorful@5.7.0` — reinstall when wiring (removed in the 2026-09-28 cleanup) | Reuse for the Figma-style color picker |
 
 ---
 
@@ -385,7 +385,7 @@ The brand powers the **installed PWA** on the fan's phone (and the creator's own
 |---|---|---|
 | 1 | One spec file (`features/branding.md`) as the single home for the full rebrand system | ✅ Decided 2026-08-05 |
 | 2 | Two-layer theme model (preset + override) + platform default | ✅ Decided — already implemented in `branding.ts` |
-| 3 | Free color choice via `react-colorful` (already installed) + 9 presets as starting points + AI Copilot | ✅ Decided 2026-08-05 |
+| 3 | Free color choice via `react-colorful` (reinstall when wiring) + 9 presets as starting points + AI Copilot | ✅ Decided 2026-08-05 |
 | 4 | Fonts: 3 fixed (Sans / Serif / Modern) — no Google Fonts picker, no custom upload | ✅ Decided 2026-08-05 |
 | 5 | Button style: 5 total — Rounded / Sharp / Pill / Squircle / Outline | ✅ Decided 2026-08-05 |
 | 6 | 7 easy-win rebrand extensions in v1 (Part 9) | ✅ Decided 2026-08-05 |
