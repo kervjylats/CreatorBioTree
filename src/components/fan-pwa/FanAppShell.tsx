@@ -21,7 +21,7 @@ import { InstallBanner } from "./InstallBanner";
 import { IOSInstallGuide } from "./IOSInstallGuide";
 import { InAppBrowserWarning } from "./InAppBrowserWarning";
 import { UpdateToast } from "./UpdateToast";
-import { ChatIcon, ChatInboxPopover, ChatHostProvider } from "@/components/messages/ChatShell";
+import { MessageIcon, MessageInboxPopover, MessageHostProvider } from "@/components/messages/MessagesShell";
 import { PoweredByFooter } from "./PoweredByFooter";
 import { buttonShape } from "./themeStyles";
 
@@ -41,7 +41,7 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
   );
 
   return (
-    <ChatHostProvider creatorId={creatorId}>
+    <MessageHostProvider creatorId={creatorId}>
       <div
         data-tl="FanAppShell"
         className="flex min-h-screen-safe w-full flex-col"
@@ -57,7 +57,7 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
               {branding.appName}
             </span>
             <div className="flex items-center gap-2">
-              <ChatIcon
+              <MessageIcon
                 otherKey={creatorId}
                 otherParty="creator"
                 name={branding.displayName}
@@ -118,7 +118,7 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
         <UpdateToast branding={branding} />
         <PageViewTracker creatorId={creatorId} />
         <div className="fixed bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)] right-[max(1rem,calc(50%-var(--shell-width)/2+1rem))] z-50 lg:bottom-6">
-          <ChatInboxPopover />
+          <MessageInboxPopover />
         </div>
         <FanBottomNav
           activeTab={activeTab}
@@ -129,6 +129,6 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
           }}
         />
       </div>
-    </ChatHostProvider>
+    </MessageHostProvider>
   );
 }

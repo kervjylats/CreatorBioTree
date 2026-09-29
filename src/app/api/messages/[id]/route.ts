@@ -1,12 +1,12 @@
 /**
  * PATCH/DELETE /api/messages/[id] — edit your own message (sets
  * edited_at) and delete with a tombstone (WhatsApp-style, messaging.md Part
- * 2). Group owners may delete any message in their chat (Part 4 moderation).
+ * 2). Group owners may delete any message in their conversation (Part 4 moderation).
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 const editSchema = z.object({
   body: z.string().min(1).max(2000),
@@ -16,7 +16,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
@@ -30,7 +30,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     await supabase.from("messages").update({ body: validation.data.body, edited_at: new Date().toISOString() }).eq("id", id);
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[chat/messages] PATCH:", err);
+    console.error("[messages/messages] PATCH:", err);
     return NextResponse.json({ error: "Failed to edit message" }, { status: 500 });
   }
 }
@@ -39,7 +39,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data: message } = await supabase.from("messages").select("*").eq("id", id).maybeSingle();
@@ -60,7 +60,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     await supabase.from("messages").update({ deleted_at: new Date().toISOString() }).eq("id", id);
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[chat/messages] DELETE:", err);
+    console.error("[messages/messages] DELETE:", err);
     return NextResponse.json({ error: "Failed to delete message" }, { status: 500 });
   }
 }

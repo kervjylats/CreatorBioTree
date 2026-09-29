@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChatIcon } from "@/components/messages/ChatShell";
+import { MessageIcon } from "@/components/messages/MessagesShell";
 import { Avatar } from "@/components/shared/Avatar";
 import { fetchJson } from "@/lib/fetchJson";
 import { formatDate } from "@/lib/format";
@@ -84,7 +84,7 @@ export function CollabDetail({ partnershipId, onBack }: CollabDetailProps) {
               <h3 className="min-w-0 text-base font-bold text-foreground">{partner.display_name}</h3>
               <Badge variant="outline" className="shrink-0 text-micro border-green-300 text-green-700">Collab</Badge>
               {partner.id && (
-                <ChatIcon
+                <MessageIcon
                   otherKey={partner.id}
                   otherParty="creator"
                   name={partner.display_name}

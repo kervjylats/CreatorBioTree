@@ -1,10 +1,10 @@
 /**
  * /dashboard/circle/messages — the creator's full messaging screen (messaging.md
  * Part 1 "Open full"): conversation list, threads, requests, privacy toggle
- * and group creation. Server wrapper over the client ChatShell.
+ * and group creation. Server wrapper over the client MessagesShell.
  */
-import { ChatShell } from "@/components/messages/ChatShell";
+import { MessagesShell } from "@/components/messages/MessagesShell";
 
 export default function MessagesPage() {
-  return <ChatShell />;
+  return <MessagesShell />;
 }

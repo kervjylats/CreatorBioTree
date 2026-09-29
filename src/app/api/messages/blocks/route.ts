@@ -5,12 +5,12 @@
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity, resolveParticipantNames } from "@/lib/chat";
+import { getMessageIdentity, resolveParticipantNames } from "@/lib/messages";
 
 export async function GET() {
   try {
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data: blocks } = await supabase
@@ -35,7 +35,7 @@ export async function GET() {
       })),
     });
   } catch (err) {
-    console.error("[chat/blocks] GET:", err);
+    console.error("[messages/blocks] GET:", err);
     return NextResponse.json({ error: "Failed to load blocks" }, { status: 500 });
   }
 }

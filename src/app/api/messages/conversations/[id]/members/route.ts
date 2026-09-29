@@ -1,13 +1,13 @@
 /**
  * POST/DELETE /api/messages/conversations/[id]/members — group membership
  * management (messaging.md Part 4): the owner adds members; DELETE (with a
- * body { member_key }) removes a member or lets anyone leave their own chat.
+ * body { member_key }) removes a member or lets anyone leave their own conversation.
  * Direct conversations have no member management.
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 const addSchema = z.object({
   member_key: z.string().min(1).max(100),
@@ -22,7 +22,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
@@ -55,7 +55,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[chat/members] POST:", err);
+    console.error("[messages/members] POST:", err);
     return NextResponse.json({ error: "Failed to add member" }, { status: 500 });
   }
 }
@@ -64,7 +64,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
@@ -95,7 +95,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[chat/members] DELETE:", err);
+    console.error("[messages/members] DELETE:", err);
     return NextResponse.json({ error: "Failed to remove member" }, { status: 500 });
   }
 }

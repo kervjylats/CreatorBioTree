@@ -14,7 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { ChatIcon } from "@/components/messages/ChatShell";
+import { MessageIcon } from "@/components/messages/MessagesShell";
 import { toast } from "sonner";
 import { fetchJson } from "@/lib/fetchJson";
 import { formatDate } from "@/lib/format";
@@ -101,7 +101,7 @@ export function FanProfileDrawer({
               <div className="flex items-center gap-2">
                 <h4 className="text-sm font-semibold">Identity</h4>
                 {profile.fan.id && (
-                  <ChatIcon
+                  <MessageIcon
                     otherKey={profile.fan.id}
                     otherParty="fan"
                     name={profile.fan.email}

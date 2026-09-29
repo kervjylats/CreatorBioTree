@@ -77,6 +77,19 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 
 ## Impromptu Fix Log
 
+### 2026-09-29 — "Chat" → "Messages" full rename (founder reversal, pre-migration)
+
+**Founder reversed the 2026-09-28 "chat.ts stays" boundary: the product word is Messages, so the code must match it — "I might get confused, another AI helping me, or my future staff." Done now while everything is mock (no real DB exists yet → zero ALTER workload). Gates green: typecheck 0 · lint 0 · check-docs PASS · smoke (conversations + unread 200 via getMessageIdentity, `message_prefs` PATCH/GET round-trip, pages 200).**
+
+- **Word choice:** **Messages** won over Chats/Inbox — Chats = one casual thread, Inbox = email-spam vibes. UI already said Messages (popover title/aria + screen headings verified), only code was lagging.
+- **Files:** `lib/chat.ts` → `lib/messages.ts` · `components/messages/ChatShell.tsx` → `MessagesShell.tsx` (both via `git mv`).
+- **Symbol sweep (39 files):** `ChatShell→MessagesShell` · `ChatIcon→MessageIcon` · `useChat→useMessages` · `ChatThread→MessageThread` · `ChatInboxPopover→MessageInboxPopover` · `ChatHostProvider/Context→Message…` · types `ChatIdentity/ChatParticipant/ChatConversation/ChatAttachment→Message…` (incl. `*Props`), `ChatMessage→MessageItem` (avoids the "MessageMessage" trap) · `getChatIdentity→getMessageIdentity` · `useChatApi/chatApi→useMessageApi/messageApi`.
+- **Wire/consts:** `CHAT_HOST_CREATOR_HEADER`/`x-chat-host-creator` → `MESSAGE_HOST_CREATOR_HEADER`/`x-message-host-creator` (both ends) · `MAX_CHAT_UPLOAD_BYTES→MAX_MESSAGE_UPLOAD_BYTES`.
+- **Storage/table (free while pre-migration = branded into future schema, no ALTER):** `chat_prefs` → `message_prefs` (mock registry `mockDataStore.ts` + preferences route + spec) · bucket `chat-attachments` → `message-attachments`, path `chat/${` → `message/${`, rate key `chat-upload` → `message-upload`, log tags `[chat/…]` → `[messages/…]` · persisted `conversations.type` value `community_chat` → `community` (now `direct`/`group`/`community`).
+- **UI strings aligned:** API errors "this chat / group chats / start a chat" → "this conversation / group conversations / start a conversation" · prompt "Group chat name" → "Group conversation name" · ItemCards messaging-item toast "Chat is coming soon" → "Messages is coming soon" · ItemEditor placeholder → "messaging arrives post-launch".
+- **Docs/specs swept (live only):** `messaging.md` (identifiers only — Part headings keep honest English), `relationships.md`, `screens.md`, `wiredLater.md`, `CODEBASE.md` (folder row + `### 6.3 messages/`), `HOW_IT_WORKS.md`, `DUPLICATION_AUDIT.md`, `EXTERNAL_SERVICES.md`, `WIRING_PLAN.md` (Sheet 12 blocks + old `chat/*` route prefixes → `messages/*`), `WALKTHROUGH.md` (Stop 00 toolbox example). **`docs/archive/` + `src/old-code/` + earlier AGENTS history untouched** (museum + diary; this entry IS the reversal record).
+- **Boundary now:** every *user-visible* and *code-readable* name says message(s). The word "chat" survives only as honest English in spec prose ("1-on-1 Chat", "group chats", "chat channels") and `Snapchat` (a real social platform — NOT touched). `messaging.md` spec filename also stays (it names the *capability*, spec'd, cited ~everywhere).
+
 ### 2026-09-29 — Phase 4: Landing Extras (showcase, hero auth modal, install button, returning-fan row)
 
 **Landing Phase 4 done; landing.md un-parked. Gates green: typecheck 0 · lint 0 · check-docs PASS (398 files) · smoke (showcase cards + modal trigger + privacy + fan-row assertions all true; login/guest 200).**

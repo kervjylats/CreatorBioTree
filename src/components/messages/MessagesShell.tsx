@@ -1,10 +1,10 @@
 /**
- * ChatShell.tsx — the complete messaging engine (messaging.md Parts 1/2/4):
- * useChat polling hook, the floating ChatInboxPopover,
- * the full ChatShell screen (list + requests + privacy toggle + groups),
- * ChatThread (1-on-1 + groups with announcements mode), MessageList /
- * MessageBubble / MessageComposer / AttachmentPreview, the per-name ChatIcon
- * quick-chat and the GuestContactModal (email capture → Follower → message,
+ * MessagesShell.tsx — the complete messaging engine (messaging.md Parts 1/2/4):
+ * useMessages polling hook, the floating MessageInboxPopover,
+ * the full MessagesShell screen (list + requests + privacy toggle + groups),
+ * MessageThread (1-on-1 + groups with announcements mode), MessageList /
+ * MessageBubble / MessageComposer / AttachmentPreview, the per-name MessageIcon
+ * quick-message and the GuestContactModal (email capture → Follower → message,
  * fan-shell.md Layer 1b). ONE file per founder request; neutral platform
  * styling — the inbox never takes a creator's theme (branding.md Part 3).
  */
@@ -38,7 +38,7 @@ import { LABEL_CLASS } from "@/lib/ui-constants";
 
 // ─── Shared types + fetch helper ─────────────────────────────────────────────
 
-export interface ChatConversation {
+export interface MessageConversation {
   id: string;
   type: "direct" | "group";
   title: string;
@@ -54,14 +54,14 @@ export interface ChatConversation {
   updatedAt: string;
 }
 
-export interface ChatAttachment {
+export interface MessageAttachment {
   url: string;
   name: string;
   mime: string;
   size: number;
 }
 
-export interface ChatMessage {
+export interface MessageItem {
   id: string;
   sender_key: string;
   sender_name: string;
@@ -69,7 +69,7 @@ export interface ChatMessage {
   created_at: string;
   edited_at: string | null;
   deleted_at: string | null;
-  attachments: ChatAttachment[];
+  attachments: MessageAttachment[];
 }
 
 export interface ThreadData {
@@ -77,15 +77,15 @@ export interface ThreadData {
   myRole: string;
   conversation: { id: string; type: string; title: string; pinned: boolean; announcementsOnly: boolean; muted: boolean };
   members: { key: string; party: string; role: string; name: string; left: boolean }[];
-  messages: ChatMessage[];
+  messages: MessageItem[];
 }
 
-async function chatApi<T = unknown>(path: string, init?: RequestInit, hostCreatorId?: string | null): Promise<T> {
+async function messageApi<T = unknown>(path: string, init?: RequestInit, hostCreatorId?: string | null): Promise<T> {
   const res = await fetch(path, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(hostCreatorId ? { "x-chat-host-creator": hostCreatorId } : {}),
+      ...(hostCreatorId ? { "x-message-host-creator": hostCreatorId } : {}),
       ...(init?.headers ?? {}),
     },
   });
@@ -95,25 +95,25 @@ async function chatApi<T = unknown>(path: string, init?: RequestInit, hostCreato
 }
 
 /**
- * Chat host context — the creator whose app the current fan is inside.
+ * Message host context — the creator whose app the current fan is inside.
  * A fan has ONE fan_account per creator, so the server needs this hint to
  * resolve the RIGHT account when the fan holds sessions on several creators
- * (chat.ts getChatIdentity). The header only selects among the fan's own
+ * (messages.ts getMessageIdentity). The header only selects among the fan's own
  * sessions — never a privilege escalation. Creators (dashboard) mount no
  * provider → null → creator auth wins.
  */
-const ChatHostContext = createContext<string | null>(null);
+const MessageHostContext = createContext<string | null>(null);
 
-/** Wrap a fan/guest surface so its chat calls carry the host creator id. */
-export function ChatHostProvider({ creatorId, children }: { creatorId: string; children: ReactNode }) {
-  return <ChatHostContext.Provider value={creatorId}>{children}</ChatHostContext.Provider>;
+/** Wrap a fan/guest surface so its message calls carry the host creator id. */
+export function MessageHostProvider({ creatorId, children }: { creatorId: string; children: ReactNode }) {
+  return <MessageHostContext.Provider value={creatorId}>{children}</MessageHostContext.Provider>;
 }
 
-/** Bound chat fetch — injects the host creator header when a provider is present. */
-function useChatApi() {
-  const hostCreatorId = useContext(ChatHostContext);
+/** Bound message fetch — injects the host creator header when a provider is present. */
+function useMessageApi() {
+  const hostCreatorId = useContext(MessageHostContext);
   return useCallback(
-    <T,>(path: string, init?: RequestInit) => chatApi<T>(path, init, hostCreatorId),
+    <T,>(path: string, init?: RequestInit) => messageApi<T>(path, init, hostCreatorId),
     [hostCreatorId],
   );
 }
@@ -136,23 +136,23 @@ function timeAgo(iso: string): string {
 const POLL_MS = 30_000;
 
 /** Conversation list + unread total, polling every 30s (mock; realtime in prod — messaging.md Part 6). */
-export function useChat(): {
-  conversations: ChatConversation[];
+export function useMessages(): {
+  conversations: MessageConversation[];
   unread: number;
   myParty: "creator" | "fan" | null;
   loading: boolean;
   refresh: () => void;
 } {
-  const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [conversations, setConversations] = useState<MessageConversation[]>([]);
   const [unread, setUnread] = useState(0);
   const [myParty, setMyParty] = useState<"creator" | "fan" | null>(null);
   const [loading, setLoading] = useState(true);
-  const api = useChatApi();
+  const api = useMessageApi();
 
   const refresh = useCallback(async () => {
     try {
       const [list, unreadRes] = await Promise.all([
-        api<{ conversations: ChatConversation[]; myParty: "creator" | "fan" }>("/api/messages/conversations"),
+        api<{ conversations: MessageConversation[]; myParty: "creator" | "fan" }>("/api/messages/conversations"),
         api<{ unread: number }>("/api/messages/unread"),
       ]);
       setConversations(list.conversations);
@@ -180,7 +180,7 @@ export function useChat(): {
 
 // ─── Conversation list row ───────────────────────────────────────────────────
 
-function ConversationRow({ convo, onClick }: { convo: ChatConversation; onClick: () => void }) {
+function ConversationRow({ convo, onClick }: { convo: MessageConversation; onClick: () => void }) {
   const preview = convo.lastMessage
     ? convo.lastMessage.deleted
       ? "Message deleted"
@@ -209,14 +209,14 @@ function ConversationRow({ convo, onClick }: { convo: ChatConversation; onClick:
 
 // ─── Floating inbox (Part 1) ─────────────────────────────────────────────────
 
-interface ChatInboxPopoverProps {
+interface MessageInboxPopoverProps {
   /** Custom "Open full" target. Default: dashboard navigates to /dashboard/circle/messages; elsewhere the full screen expands in place. */
   onOpenFull?: () => void;
 }
 
 /** The 💬 floating inbox — POSITION-LESS: the mount site owns placement (shell layout's floating stack next to My Peeps; FanAppShell wraps it in its own fixed corner). WhatsApp-style popover + badge. */
-export function ChatInboxPopover({ onOpenFull }: ChatInboxPopoverProps) {
-  const { conversations, unread, refresh } = useChat();
+export function MessageInboxPopover({ onOpenFull }: MessageInboxPopoverProps) {
+  const { conversations, unread, refresh } = useMessages();
   const [open, setOpen] = useState(false);
   const [full, setFull] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -275,22 +275,22 @@ export function ChatInboxPopover({ onOpenFull }: ChatInboxPopoverProps) {
         )}
       </div>
 
-      {full && <ChatShell initialConversationId={selectedId} onClose={() => setFull(false)} />}
+      {full && <MessagesShell initialConversationId={selectedId} onClose={() => setFull(false)} />}
     </>
   );
 }
 
 // ─── Full messaging screen (the "Open full" destination) ─────────────────────
 
-interface ChatShellProps {
+interface MessagesShellProps {
   onClose?: () => void;
   initialConversationId?: string | null;
 }
 
 /** The complete messaging screen — conversation list, thread, requests, privacy toggle, new group (Part 1 "Open full"). */
-export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
-  const { conversations, myParty, refresh } = useChat();
-  const api = useChatApi();
+export function MessagesShell({ onClose, initialConversationId }: MessagesShellProps) {
+  const { conversations, myParty, refresh } = useMessages();
+  const api = useMessageApi();
   const router = useRouter();
   const [threadId, setThreadId] = useState<string | null>(initialConversationId ?? null);
   const [requests, setRequests] = useState<{ id: string; from_name: string; body: string | null }[]>([]);
@@ -344,7 +344,7 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
   };
 
   const createGroup = async () => {
-    const title = window.prompt("Group chat name");
+    const title = window.prompt("Group conversation name");
     if (!title?.trim()) return;
     try {
       const res = await api<{ conversation_id: string }>("/api/messages/conversations", {
@@ -391,7 +391,7 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
       </div>
 
       {threadId ? (
-        <ChatThread conversationId={threadId} onBack={() => setThreadId(null)} />
+        <MessageThread conversationId={threadId} onBack={() => setThreadId(null)} />
       ) : (
         <div className="flex-1 overflow-y-auto">
           {/* Requests folder */}
@@ -430,7 +430,7 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
               <MessageCircle size={36} className="text-muted-foreground/50" />
               <p className="text-sm text-muted-foreground">No conversations yet</p>
               <p className="max-w-xs text-xs text-muted-foreground/70">
-                Message buttons across the app — catalog items, fan pages, network — open chats here.
+                Message buttons across the app — catalog items, fan pages, network — open conversations here.
               </p>
             </div>
           ) : (
@@ -448,21 +448,21 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
 
 // ─── Thread ──────────────────────────────────────────────────────────────────
 
-interface ChatThreadProps {
+interface MessageThreadProps {
   conversationId: string;
   onBack: () => void;
   onOpenFull?: () => void;
-  /** Compact mode for the quick-chat popover. */
+  /** Compact mode for the quick-message popover. */
   compact?: boolean;
   accentColor?: string;
 }
 
 /** Full conversation view: header + MessageList + MessageComposer, polling every 6s. */
-export function ChatThread({ conversationId, onBack, onOpenFull, compact, accentColor }: ChatThreadProps) {
+export function MessageThread({ conversationId, onBack, onOpenFull, compact, accentColor }: MessageThreadProps) {
   const [data, setData] = useState<ThreadData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const api = useChatApi();
+  const api = useMessageApi();
 
   const load = useCallback(async () => {
     try {
@@ -557,7 +557,7 @@ function MessageList({
   isGroup,
   accentColor,
 }: {
-  messages: ChatMessage[];
+  messages: MessageItem[];
   myKey: string;
   isGroup: boolean;
   accentColor?: string;
@@ -584,7 +584,7 @@ function MessageBubble({
   showSender,
   accentColor,
 }: {
-  message: ChatMessage;
+  message: MessageItem;
   mine: boolean;
   showSender: boolean;
   accentColor?: string;
@@ -622,7 +622,7 @@ function MessageBubble({
 }
 
 /** Inline image preview or download card (messaging.md Part 4 files). */
-export function AttachmentPreview({ attachment }: { attachment: ChatAttachment }) {
+export function AttachmentPreview({ attachment }: { attachment: MessageAttachment }) {
   const isImage = attachment.mime.startsWith("image/");
   if (isImage) {
     return (
@@ -661,9 +661,9 @@ function MessageComposer({
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const api = useChatApi();
+  const api = useMessageApi();
 
-  const send = async (body?: string, attachment?: ChatAttachment) => {
+  const send = async (body?: string, attachment?: MessageAttachment) => {
     if ((!body || !body.trim()) && !attachment) return;
     setSending(true);
     try {
@@ -694,7 +694,7 @@ function MessageComposer({
         reader.onerror = () => reject(new Error("read failed"));
         reader.readAsDataURL(file);
       });
-      const uploaded = await api<ChatAttachment>("/api/messages/upload", {
+      const uploaded = await api<MessageAttachment>("/api/messages/upload", {
         method: "POST",
         body: JSON.stringify({ dataUrl, name: file.name }),
       });
@@ -710,7 +710,7 @@ function MessageComposer({
   if (readOnly) {
     return (
       <div className="border-t border-border px-3 py-2.5 text-center text-xs text-muted-foreground">
-        Only the host can post in this chat
+        Only the host can post in this conversation
       </div>
     );
   }
@@ -758,25 +758,25 @@ function MessageComposer({
   );
 }
 
-// ─── Quick chat icon (Part 2 entry points) ───────────────────────────────────
+// ─── Quick message icon (Part 2 entry points) ───────────────────────────────────
 
-interface ChatIconProps {
+interface MessageIconProps {
   otherKey: string;
   otherParty: "creator" | "fan";
   name: string;
   accentColor?: string;
-  /** Small email-capture contact variant for guests (no chat identity yet). */
+  /** Small email-capture contact variant for guests (no message identity yet). */
   guest?: boolean;
   onGuestContact?: () => void;
 }
 
-/** The per-name chat icon — tap for a quick mini thread; "Open full" expands to the full screen. */
-export function ChatIcon({ otherKey, otherParty, name, accentColor, guest, onGuestContact }: ChatIconProps) {
+/** The per-name message icon — tap for a quick mini thread; "Open full" expands to the full screen. */
+export function MessageIcon({ otherKey, otherParty, name, accentColor, guest, onGuestContact }: MessageIconProps) {
   const [open, setOpen] = useState(false);
   const [convoId, setConvoId] = useState<string | null>(null);
   const [requested, setRequested] = useState(false);
   const [starting, setStarting] = useState(false);
-  const api = useChatApi();
+  const api = useMessageApi();
 
   const start = async () => {
     if (guest) {
@@ -792,7 +792,7 @@ export function ChatIcon({ otherKey, otherParty, name, accentColor, guest, onGue
       if (res.status === "requested") setRequested(true);
       else setConvoId(res.conversation_id);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't start a chat");
+      toast.error(err instanceof Error ? err.message : "Couldn't start a conversation");
     } finally {
       setStarting(false);
     }
@@ -847,7 +847,7 @@ export function ChatIcon({ otherKey, otherParty, name, accentColor, guest, onGue
                 <p className="text-xs text-muted-foreground">They&apos;ll see it in their Requests folder and can approve it.</p>
               </div>
             ) : convoId ? (
-              <ChatThread conversationId={convoId} onBack={() => setOpen(false)} accentColor={accentColor} />
+              <MessageThread conversationId={convoId} onBack={() => setOpen(false)} accentColor={accentColor} />
             ) : (
               <div className="flex h-full items-center justify-center">
                 <Spinner size={20} />
@@ -869,12 +869,12 @@ interface GuestContactModalProps {
   onClose: () => void;
 }
 
-/** Guest "Contact" — email capture creates a Follower + fan_session, then the first message opens a chat (fan-shell.md Layer 1b). */
+/** Guest "Contact" — email capture creates a Follower + fan_session, then the first message opens a conversation (fan-shell.md Layer 1b). */
 export function GuestContactModal({ creatorId, creatorUsername, displayName, onClose }: GuestContactModalProps) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const api = useChatApi();
+  const api = useMessageApi();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -938,4 +938,4 @@ export function GuestContactModal({ creatorId, creatorUsername, displayName, onC
   );
 }
 
-export default ChatShell;
+export default MessagesShell;

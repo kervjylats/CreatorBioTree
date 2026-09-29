@@ -1,7 +1,7 @@
 /**
  * Avatar — avatar circle with image + initials fallback (visual half of the
  * getInitials duplication, audit 2026-09-29 #2/trivial). Default is the neutral
- * `bg-foreground/10` circle used across Network/circle/chat lists; themed
+ * `bg-foreground/10` circle used across Network/circle/messaging lists; themed
  * variants (brand colors, borders, shadow) stay hand-rolled at their sites.
  */
 import { getInitials } from "@/lib/fan-helpers";

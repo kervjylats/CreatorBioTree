@@ -6,7 +6,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 const patchSchema = z.object({
   title: z.string().min(1).max(80).optional(),
@@ -21,7 +21,7 @@ export async function PATCH(
   try {
     const { id, channelId } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me || me.party !== "creator") {
       return NextResponse.json({ error: "Only creators can manage channels" }, { status: 403 });
     }
@@ -57,7 +57,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[chat/communities/channels] PATCH:", err);
+    console.error("[messages/communities/channels] PATCH:", err);
     return NextResponse.json({ error: "Failed to update channel" }, { status: 500 });
   }
 }

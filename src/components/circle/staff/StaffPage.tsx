@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { TeamRow } from "@/components/circle/staff/TeamRow";
 import { InviteEmail } from "@/components/shared/InviteEmail";
 import { PermissionsToggles } from "@/components/circle/staff/PermissionsToggles";
-import { ChatIcon } from "@/components/messages/ChatShell";
+import { MessageIcon } from "@/components/messages/MessagesShell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
@@ -168,7 +168,7 @@ export function StaffPage() {
                       />
                     </div>
                     {m.user_id && (
-                      <ChatIcon
+                      <MessageIcon
                         otherKey={m.user_id}
                         otherParty="creator"
                         name={m.user?.display_name ?? m.user?.email ?? "Team member"}

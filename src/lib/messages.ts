@@ -1,5 +1,5 @@
 /**
- * chat.ts — server-side chat helpers (messaging.md Parts 1/2/4/5): party
+ * messages.ts — server-side messaging helpers (messaging.md Parts 1/2/4/5): party
  * identity resolution (creator via creator auth, fan via fan_session cookie),
  * display-name resolution, block checks, allow-anyone preference gate and the
  * direct-conversation find-or-create. Shared by every /api/messages/* route —
@@ -10,20 +10,20 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getFanSession } from "@/lib/fanSession";
 
 /** Header set by the fan/guest surfaces naming the creator whose app is open. */
-export const CHAT_HOST_CREATOR_HEADER = "x-chat-host-creator";
+export const MESSAGE_HOST_CREATOR_HEADER = "x-message-host-creator";
 
-/** A chat participant — fan side uses fan_accounts.id, creator side uses creators.id (messaging.md Part 5). */
-export interface ChatParticipant {
+/** A message participant — fan side uses fan_accounts.id, creator side uses creators.id (messaging.md Part 5). */
+export interface MessageParticipant {
   key: string;
   party: "creator" | "fan";
 }
 
-export interface ChatIdentity extends ChatParticipant {
+export interface MessageIdentity extends MessageParticipant {
   displayName: string;
 }
 
 /** Resolve the caller: creator auth first, then fan_session (messaging.md Part 7 auth note). */
-export async function getChatIdentity(supabase: SupabaseClient): Promise<ChatIdentity | null> {
+export async function getMessageIdentity(supabase: SupabaseClient): Promise<MessageIdentity | null> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -43,7 +43,7 @@ export async function getChatIdentity(supabase: SupabaseClient): Promise<ChatIde
   // Fan side: resolve the fan_account for the creator whose app is open. A fan
   // holds one fan_account per creator, so without this hint a multi-creator fan
   // could be identified as the wrong account (first valid token wins).
-  const hostCreatorId = (await headers()).get(CHAT_HOST_CREATOR_HEADER) ?? undefined;
+  const hostCreatorId = (await headers()).get(MESSAGE_HOST_CREATOR_HEADER) ?? undefined;
   const session = await getFanSession(await cookies(), supabase, hostCreatorId);
   if (session) {
     const { data: account } = await supabase
@@ -59,7 +59,7 @@ export async function getChatIdentity(supabase: SupabaseClient): Promise<ChatIde
 /** Display names for arbitrary participants (creator = display_name, fan = email). */
 export async function resolveParticipantNames(
   supabase: SupabaseClient,
-  participants: ChatParticipant[],
+  participants: MessageParticipant[],
 ): Promise<Map<string, string>> {
   const map = new Map<string, string>();
   const creators = participants.filter((p) => p.party === "creator");
@@ -99,34 +99,34 @@ export async function isBlocked(supabase: SupabaseClient, a: string, b: string):
   return Boolean(data);
 }
 
-/** Per-party chat prefs — default: allow messages from anyone (messaging.md Part 2 privacy). */
+/** Per-party message prefs — default: allow messages from anyone (messaging.md Part 2 privacy). */
 export async function getPrefs(
   supabase: SupabaseClient,
   key: string,
 ): Promise<{ allow_messages_from_anyone: boolean }> {
   const { data } = await supabase
-    .from("chat_prefs")
+    .from("message_prefs")
     .select("allow_messages_from_anyone")
     .eq("participant_key", key)
     .maybeSingle();
   return { allow_messages_from_anyone: data?.allow_messages_from_anyone ?? true };
 }
 
-/** Set per-party chat prefs (insert or update by participant_key). */
+/** Set per-party message prefs (insert or update by participant_key). */
 export async function setPrefs(
   supabase: SupabaseClient,
   key: string,
   prefs: { allow_messages_from_anyone: boolean },
 ): Promise<void> {
   const { data: existing } = await supabase
-    .from("chat_prefs")
+    .from("message_prefs")
     .select("participant_key")
     .eq("participant_key", key)
     .maybeSingle();
 
   if (existing) {
     await supabase
-      .from("chat_prefs")
+      .from("message_prefs")
       .update({ allow_messages_from_anyone: prefs.allow_messages_from_anyone })
       .eq("participant_key", key);
   } else {
@@ -134,7 +134,7 @@ export async function setPrefs(
     // the getPrefs default (allow=true) made a missing row look "existing",
     // so the update path ran against zero rows and silently dropped writes
     // (2026-08-13: PATCH preferences returned 200 but never persisted).
-    await supabase.from("chat_prefs").insert({
+    await supabase.from("message_prefs").insert({
       participant_key: key,
       allow_messages_from_anyone: prefs.allow_messages_from_anyone,
     });

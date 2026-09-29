@@ -2,8 +2,8 @@
  * Sheet — the shared bottom-sheet/dim backdrop shell (duplication audit
  * 2026-09-29 #17: same overlay written 6× with z drifted 50/60/90).
  * Default `z-[60]` sits above the fan bottom nav (z-40) and dialogs (z-50);
- * pass `zClassName` when a sheet must stack higher (e.g. chat's contact sheet
- * over the full-screen chat at z-[70]). Each site keeps its own panel markup
+ * pass `zClassName` when a sheet must stack higher (e.g. messaging contact sheet
+ * over the full-screen messaging at z-[70]). Each site keeps its own panel markup
  * via `panelClassName`/children — only the backdrop + click-to-close live here.
  */
 interface SheetProps {

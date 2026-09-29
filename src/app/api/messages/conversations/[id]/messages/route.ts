@@ -8,7 +8,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity, isBlocked, resolveParticipantNames } from "@/lib/chat";
+import { getMessageIdentity, isBlocked, resolveParticipantNames } from "@/lib/messages";
 
 const sendSchema = z.object({
   body: z.string().min(1).max(2000),
@@ -27,7 +27,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const membership = await getMembership(supabase, id, me.key);
@@ -88,7 +88,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       messages,
     });
   } catch (err) {
-    console.error("[chat/messages] GET:", err);
+    console.error("[messages/messages] GET:", err);
     return NextResponse.json({ error: "Failed to load messages" }, { status: 500 });
   }
 }
@@ -97,7 +97,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
@@ -115,7 +115,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     // Announcements mode — only the owner posts (Part 4).
     if (convo.type !== "direct" && convo.announcements_only && membership.role !== "owner") {
-      return NextResponse.json({ error: "Only the host can post in this chat" }, { status: 403 });
+      return NextResponse.json({ error: "Only the host can post in this conversation" }, { status: 403 });
     }
 
     if (convo.type === "direct") {
@@ -170,7 +170,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       { status: 201 },
     );
   } catch (err) {
-    console.error("[chat/messages] POST:", err);
+    console.error("[messages/messages] POST:", err);
     return NextResponse.json({ error: "Failed to send message" }, { status: 500 });
   }
 }

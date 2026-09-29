@@ -4,7 +4,7 @@
  * { creatorId → token }. Logging in on one creator auto-recognizes you on
  * every creator's link (same email), yet logging out of one creator leaves
  * the others logged in. Pass creatorId to resolve that creator's token; omit
- * it for generic callers (chat, dashboard) that take any valid session.
+ * it for generic callers (messaging, dashboard) that take any valid session.
  */
 import type { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -127,7 +127,7 @@ async function resolveSessionToken(
 /**
  * Resolve the fan session for a creator. Pass `creatorId` when the caller
  * knows which creator's app it's serving; omit it for generic callers that
- * accept any valid session (chat identity, fan dashboard).
+ * accept any valid session (messaging identity, fan dashboard).
  */
 export async function getFanSession(
   cookieStore: CookieStoreLike,

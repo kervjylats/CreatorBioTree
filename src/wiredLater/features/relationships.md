@@ -81,7 +81,7 @@ Click any fan (or community member) → a drawer/side panel with their full rela
 | **Purchases** | Chronological list: item, amount, date, status (completed / refunded) — from `fan_purchases` |
 | **Subscription** | Current plan, status, next renewal — if any |
 | **Installs & activity** | PWA installs (`fan_installs`), last-seen (`fan_sessions`) — is this person actually using my app? |
-| **Messages** | Conversation thread with this fan — **reuses `ChatShell`** from `messaging.md` Part 8. One-click "Message them" button. The differentiator |
+| **Messages** | Conversation thread with this fan — **reuses `MessagesShell`** from `messaging.md` Part 8. One-click "Message them" button. The differentiator |
 | **Notes** | Creator-written free-text note per fan (Patreon's Notes column) — "met at LA event", "wants course 2" |
 | **Actions** | Message · Export single · (production: grant/revoke access, refund — Stan/Patreon actions, mocked in v1) |
 
@@ -180,7 +180,7 @@ Auth: creator-only (`mock_auth_uid` / Supabase) — fans never see this data.
 | #1 File structure | ✅ Decided — ONE umbrella spec; collabs stay in `network.md`, community stays in `messaging.md` Part 3, staff stays in `team.md` (founder decision 2026-08-04) |
 | #2 Hub concept ("My Peeps") | ✅ Decided 2026-08-05 — the umbrella is **My Peeps**: 3 rows (Partners / Fans / Staffs) in an expandable table, no one-search box |
 | #3 Fan list | ✅ Decided — table (email/joined/referred-by/status/LTV/last-purchase) + quick filters + CSV export (competitor floor) |
-| #4 Profile drawer | ✅ Decided — purchases, subscription, installs/activity, MESSAGES (ChatShell reuse), notes, actions. The differentiator |
+| #4 Profile drawer | ✅ Decided — purchases, subscription, installs/activity, MESSAGES (MessagesShell reuse), notes, actions. The differentiator |
 | #5 Referred-by | ✅ Decided — column + filter + tie-in to collab stats (data exists) |
 | #6 Consent | ✅ Decided — do-not-contact flag, email opt-out (flag exists, fan toggle parked), GDPR note, no imports |
 | #7 Deferred | ✅ Decided — tags/segments, MRR-per-fan, product progress, multi-notes, access-grant/refund actions, fan opt-out UI |

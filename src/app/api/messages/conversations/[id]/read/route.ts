@@ -5,13 +5,13 @@
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const now = new Date().toISOString();
@@ -24,7 +24,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     if (error) return NextResponse.json({ error: "Couldn't mark as read" }, { status: 500 });
     return NextResponse.json({ success: true, read_at: now });
   } catch (err) {
-    console.error("[chat/read] POST:", err);
+    console.error("[messages/read] POST:", err);
     return NextResponse.json({ error: "Failed to mark read" }, { status: 500 });
   }
 }

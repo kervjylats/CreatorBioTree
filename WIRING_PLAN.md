@@ -63,7 +63,7 @@
 | **9** | **Settings** `/dashboard/settings` | screen — ✅ done 2026-08-30 |
 | **10** | **Overview** `/dashboard/overview` | screen — ✅ done 2026-08-30 |
 | **11** | **Search** `/search` | screen — ✅ done 2026-08-30 · ❌ **page removed 2026-09-28** (Network hub Discover is the search home; `GET /api/discover/creators` stays) |
-| **12** | **Messaging** — `ChatShell` + 12 routes + 7 tables | feature — ✅ done 2026-08-17 (engine + inbox) · ✅ **Part 3 Community wired 2026-08-31** (fan Home section + guest CTA + Connect card + channels + join/leave) |
+| **12** | **Messaging** — `MessagesShell` + 12 routes + 7 tables | feature — ✅ done 2026-08-17 (engine + inbox) · ✅ **Part 3 Community wired 2026-08-31** (fan Home section + guest CTA + Connect card + channels + join/leave) |
 | **13** | **Partnerships** — 2 routes + invite card + `source` column | feature — ✅ done 2026-08-30 |
 | **14** | **Relationships / My Peeps** — 3 routes + 3 fan_accounts cols | feature — ✅ done 2026-08-30 |
 | **15** | **Team** — 8 routes + 3 tables | feature — ✅ done 2026-08-30 |
@@ -309,14 +309,14 @@ DEPENDS ON  1 2 3 — landing search section deferred (Sheet 23)
 
 > **Purpose:** THE WhatsApp-style inbox: floating 💬 on every screen, 1-on-1 between all parties, requests + block + toggles, group + announcements, Community (Home tab). Build the engine first; screens reuse it.
 
-> **DONE 2026-08-17 (Stage B of the Connected Loop Pass):** `src/components/messages/ChatShell.tsx` (single file: useChat, useUnreadBadge, ChatInboxPopover, ChatShell, ChatThread, MessageList, MessageBubble, MessageComposer, AttachmentPreview, ChatIcon, GuestContactModal) + 12 routes under `/api/messages/*` + `chat_prefs` table (added to the 7 spec tables) + `src/lib/chat.ts` helpers (getChatIdentity, resolveParticipantNames, isBlocked, getPrefs/setPrefs). Wired: dashboard layout floating inbox + `/dashboard/circle/messages`; fan shell header ChatIcon + floating inbox; fan-page messaging catalog item → ChatIcon (identity) / email-capture unlock box (guest); guest "Contact" button → GuestContactModal (email capture → follow row → direct chat). Verified end-to-end via curl: direct chat fan↔creator, unread + read receipts, allow-anyone gate → Requests folder → approve (queued first message delivered), block both directions, group + announcements-only, upload route. Also fixed two real mock bugs (auth singleton leak across requests; chat_prefs writes silently dropped).
+> **DONE 2026-08-17 (Stage B of the Connected Loop Pass):** `src/components/messages/MessagesShell.tsx` (single file: useMessages, useUnreadBadge, MessageInboxPopover, MessagesShell, MessageThread, MessageList, MessageBubble, MessageComposer, AttachmentPreview, MessageIcon, GuestContactModal) + 12 routes under `/api/messages/*` + `message_prefs` table (added to the 7 spec tables) + `src/lib/messages.ts` helpers (getMessageIdentity, resolveParticipantNames, isBlocked, getPrefs/setPrefs). Wired: dashboard layout floating inbox + `/dashboard/circle/messages`; fan shell header MessageIcon + floating inbox; fan-page messaging catalog item → MessageIcon (identity) / email-capture unlock box (guest); guest "Contact" button → GuestContactModal (email capture → follow row → direct chat). Verified end-to-end via curl: direct chat fan↔creator, unread + read receipts, allow-anyone gate → Requests folder → approve (queued first message delivered), block both directions, group + announcements-only, upload route. Also fixed two real mock bugs (auth singleton leak across requests; message_prefs writes silently dropped).
 > **✅ Part 3 Community wired 2026-08-31:** `FanCommunitySection.tsx` (Home tab section with join/leave + channel list), guest-page "Join the community" card → FanAuthModal, Connect-tab community card → deep-link Home. `fanShellData.ts` now fetches community + channels + fan membership status server-side. Community join/leave routes already existed from the engine build.
 
 ```
 FEATURE · MESSAGING  ·  spec: messaging.md (Parts 1–7)
 ──────────────────────────────────────────────────────────
-CONPOC     src/components/ChatShell.tsx — single file → useChat, ChatInboxPopover, ChatThread,
-           MessageList, MessageBubble, MessageComposer, AttachmentPreview, ChatIcon, useUnreadBadge
+CONPOC     src/components/MessagesShell.tsx — single file → useMessages, MessageInboxPopover, MessageThread,
+           MessageList, MessageBubble, MessageComposer, AttachmentPreview, MessageIcon, useUnreadBadge
              (fresh build, NO old-code reference)
 ROUTES     all under /api/messages/* (11):
            GET/POST  conversations
@@ -325,9 +325,9 @@ ROUTES     all under /api/messages/* (11):
            POST      conversations/[id]/read
            POST/DEL  conversations/[id]/members
            PATCH     conversations/[id] (rename/pin/announcements)
-           POST      chat/upload (reuse /api/creator/upload)
-           GET/POST  chat/requests · POST chat/block · GET chat/blocks
-           GET       chat/unread · PATCH chat/preferences
+           POST      messages/upload (reuse /api/creator/upload)
+           GET/POST  messages/requests · POST messages/block · GET messages/blocks
+           GET       messages/unread · PATCH messages/preferences
 TABLES     conversations · conversation_members · messages · message_attachments ·
            message_requests · blocked_users · communities   (all NEW — #4)
 REUSE      guest contact = email capture per Part 2 (no magic link — deleted 2026-08-08)
@@ -361,7 +361,7 @@ FEATURE: RELATIONSHIPS  ·  spec: relationships.md
 ──────────────────────────────────────────────────────────────────────
 COMPONENTS  MyPeeps (umbrella — count card: Partners / Fans / Staff) ·
             Fans: FanList-table (filters + export button) · FanProfileDrawer (purchases,
-            subscription, install history, messages via ChatShell)
+            subscription, install history, messages via MessagesShell)
 API ROUTES  GET    /api/creator/fans/list        LIVE (stats)
             GET    /api/creator/fans/export      EXTEND (LTV, ref-by, consent flag)
             PATCH  /api/creator/fans/[id]        NEW (do_not_contact, notes)
@@ -370,7 +370,7 @@ API ROUTES  GET    /api/creator/fans/list        LIVE (stats)
 TABLES      fan_accounts (+ 3 new cols in #2) · fan_installs · fan_purchases ·
             subscriptions · conversations (read for history)
 OLDCODE      FanStatsCard.tsx · CreatorManagementWidgets.tsx (FanExportButton)
-DEPENDED     #3 #4 (columns) #12 (ChatShell in profile drawer) — builds into Network right rail
+DEPENDED     #3 #4 (columns) #12 (MessagesShell in profile drawer) — builds into Network right rail
 ```
 
 ---
@@ -439,7 +439,7 @@ COMPONENTS         NetworkPage · MyPeeps · PartnersRow (←13) · FansRow (←
                    CollabList · CollabDetail · Discover · BillboardEditor · BillboardCard ·
                    Affiliates (←16) · AffiliateDealForm · EarningsSummary · AffiliateDiscover ·
                    AffiliateLinks · Inbox/Requests ·
-                   ChatIcon (←12) on each creator line
+                   MessageIcon (←12) on each creator line
 ROUTES /api/creator/partners/*   request POST · respond POST · list GET · discoverable GET ·
                                    billboard GET/PUT   (NEW — parterride rebuild old routes)
            + fan/creator/fans/export GET (from #14)
@@ -452,8 +452,8 @@ ORDER     18/23 — the most shelf-heavy (Need Themes like).
 > **✅ DONE 2026-08-30 + ADDENDUM (2026-09-26, `docs/archive/NETWORK_REDESIGN_PLAN.md`) — layout OVERRIDDEN.**
 > The 3-section anchored layout is superseded by **hub + floating dock + 3 sub-screens**:
 > - **Hub `/dashboard/network`** — 2-col at `lg`: LEFT rail (BillboardPreview/Editor + affiliate block: `＋ New deal` → AffiliateDealForm → YourDealsCard → EarningsSummary → AffiliateDiscover → AffiliateLinks — mounted 2026-09-27, components in `src/components/network/`) · CENTER = **Discover grid** (`/api/discover/creators?q=` + result cards with Visit + Connect buttons). Right rail removed. Mobile order: Discover → Billboard → Affiliates.
-> - **3 sub-screens:** `/dashboard/circle/partners` (InboxRequests pending-only + CollabList active-only + CollabDetail w/ ChatIcon + PartnerInviteCard) · `/dashboard/circle/fans` (FanListTable full-width + FanProfileDrawer w/ ChatIcon) · `/dashboard/circle/staff` (pending invites + TeamRow members + PermissionsToggles + InviteEmail + ChatIcon per row). Route chain per sub-screen: `page.tsx` re-export → `screens/creator/circle/<name>/Screen.tsx` → `components/circle/<Name>Page.tsx`.
-> - **My Peeps + 💬 = ONE unified dock stack** (`components/layout/MyPeeps.tsx` + `ChatInboxPopover`), mounted in `app/(shell)/layout.tsx` inside the **single** floating wrapper `fixed bottom-20 right-4 z-50 flex flex-col items-center gap-2 sm:bottom-6 sm:right-6` — vertical order top→bottom = Partners · Fans · Staff · Messages. Both components are **position-less** (MyPeeps = fragment of 3 buttons; ChatInboxPopover root = `relative`) — the mount site owns placement, so there is no hardcoded offset to keep in sync. All four buttons are uniform `h-11 w-11` round icon buttons (icon-only every breakpoint, `title` tooltips); active page from `usePathname()`; red combined pill per chip (Partners = pending_requests + unread · Fans = unread · Staff = pending_invites + unread; "99+" cap; hidden at 0); 30s poll. Fan shell wraps its bubble independently in `FanAppShell.tsx` (different surface, not a sync pair).
+> - **3 sub-screens:** `/dashboard/circle/partners` (InboxRequests pending-only + CollabList active-only + CollabDetail w/ MessageIcon + PartnerInviteCard) · `/dashboard/circle/fans` (FanListTable full-width + FanProfileDrawer w/ MessageIcon) · `/dashboard/circle/staff` (pending invites + TeamRow members + PermissionsToggles + InviteEmail + MessageIcon per row). Route chain per sub-screen: `page.tsx` re-export → `screens/creator/circle/<name>/Screen.tsx` → `components/circle/<Name>Page.tsx`.
+> - **My Peeps + 💬 = ONE unified dock stack** (`components/layout/MyPeeps.tsx` + `MessageInboxPopover`), mounted in `app/(shell)/layout.tsx` inside the **single** floating wrapper `fixed bottom-20 right-4 z-50 flex flex-col items-center gap-2 sm:bottom-6 sm:right-6` — vertical order top→bottom = Partners · Fans · Staff · Messages. Both components are **position-less** (MyPeeps = fragment of 3 buttons; MessageInboxPopover root = `relative`) — the mount site owns placement, so there is no hardcoded offset to keep in sync. All four buttons are uniform `h-11 w-11` round icon buttons (icon-only every breakpoint, `title` tooltips); active page from `usePathname()`; red combined pill per chip (Partners = pending_requests + unread · Fans = unread · Staff = pending_invites + unread; "99+" cap; hidden at 0); 30s poll. Fan shell wraps its bubble independently in `FanAppShell.tsx` (different surface, not a sync pair).
 > - **`GET /api/creator/peeps` re-shaped:** `{ partners, fans, staff, pending_requests, pending_invites, unread: { partners, fans, staff } }` — unread classifies each active direct convo's other participant (fan_accounts → fans · creator_team_members → staff · non-ended partnership → partners), skipping muted + deleted + own messages.
 > - **`GET /api/creator/partners/list`** now returns ALL non-ended rows (active + pending) + computed `direction` (`"incoming"` when `creator_b === user.id`, else `"outgoing"`).
 > - **`GET /api/creator/fans/list`** now returns `id`, `do_not_contact`, computed `total_spent` (sum of completed `fan_purchases.amount_paid` per fan).

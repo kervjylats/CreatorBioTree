@@ -6,8 +6,8 @@
  * these BEFORE the server slices them.
  */
 
-/** Chat attachment cap — must match `api/messages/upload` (8MB). */
-export const MAX_CHAT_UPLOAD_BYTES = 8_000_000;
+/** Message attachment cap — must match `api/messages/upload` (8MB). */
+export const MAX_MESSAGE_UPLOAD_BYTES = 8_000_000;
 
 /** Creator file upload cap — must match `api/creator/upload` (50MB). */
 export const MAX_AVATAR_UPLOAD_BYTES = 50 * 1024 * 1024;

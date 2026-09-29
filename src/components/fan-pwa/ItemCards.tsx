@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import type { ContentItem } from "@/types";
 import type { CreatorBranding } from "@/lib/branding";
 import { TYPE_ICONS } from "@/types/contentTypes";
-import { ChatIcon } from "@/components/messages/ChatShell";
+import { MessageIcon } from "@/components/messages/MessagesShell";
 import type { FanIdentity, ItemGate } from "./fanData";
 import { computeItemGate } from "./fanData";
 import { money, DAY_LABELS } from "@/lib/format";
@@ -90,7 +90,7 @@ export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuth
       setShowUnlockBox(true);
       return;
     }
-    toast("Chat is coming soon — you're on the list.");
+    toast("Messages is coming soon — you're on the list.");
   };
 
   return (
@@ -156,7 +156,7 @@ export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuth
           {item.type === "newsletter" && <NewsletterInline item={item} branding={branding} onUnlock={onUnlock} />}
           {item.type === "messaging" &&
             (identity ? (
-              <ChatIcon otherKey={branding.creatorId} otherParty="creator" name={branding.displayName} accentColor={branding.accentColor} />
+              <MessageIcon otherKey={branding.creatorId} otherParty="creator" name={branding.displayName} accentColor={branding.accentColor} />
             ) : (
               <button type="button" {...buttonClass(branding)} onClick={handleMessage}>
                 <MessageCircle size={14} /> Message

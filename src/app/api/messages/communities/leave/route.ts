@@ -5,7 +5,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 const leaveSchema = z.object({
   community_id: z.string().min(1),
@@ -14,7 +14,7 @@ const leaveSchema = z.object({
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       .from("conversations")
       .select("id")
       .eq("community_id", validation.data.community_id)
-      .eq("type", "community_chat");
+      .eq("type", "community");
 
     if (!channels?.length) {
       return NextResponse.json({ error: "Community not found" }, { status: 404 });
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[chat/communities/leave] POST:", err);
+    console.error("[messages/communities/leave] POST:", err);
     return NextResponse.json({ error: "Failed to leave community" }, { status: 500 });
   }
 }

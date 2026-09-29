@@ -3,7 +3,7 @@
  * Renders nav items from nav-config.ts (single source of truth).
  * Admin Panel appears for admin users on BOTH desktop sidebar and mobile bottom bar.
  * No sign out here — that lives in Settings.
- * Messages via floating ChatInboxPopover.
+ * Messages via floating MessageInboxPopover.
  *
  * On phones (<md), replaced by a bottom bar with the same items.
  */

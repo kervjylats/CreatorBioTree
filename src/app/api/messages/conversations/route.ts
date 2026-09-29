@@ -9,8 +9,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity, isBlocked, resolveParticipantNames } from "@/lib/chat";
-import { getPrefs } from "@/lib/chat";
+import { getMessageIdentity, isBlocked, resolveParticipantNames } from "@/lib/messages";
+import { getPrefs } from "@/lib/messages";
 
 interface ConvoRow {
   id: string;
@@ -47,7 +47,7 @@ async function listConversations(supabase: Awaited<ReturnType<typeof createClien
 
   // Per-conversation last message + unread count use server-side filtered
   // queries (order+limit 1, and a COUNT) — never load full history. This list
-  // is polled every 6s by the chat shell.
+  // is polled every 6s by the messages shell.
   const summaries = await Promise.all(
     ((convos ?? []) as ConvoRow[]).map(async (convo) => {
       const memberRow = active.find((m) => m.conversation_id === convo.id)!;
@@ -126,13 +126,13 @@ const createSchema = z.object({
 export async function GET() {
   try {
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const conversations = await listConversations(supabase, me.key);
     return NextResponse.json({ myKey: me.key, myParty: me.party, conversations });
   } catch (err) {
-    console.error("[chat/conversations] GET:", err);
+    console.error("[messages/conversations] GET:", err);
     return NextResponse.json({ error: "Failed to load conversations" }, { status: 500 });
   }
 }
@@ -140,7 +140,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
@@ -207,7 +207,7 @@ export async function POST(req: Request) {
     }
 
     // Groups — creators only (Part 4).
-    if (me.party !== "creator") return NextResponse.json({ error: "Only creators can create group chats" }, { status: 403 });
+    if (me.party !== "creator") return NextResponse.json({ error: "Only creators can create group conversations" }, { status: 403 });
     if (!title) return NextResponse.json({ error: "Group name required" }, { status: 400 });
 
     const now = new Date().toISOString();
@@ -233,7 +233,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ conversation_id: group.id, status: "ok" }, { status: 201 });
   } catch (err) {
-    console.error("[chat/conversations] POST:", err);
+    console.error("[messages/conversations] POST:", err);
     return NextResponse.json({ error: "Failed to create conversation" }, { status: 500 });
   }
 }

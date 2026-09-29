@@ -28,7 +28,7 @@ These are the ones that most shrink the codebase. **Not built yet, not wired —
 |---|---|---|---|---|---|
 | 1 | **Push notifications** | `web-push` + VAPID + `push_subscriptions` table + service worker wiring | **OneSignal** (free tier: 10k subscribers, unlimited sends) | HUGE — kills an entire subsystem | OneSignal is a third party; fans' devices go through them |
 | 2 | **Background jobs** (scheduled publish, emails, affiliate payouts) | Nothing in-process — work runs inline in routes (`queue.ts` removed in the 2026-09-28 cleanup; rebuild at migration) | **QStash** (500 msgs/day free) or **Inngest** (10k events/mo free) | Kills queue infra | Rebuild the small queue wrapper when wiring real jobs |
-| 3 | **Real-time (chat)** | Polling (**implemented** — 6s polling in `useChat`, ChatShell) | **Supabase Realtime** free | Replaces polling with live push | Deferred decision per `messaging.md` |
+| 3 | **Real-time (messaging)** | Polling (**implemented** — 6s polling in `useMessages`, MessagesShell) | **Supabase Realtime** free | Replaces polling with live push | Deferred decision per `messaging.md` |
 | 4 | **Error tracking** | Nothing | **Sentry** free | Debugging speed, not code size | Optional |
 | 5 | **Analytics** (views, installs) | Custom tables + RPCs | **PostHog** (10k events/mo free) or keep custom | Optional — your data vs theirs | Keep custom if privacy matters |
 | 6 | **Branded share-card images** (OG meta) | Hand-rolled | **@vercel/og** (open-source, free) | Removes image-gen code | Serverless edge, no cost |
@@ -57,7 +57,7 @@ These are your product. Outsourcing them would mean renting out your differentia
 |---|---|
 | **The fan-app builder** (My App designer, catalog editor) | The core product — creator-to-fan publishing |
 | **The branding system** (`resolveBranding`, custom themes) | Your look-and-feel, not a service's |
-| **The chat engine** (`ChatShell`) | Spec'd custom via `messaging.md`; realtime provider is the only external bit |
+| **The messaging engine** (`MessagesShell`) | Spec'd custom via `messaging.md`; realtime provider is the only external bit |
 | **Affiliate deal ledger + attribution + distribution** | Custom trust layer (`affiliate_*` tables) — the platform's credibility |
 | **PWA manifests + install kit** | Ours, per-creator, driven by branding |
 | **Payments business logic** | **PayPal handles card rails (v1, PayPal-first — 2026-08-10; Stripe = deferred Atlas path)**; the rules around purchases/claims/settlement stay yours |

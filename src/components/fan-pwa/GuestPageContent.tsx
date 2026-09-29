@@ -20,7 +20,7 @@ import { CreatorHeader } from "./CreatorHeader";
 import { FollowBox } from "./FollowBox";
 import { ItemCard } from "./ItemCards";
 import { FanAuthModal } from "./FanAuthModal";
-import { GuestContactModal, ChatHostProvider } from "@/components/messages/ChatShell";
+import { GuestContactModal, MessageHostProvider } from "@/components/messages/MessagesShell";
 import { PoweredByFooter } from "./PoweredByFooter";
 import { buttonClass, cardRadius } from "./themeStyles";
 
@@ -107,7 +107,7 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
   };
 
   return (
-    <ChatHostProvider creatorId={branding.creatorId}>
+    <MessageHostProvider creatorId={branding.creatorId}>
       <div
         className="min-h-full w-full pb-[var(--bottom-nav-height)]"
         data-mock-edit-kind="background"
@@ -293,6 +293,6 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
           />
         )}
       </div>
-    </ChatHostProvider>
+    </MessageHostProvider>
   );
 }

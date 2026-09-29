@@ -2,8 +2,8 @@
  * My Peeps dock — three navigation icon buttons (Partners / Fans / Staff) with
  * red count badges. POSITION-LESS: the mount site (shell layout's floating stack)
  * owns placement — this component renders only the button group. Hidden entirely
- * on /admin. Uniform h-11 w-11 circles at every breakpoint (matches the chat
- * bubble that sits below it in the stack).
+ * on /admin. Uniform h-11 w-11 circles at every breakpoint (matches the
+ * message bubble that sits below it in the stack).
  */
 "use client";
 

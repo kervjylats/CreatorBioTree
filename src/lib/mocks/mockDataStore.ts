@@ -53,7 +53,7 @@ export type TableName =
   | "message_requests"
   | "blocked_users"
   | "communities"
-  | "chat_prefs"
+  | "message_prefs"
   // ── Team (team.md) ──
   | "creator_team_members"
   | "creator_team_invites"
@@ -114,7 +114,7 @@ function initStore(): void {
   mockStore.set("message_requests", []);
   mockStore.set("blocked_users", []);
   mockStore.set("communities", []);
-  mockStore.set("chat_prefs", []);
+  mockStore.set("message_prefs", []);
   mockStore.set("creator_team_members", []);
   mockStore.set("creator_team_invites", []);
   mockStore.set("creator_team_activity", []);

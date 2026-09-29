@@ -78,7 +78,7 @@ export function PhonePreview({ data, activeTab, onTabChange }: PhonePreviewProps
         {/* Dynamic island notch — cosmetic overlay */}
         <div className="pointer-events-none absolute top-0 left-1/2 z-50 -translate-x-1/2 mt-1 h-5 w-24 rounded-full bg-black/80" />
 
-        {/* Branded header — matches FanAppShell (simplified: no ChatIcon/Bell in preview) */}
+        {/* Branded header — matches FanAppShell (simplified: no MessageIcon/Bell in preview) */}
         <header
           className="flex shrink-0 px-4 py-3"
           style={{ backgroundColor: branding.backgroundColor + "DD" }}

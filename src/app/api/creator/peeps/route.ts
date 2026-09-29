@@ -2,11 +2,11 @@
  * GET /api/creator/peeps — My Peeps umbrella (relationships.md Part 1)
  * extended for the Network rebuild: partner/fan/staff counts plus the data the
  * floating dock badges need — pending collab requests, pending team invites,
- * and per-group unread chat totals (partners/fans/staff).
+ * and per-group unread message totals (partners/fans/staff).
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 export async function GET() {
   try {
@@ -16,7 +16,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // ── Counts ────────────────────────────────────────────────────────────────

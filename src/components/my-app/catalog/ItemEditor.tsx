@@ -548,7 +548,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
               <input
                 value={(draft.metadata.auto_response as string) ?? ""}
                 onChange={(e) => patchMetadata("auto_response", e.target.value)}
-                placeholder="Hi! I reply within a day — chat arrives post-launch."
+                placeholder="Hi! I reply within a day — messaging arrives post-launch."
                 className={INPUT_CLASS}
               />
             </div>

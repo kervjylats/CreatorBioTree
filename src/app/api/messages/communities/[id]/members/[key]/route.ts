@@ -4,7 +4,7 @@
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 export async function DELETE(
   _req: Request,
@@ -13,7 +13,7 @@ export async function DELETE(
   try {
     const { id, key } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me || me.party !== "creator") {
       return NextResponse.json({ error: "Only creators can remove members" }, { status: 403 });
     }
@@ -37,7 +37,7 @@ export async function DELETE(
       .from("conversations")
       .select("id")
       .eq("community_id", id)
-      .eq("type", "community_chat");
+      .eq("type", "community");
 
     const channelIds = (channels ?? []).map((c) => c.id as string);
     const now = new Date().toISOString();
@@ -52,7 +52,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[chat/communities/members] DELETE:", err);
+    console.error("[messages/communities/members] DELETE:", err);
     return NextResponse.json({ error: "Failed to remove member" }, { status: 500 });
   }
 }

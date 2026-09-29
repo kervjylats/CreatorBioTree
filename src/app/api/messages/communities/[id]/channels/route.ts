@@ -5,13 +5,13 @@
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data: community } = await supabase
@@ -28,7 +28,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       .from("conversations")
       .select("*")
       .eq("community_id", id)
-      .eq("type", "community_chat");
+      .eq("type", "community");
 
     const channelIds = (channels ?? []).map((c) => c.id as string);
     const myMemberships: Record<string, string> = {};
@@ -57,7 +57,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     return NextResponse.json({ channels: enriched });
   } catch (err) {
-    console.error("[chat/communities/channels] GET:", err);
+    console.error("[messages/communities/channels] GET:", err);
     return NextResponse.json({ error: "Failed to load channels" }, { status: 500 });
   }
 }

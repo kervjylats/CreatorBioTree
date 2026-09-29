@@ -6,7 +6,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 const createSchema = z.object({
   name: z.string().min(1).max(80),
@@ -17,7 +17,7 @@ const createSchema = z.object({
 export async function GET() {
   try {
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     if (me.party === "creator") {
@@ -40,7 +40,7 @@ export async function GET() {
       .from("conversations")
       .select("id, creator_id")
       .in("id", convoIds)
-      .eq("type", "community_chat");
+      .eq("type", "community");
 
     const ownerIds = [...new Set((convos ?? []).map((c) => c.creator_id as string).filter(Boolean))];
     if (ownerIds.length === 0) return NextResponse.json({ community: null });
@@ -52,7 +52,7 @@ export async function GET() {
 
     return NextResponse.json({ community: communities?.[0] ?? null });
   } catch (err) {
-    console.error("[chat/communities] GET:", err);
+    console.error("[messages/communities] GET:", err);
     return NextResponse.json({ error: "Failed to load community" }, { status: 500 });
   }
 }
@@ -60,7 +60,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me || me.party !== "creator") {
       return NextResponse.json({ error: "Only creators can create communities" }, { status: 403 });
     }
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
     ];
 
     const channelRows = defaultChannels.map((ch) => ({
-      type: "community_chat",
+      type: "community",
       title: ch.title,
       creator_id: me.key,
       community_id: community.id,
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ community, channels: channels ?? [] }, { status: 201 });
   } catch (err) {
-    console.error("[chat/communities] POST:", err);
+    console.error("[messages/communities] POST:", err);
     return NextResponse.json({ error: "Failed to create community" }, { status: 500 });
   }
 }

@@ -82,7 +82,7 @@ src/
 │   │   └── offline/              # /offline
 │   │
 │   ├── (creator)/dashboard/      # Creator Dashboard (PWA #2)
-│   │   ├── layout.tsx            # Auth guard (no user → /login, no creator → /onboarding) + floating ChatInboxPopover
+│   │   ├── layout.tsx            # Auth guard (no user → /login, no creator → /onboarding) + floating MessageInboxPopover
 │   │   ├── page.tsx              # REDIRECT → /dashboard/overview
 │   │   ├── overview/             # /dashboard/overview (wired)
 │   │   ├── my-app/               # /dashboard/my-app (see + edit fan shell — WIRED)
@@ -128,7 +128,7 @@ src/
 │   ├── network/                  # Network hub only: NetworkPage, Billboards, Affiliate×4 + YourDealsCard
 │   ├── circle/                   # Dock pages, mirrors /dashboard/circle/*: partners/ · fans/ · staff/
 │   │                             #   (pages + their guts: Collab trio + invite card · fan tables · staff rows)
-│   ├── messages/                 # ChatShell.tsx — the whole messaging engine (dashboard + fan shell + guest)
+│   ├── messages/                 # MessagesShell.tsx — the whole messaging engine (dashboard + fan shell + guest)
 │   ├── layout/                   # Shell chrome: DashboardSidebar, MyPeeps (the dock)
 │   ├── shared/                   # Used by 2+ different features: InviteEmail (staff + admin)
 │   ├── overview/ settings/ admin/ analytics/  # Screen-owned widgets (e.g. FanExportButton → overview/)
@@ -258,7 +258,7 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `block/` · `blocks/` | POST/GET | Block a user / list blocked |
 | `unread/` | GET | Unread count for the floating badge |
 | `preferences/` | GET/POST | Allow-anyone toggle |
-| `upload/` | POST | Chat attachments (≤8MB, 10/min, `chat-attachments` bucket) |
+| `upload/` | POST | Chat attachments (≤8MB, 10/min, `message-attachments` bucket) |
 
 ### 5.2 Fan API (`/api/fan/**`)
 
@@ -323,9 +323,9 @@ Button, Input, Textarea, Select, Switch, Separator, Tooltip, Card, Badge, Dialog
 
 `AuthCard` (centered wrapper), `LoginForm` (`?next=` redirect, root-cause error copy, mock-only social buttons, mock auto-signup fallback), `ForgotPasswordForm`, `OnboardingForm` (Link Address availability + permanence dialog).
 
-### 6.3 chat/ — ChatShell.tsx (WIRED, Sheet 12)
+### 6.3 messages/ — MessagesShell.tsx (WIRED, Sheet 12)
 
-Single-file messaging engine per messaging.md: `useChat` (6s polling), `useUnreadBadge`, `ChatInboxPopover` (floating 💬), `ChatShell`, `ChatThread`, `MessageList`, `MessageBubble`, `MessageComposer`, `AttachmentPreview`, `ChatIcon`, `GuestContactModal`. Neutral platform styling — never creator-themed.
+Single-file messaging engine per messaging.md: `useMessages` (6s polling), `useUnreadBadge`, `MessageInboxPopover` (floating 💬), `MessagesShell`, `MessageThread`, `MessageList`, `MessageBubble`, `MessageComposer`, `AttachmentPreview`, `MessageIcon`, `GuestContactModal`. Neutral platform styling — never creator-themed.
 
 ### 6.4 fan-pwa/ — Fan App (WIRED, Sheet 21-V1, 20 files)
 
@@ -574,7 +574,7 @@ Page reloads → FanAppShell renders (authenticated view)
 - Social scrape route did not exist (re-added later as an UNWIRED 503 stub for rebuild)
 - **A1/A1.5/A2 restructure (2026-08-07):** `src/app/` became a thin address book — route groups `(public)/`, `(fan)/[username]/`, `(creator)/dashboard/`, `(admin)/admin/` — and a new `src/screens/` middleman was created (17 screen folders, one `index.ts` + `Screen.tsx` each). Every page.tsx is a 2-line re-export. Planning + audit docs at repo root: `WIRING_PLAN.md`, `CODEBASE_AUDIT.md`, `CODEBASE_INVENTORY.md`.
 - **Foundation prep (2026-08-07):** adopted `api-utils`/`api-error`/`requireAuth` into `src/lib/`; added messaging/team/affiliate types + 14 mock tables + 9 brand presets; killed 5 dead files; added 5 missing rate limits.
-- **Wiring (2026-08-10 → 2026-08-31):** Sheets 6-7 (login/onboarding/forgot-password), Sheet 19-V1 (My App — 16 item types + device uploads), Sheet 21-V1 (fan shell + mock PayPal checkout), Sheet 12 (messaging engine — 12 routes + ChatShell), Sheets 8-11 + 13-16 + 18 + 20 + 22 (admin, settings, overview, search, partnerships, relationships, team, affiliates, network, partner page, offline — all wired 2026-08-30). 18 API routes rewritten from mock store to Supabase clients. Dead code removed (Stripe, Paddle, playground/ai, ai-summary, unused deps).
+- **Wiring (2026-08-10 → 2026-08-31):** Sheets 6-7 (login/onboarding/forgot-password), Sheet 19-V1 (My App — 16 item types + device uploads), Sheet 21-V1 (fan shell + mock PayPal checkout), Sheet 12 (messaging engine — 12 routes + MessagesShell), Sheets 8-11 + 13-16 + 18 + 20 + 22 (admin, settings, overview, search, partnerships, relationships, team, affiliates, network, partner page, offline — all wired 2026-08-30). 18 API routes rewritten from mock store to Supabase clients. Dead code removed (Stripe, Paddle, playground/ai, ai-summary, unused deps).
 
 ### What's LIVE vs EXTRACTED
 
@@ -584,7 +584,7 @@ Page reloads → FanAppShell renders (authenticated view)
 | UI primitives | `components/ui/` (11 shadcn) | — |
 | Fan shell | `components/fan-pwa/` (20 files — full implementation) | Pre-wiring versions |
 | My App editor | `components/my-app/` (MyAppForm, PhonePreview, PreviewStateToggle, catalog/ editors…) + hooks | Old playground versions |
-| Messaging | `components/messages/ChatShell.tsx` + `lib/chat.ts` + 12 routes | — (wired fresh from spec) |
+| Messaging | `components/messages/MessagesShell.tsx` + `lib/messages.ts` + 12 routes | — (wired fresh from spec) |
 | Catalog | CRUD + my-app + upload routes; 16 editors live in `catalog/` | 17 old editors + manager |
 | Hooks | 3 live (useAutoSave, useMyAppForm, usePWAInstall) | Archive copies |
 | Admin RBAC | Roles, permissions, API routes, `admin-permissions.ts` + 5-tab admin UI | — |

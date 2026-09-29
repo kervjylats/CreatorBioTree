@@ -99,7 +99,7 @@ export async function resolveFanShellData(username: string): Promise<FanShellDat
       .from("conversations")
       .select("id, title, announcements_only, restricted")
       .eq("community_id", commRow.id)
-      .eq("type", "community_chat");
+      .eq("type", "community");
 
     let isMember = false;
     const memberRoles: Record<string, string> = {};

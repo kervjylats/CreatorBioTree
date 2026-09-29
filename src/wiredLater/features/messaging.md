@@ -145,7 +145,7 @@ Community is **Phase 3** of the messaging build (see Part 9) — it ships only a
 
 ### Files & attachments
 
-- Images, videos, docs via `/api/messages/upload` (≤8MB, 10/min; stored in the mock `chat-attachments` bucket — the catalog `/api/creator/upload` pattern)
+- Images, videos, docs via `/api/messages/upload` (≤8MB, 10/min; stored in the mock `message-attachments` bucket — the catalog `/api/creator/upload` pattern)
 - Per-message attachments: `message_attachments` rows, rendered inline (image preview) or as download cards
 - Mock: in-memory storage via the mock storage API (`makeStorageApi()` in `src/lib/mocks/mockSupabaseClient.ts`); Production: existing S3/upload service
 - Size limits: TBD at wiring (align with catalog upload caps)
@@ -156,7 +156,7 @@ Community is **Phase 3** of the messaging build (see Part 9) — it ships only a
 
 | Table | Purpose |
 |---|---|
-| `conversations` | id, type (`direct` / `group` / `community_chat`), title (groups), creator_id (group/community owner), created_at, last_message_at, pinned |
+| `conversations` | id, type (`direct` / `group` / `community`), title (groups), creator_id (group/community owner), created_at, last_message_at, pinned |
 | `conversation_members` | conversation_id, participant_key (fan_account_id / creator_id), role (owner/admin/member), last_read_at, muted_at, added_at, left_at |
 | `messages` | id, conversation_id, sender_key, body, attachment refs, edited_at, deleted_at (tombstone), created_at |
 | `message_attachments` | id, message_id, storage_url, mime, name, size |
@@ -166,7 +166,7 @@ Community is **Phase 3** of the messaging build (see Part 9) — it ships only a
 
 **Participant keying:** fan side uses the per-creator `fan_accounts` (fan-shell model); creator side uses `creators.id`. A person who is both uses the appropriate key per context (same as the two-auth-system split elsewhere).
 
-**Community = container over conversations.** A community's channels ARE `conversations` (type `community_chat`) with the creator as owner; `conversation_members.role` carries Member / VIP / Partner (Part 3). Channel membership, per-channel `restricted` access, and announcements-only all reuse the existing group mechanics — `communities` only wraps them (id, owner, name, icon, join_rule).
+**Community = container over conversations.** A community's channels ARE `conversations` (type `community`) with the creator as owner; `conversation_members.role` carries Member / VIP / Partner (Part 3). Channel membership, per-channel `restricted` access, and announcements-only all reuse the existing group mechanics — `communities` only wraps them (id, owner, name, icon, join_rule).
 
 ---
 
@@ -213,13 +213,13 @@ Auth: fan-side cookie sessions (`fan_` pattern) or creator auth (`mock_auth_uid`
 
 ## Part 8: Component Plan (single file + exports)
 
-Per founder request: **one `ChatShell.tsx` file** (in `src/components/`, wired at Phase F) exporting hooks/components where necessary:
+Per founder request: **one `MessagesShell.tsx` file** (in `src/components/`, wired at Phase F) exporting hooks/components where necessary:
 
-- `useChat` — conversation list + unread polling hook
-- `ChatInboxPopover` — the floating-icon popover (WhatsApp-style list + "Open full")
-- `ChatThread` — full conversation view (messages, composer, files)
+- `useMessages` — conversation list + unread polling hook
+- `MessageInboxPopover` — the floating-icon popover (WhatsApp-style list + "Open full")
+- `MessageThread` — full conversation view (messages, composer, files)
 - `MessageList` / `MessageBubble` / `MessageComposer` / `AttachmentPreview`
-- `ChatIcon` — the per-name quick-chat icon (mini box + open-full)
+- `MessageIcon` — the per-name quick-chat icon (mini box + open-full)
 - `useUnreadBadge` — badge count hook for the floating icon / sidebar
 
 ---

@@ -39,7 +39,7 @@ Parts archive (old code) available:
 - **Hub (`/dashboard/network`)** — 2 columns at `md+`: LEFT rail (Billboard preview + editor + Affiliates: `＋ New deal` form → Your deals card → EarningsSummary/AffiliateDiscover/AffiliateLinks) · CENTER = **Discover grid** (search box + result cards with Visit + Connect buttons). Mobile (<`md`) order: Discover → Billboard → Affiliates; at `md+` the rail is `order-1` (left track), Discover `order-2` (center), result cards go 2-up from `lg`.
 - **3 dock pages** (entered via the My Peeps dock) — `/dashboard/circle/partners` (collab Requests inbox with Accept/Decline + outgoing Pending + active Collabs list/detail + "Invite a partner" card), `/dashboard/circle/fans` (full-width `FanListTable` + `FanProfileDrawer`), `/dashboard/circle/staff` (pending team invites + members + `PermissionsToggles`).
 - **My Peeps = unified dock stack** (ONE component, `src/components/layout/MyPeeps.tsx`) — the single floating stack at bottom-right on every `/dashboard/*` page: **Partners · Fans · Staff · 💬 Messages** (top→bottom) as uniform round icon buttons. Active page highlights; each chip carries ONE combined red badge (Partners = pending requests + unread, Fans = unread, Staff = pending invites + unread). Counts from `GET /api/creator/peeps` (30s poll). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement.
-- **💬 ChatIcon** on collab detail + fan drawer + staff rows (creator↔creator / creator↔fan threads).
+- **💬 MessageIcon** on collab detail + fan drawer + staff rows (creator↔creator / creator↔fan threads).
 
 **Full spec: `screens/creator-dashboard/network/network.md`** (friend-request style, discovery directory, discoverability toggle, affiliates §7)
 
@@ -192,7 +192,7 @@ Surfaces:
 - **Partner page** — chat icon next to partner names (fan↔partner)
 - **Offline** — messages queue locally and sync (see `screens/public/offline.md`)
 
-No new screen route beyond `/dashboard/circle/messages` — the rest lives inside the fan shell frame and existing screens. Full data model, requests/block/toggles, group chats + announcements, Community (Part 3), and the single-file `ChatShell.tsx` plan are all in `messaging.md`. **Status: WIRED 2026-08-17 (Sheet 12)** — `src/components/messages/ChatShell.tsx` + `src/lib/chat.ts` + 12 `/api/messages/*` routes; Community (Part 3) remains unbuilt.
+No new screen route beyond `/dashboard/circle/messages` — the rest lives inside the fan shell frame and existing screens. Full data model, requests/block/toggles, group chats + announcements, Community (Part 3), and the single-file `MessagesShell.tsx` plan are all in `messaging.md`. **Status: WIRED 2026-08-17 (Sheet 12)** — `src/components/messages/MessagesShell.tsx` + `src/lib/messages.ts` + 12 `/api/messages/*` routes; Community (Part 3) remains unbuilt.
 
 ---
 
@@ -202,7 +202,7 @@ No new screen route beyond `/dashboard/circle/messages` — the rest lives insid
 
 - **Dock** — ONE component (`MyPeeps.tsx`): 3 icon buttons + the 💬 bubble in one vertical stack, combined red badges (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread; 30s poll of `GET /api/creator/peeps`)
 - **Partners (`/dashboard/circle/partners`)** — collab Requests inbox (Accept/Decline + outgoing Pending) + active collabs list/detail + "Invite a partner" card
-- **Fans (`/dashboard/circle/fans`)** — full-width fan table (email, joined, referred-by, status chip, lifetime value, last purchase + filters + CSV export) + `FanProfileDrawer` (purchases, subscription, installs/activity, **message history via ChatShell**, consent flags)
+- **Fans (`/dashboard/circle/fans`)** — full-width fan table (email, joined, referred-by, status chip, lifetime value, last purchase + filters + CSV export) + `FanProfileDrawer` (purchases, subscription, installs/activity, **message history via MessagesShell**, consent flags)
 - **Staff (`/dashboard/circle/staff`)** — pending team invites + members + permission toggles (see Team below)
 - Collabs → `network.md`; community members → `messaging.md` Part 3
 

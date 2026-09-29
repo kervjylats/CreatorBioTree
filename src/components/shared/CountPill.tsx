@@ -1,6 +1,6 @@
 /**
  * CountPill — the red unread badge (duplication audit 2026-09-29 trivial sweep:
- * the dock badge was byte-identical in MyPeeps + ChatShell, the row badge a
+ * the dock badge was byte-identical in MyPeeps + MessagesShell, the row badge a
  * third copy). "dock" = absolute corner badge with 99+ cap · "row" = inline
  * list badge (no cap). Visibility guards (`count > 0`) stay at the call site.
  */

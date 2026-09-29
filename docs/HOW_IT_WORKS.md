@@ -230,7 +230,7 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 | **Admin RBAC system** | `admin_accounts` table, 4 roles, permission checks (`canPerform`) — fully wired (Sheet 8, 2026-08-30) |
 | **My App editor** | Full-screen preview, Identity/Design/Catalog/Artist Links, 16 item types + device uploads, auto-save, draft/live/deploy, tap-to-edit |
 | **Fan shell** | Guest 3-layer page, 4-tab fan app, item cards for all 16 types, gates, receipts, install trio, update toast |
-| **Messaging engine** | 12 `/api/messages/*` routes + ChatShell (floating inbox, requests, groups, announcements, block, attachments) |
+| **Messaging engine** | 12 `/api/messages/*` routes + MessagesShell (floating inbox, requests, groups, announcements, block, attachments) |
 | **Catalog API routes** | item CRUD + my-app + fan data + purchases + upload + paypal + chat families live |
 | **Content service** | Shared infrastructure stays live |
 | **File uploads** | Images/files saved to `/public/mock-uploads/` via `/api/creator/upload` (50MB, per-type MIME check) |

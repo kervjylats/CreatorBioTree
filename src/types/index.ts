@@ -508,7 +508,7 @@ export const ADMIN_PERMISSIONS: Record<AdminRole, string[]> = {
   agent:         ["api_access"],
 };
 
-// ─── Messaging (messaging.md — free WhatsApp-style chat) ─────────────────────
+// ─── Messaging (messaging.md — free WhatsApp-style messaging) ─────────────────────
 
 export interface Conversation {
   id: string;

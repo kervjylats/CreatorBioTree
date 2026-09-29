@@ -6,7 +6,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 const addMemberSchema = z.object({
   key: z.string().min(1),
@@ -21,7 +21,7 @@ export async function POST(
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me || me.party !== "creator") {
       return NextResponse.json({ error: "Only creators can add members" }, { status: 403 });
     }
@@ -47,7 +47,7 @@ export async function POST(
       .from("conversations")
       .select("id")
       .eq("community_id", id)
-      .eq("type", "community_chat");
+      .eq("type", "community");
 
     const channelIds = (channels ?? []).map((c) => c.id as string);
     if (channelIds.length === 0) {
@@ -66,7 +66,7 @@ export async function POST(
     await supabase.from("conversation_members").insert(memberRows);
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
-    console.error("[chat/communities/members] POST:", err);
+    console.error("[messages/communities/members] POST:", err);
     return NextResponse.json({ error: "Failed to add member" }, { status: 500 });
   }
 }

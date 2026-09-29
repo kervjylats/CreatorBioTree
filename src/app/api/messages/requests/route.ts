@@ -9,7 +9,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity, resolveParticipantNames } from "@/lib/chat";
+import { getMessageIdentity, resolveParticipantNames } from "@/lib/messages";
 
 const actionSchema = z.object({
   request_id: z.string().min(1),
@@ -19,7 +19,7 @@ const actionSchema = z.object({
 export async function GET() {
   try {
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data: requests } = await supabase
@@ -43,7 +43,7 @@ export async function GET() {
       })),
     });
   } catch (err) {
-    console.error("[chat/requests] GET:", err);
+    console.error("[messages/requests] GET:", err);
     return NextResponse.json({ error: "Failed to load requests" }, { status: 500 });
   }
 }
@@ -51,7 +51,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     await supabase.from("message_requests").update({ status: "approved" }).eq("id", request.id);
     return NextResponse.json({ success: true, status: "approved", conversation_id: convo.id });
   } catch (err) {
-    console.error("[chat/requests] POST:", err);
+    console.error("[messages/requests] POST:", err);
     return NextResponse.json({ error: "Failed to handle request" }, { status: 500 });
   }
 }

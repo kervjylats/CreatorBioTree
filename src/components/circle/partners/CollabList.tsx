@@ -1,4 +1,4 @@
-/** Collab list (network.md) — shows active collabs with avatar, name, and chat icon. Fetches from GET /api/creator/partners/list. */
+/** Collab list (network.md) — shows active collabs with avatar, name, and message icon. Fetches from GET /api/creator/partners/list. */
 "use client";
 
 import { useEffect, useState } from "react";

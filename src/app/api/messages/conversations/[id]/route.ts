@@ -6,7 +6,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getChatIdentity } from "@/lib/chat";
+import { getMessageIdentity } from "@/lib/messages";
 
 const patchSchema = z.object({
   title: z.string().min(1).max(80).optional(),
@@ -18,7 +18,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const { id } = await params;
     const supabase = await createClient();
-    const me = await getChatIdentity(supabase);
+    const me = await getMessageIdentity(supabase);
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
@@ -38,7 +38,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     const isOwner = membership.role === "owner";
     if (validation.data.title !== undefined && (!isOwner || convo.type === "direct")) {
-      return NextResponse.json({ error: "Only the host can rename this chat" }, { status: 403 });
+      return NextResponse.json({ error: "Only the host can rename this conversation" }, { status: 403 });
     }
     if (validation.data.announcements_only !== undefined && (!isOwner || convo.type === "direct")) {
       return NextResponse.json({ error: "Only the host can change posting rules" }, { status: 403 });
@@ -48,7 +48,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     await supabase.from("conversations").update(patch).eq("id", id);
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[chat/conversations] PATCH:", err);
+    console.error("[messages/conversations] PATCH:", err);
     return NextResponse.json({ error: "Failed to update conversation" }, { status: 500 });
   }
 }

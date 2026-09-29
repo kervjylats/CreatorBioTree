@@ -1168,7 +1168,7 @@ export function createMockSupabaseClient(
     // singleton shared by every request in the process, so a previous
     // request's cookie hydration (or sign-in) would leak into cookie-less
     // requests — e.g. a fan API call appearing as the creator (2026-08-13:
-    // chat routes resolved fan requests as mock-test-creator). The cookie is
+    // messaging routes resolved fan requests as mock-test-creator). The cookie is
     // authoritative per request (see 2026-07-13 account-switching fix).
     currentAuthUser.id = "";
     currentAuthUser.email = "";

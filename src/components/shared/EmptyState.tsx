@@ -2,7 +2,7 @@
  * EmptyState — shared empty-state markup (duplication audit 2026-09-29 #18).
  * `variant="box"` = the dashed-border card used across lists (Network, admin,
  * circle); `variant="inline"` = the one-line muted message used in compact
- * popovers (chat inbox, deal cards). Pattern source: src/old-code/EmptyState.tsx,
+ * popovers (messaging inbox, deal cards). Pattern source: src/old-code/EmptyState.tsx,
  * restyled to live tokens.
  */
 

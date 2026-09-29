@@ -1,6 +1,6 @@
 /**
  * follow.ts — shared "follow with email" POST (duplication audit 2026-09-29 #7).
- * FollowBox, GuestPageContent, and ChatShell each inlined the
+ * FollowBox, GuestPageContent, and MessagesShell each inlined the
  * `/api/fan/follow-creator` fetch; they keep their own toast copy + reload
  * timing, this only owns the request/parse/normalize step.
  */
