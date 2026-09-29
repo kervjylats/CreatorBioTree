@@ -2,10 +2,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChatIcon } from "@/components/messages/ChatShell";
+import { Avatar } from "@/components/shared/Avatar";
+import { fetchJson } from "@/lib/fetchJson";
+import { formatDate } from "@/lib/format";
+import { Spinner } from "@/components/shared/Spinner";
 import { toast } from "sonner";
 
 interface CollabPartner {
@@ -28,12 +32,11 @@ export function CollabDetail({ partnershipId, onBack }: CollabDetailProps) {
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/creator/partners/list")
-      .then((r) => r.json())
+    fetchJson<{ partnerships?: Array<{ id: string; partner_info: CollabPartner | null; created_at: string }> }>(
+      "/api/creator/partners/list"
+    )
       .then((d) => {
-        const row = (d.partnerships ?? []).find(
-          (p: { id: string }) => p.id === partnershipId
-        );
+        const row = (d.partnerships ?? []).find((p) => p.id === partnershipId);
         if (row) {
           setPartner(row.partner_info);
           setCreatedAt(row.created_at);
@@ -46,7 +49,7 @@ export function CollabDetail({ partnershipId, onBack }: CollabDetailProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 size={18} className="animate-spin text-muted-foreground" />
+        <Spinner size={18} />
       </div>
     );
   }
@@ -75,19 +78,7 @@ export function CollabDetail({ partnershipId, onBack }: CollabDetailProps) {
 
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-lg font-bold text-foreground overflow-hidden">
-            {partner.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={partner.avatar_url} alt={partner.display_name} className="h-full w-full object-cover" />
-            ) : (
-              partner.display_name
-                .split(/[\s@._-]+/)
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((w) => w[0]?.toUpperCase() ?? "")
-                .join("")
-            )}
-          </span>
+          <Avatar src={partner.avatar_url} name={partner.display_name} size="h-14 w-14" textClass="text-lg" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="min-w-0 text-base font-bold text-foreground">{partner.display_name}</h3>
@@ -108,7 +99,7 @@ export function CollabDetail({ partnershipId, onBack }: CollabDetailProps) {
         </div>
 
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <span>Connected since {new Date(createdAt).toLocaleDateString()}</span>
+          <span>Connected since {formatDate(createdAt)}</span>
         </div>
       </div>
 

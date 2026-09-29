@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { searchCreators } from "@/hooks/useCreatorSearch";
 
 interface AffiliateDealFormProps {
   onSubmit: (deal: DealFormData) => void | Promise<void>;
@@ -90,10 +91,9 @@ export function AffiliateDealForm({ onSubmit, onCancel }: AffiliateDealFormProps
     }
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/discover/creators?q=${encodeURIComponent(q)}`);
-      const data = res.ok ? await res.json() : {};
-      const match = (data.results ?? []).find(
-        (r: { username?: string }) => r.username?.toLowerCase() === q.toLowerCase()
+      const results = await searchCreators(q);
+      const match = results.find(
+        (r) => r.username?.toLowerCase() === q.toLowerCase()
       );
       if (!match) {
         setFormError(`No discoverable creator found for @${q} — check the name.`);

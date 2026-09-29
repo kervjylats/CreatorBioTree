@@ -13,7 +13,9 @@ import { CheckCircle2, MessageCircle, Receipt, Users } from "lucide-react";
 import type { ContentItem } from "@/types";
 import type { CreatorBranding } from "@/lib/branding";
 import type { FanShellData } from "./fanData";
-import { isScheduledVisible, money } from "./fanData";
+import { isScheduledVisible } from "./fanData";
+import { money, formatDate } from "@/lib/format";
+import { submitFollow } from "@/lib/follow";
 import { CreatorHeader } from "./CreatorHeader";
 import { FollowBox } from "./FollowBox";
 import { ItemCard } from "./ItemCards";
@@ -95,14 +97,9 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
   }, [searchParams, data.branding.creatorId, data.items]);
 
   const handleUnlock = async (_item: ContentItem, email: string) => {
-    const res = await fetch("/api/fan/follow-creator", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, creator_username: data.username }),
-    });
-    const json = await res.json();
-    if (!res.ok) {
-      toast(typeof json?.error === "string" ? json.error : "Couldn't unlock — try again.");
+    const r = await submitFollow(email, data.username);
+    if (!r.ok) {
+      toast(r.error ?? "Couldn't unlock — try again.");
       return;
     }
     toast("Unlocked — thanks for joining!");
@@ -212,7 +209,7 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
                           {items.find((i) => i.id === p.content_item_id)?.title ?? "Purchase"}
                         </p>
                         <p className="text-xs" style={{ color: branding.textColor + "77" }}>
-                          {new Date(p.purchased_at).toLocaleDateString()}
+                          {formatDate(p.purchased_at)}
                         </p>
                       </div>
                       <p className="shrink-0 text-sm font-bold">{money(p.amount_paid ?? 0, p.currency)}</p>

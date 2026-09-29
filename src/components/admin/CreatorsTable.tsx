@@ -5,8 +5,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Star, StarOff } from "lucide-react";
+import { Star, StarOff } from "lucide-react";
 import { toast } from "sonner";
+import { fetchJson } from "@/lib/fetchJson";
+import { SearchBox } from "@/components/shared/SearchBox";
+import { formatDate } from "@/lib/format";
 
 interface Creator {
   id: string;
@@ -25,8 +28,7 @@ export function CreatorsTable() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/creators")
-      .then((r) => r.json())
+    fetchJson<Creator[]>("/api/admin/creators")
       .then((data) => setCreators(Array.isArray(data) ? data : []))
       .catch(() => { toast.error("Failed to load creators"); })
       .finally(() => setLoading(false));
@@ -41,7 +43,7 @@ export function CreatorsTable() {
 
   const toggleFeature = async (creator: Creator) => {
     try {
-      await fetch(`/api/admin/creators/${creator.id}`, {
+      await fetchJson(`/api/admin/creators/${creator.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_featured: !creator.is_featured }),
@@ -57,16 +59,11 @@ export function CreatorsTable() {
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search creators…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-xl border border-input bg-background py-2 pl-9 pr-4 text-sm outline-none focus:border-foreground"
-        />
-      </div>
+      <SearchBox
+        value={search}
+        onChange={setSearch}
+        placeholder="Search creators…"
+      />
 
       {loading ? (
         <p className="py-8 text-center text-sm text-muted-foreground">Loading creators…</p>
@@ -95,7 +92,7 @@ export function CreatorsTable() {
                   <td className="px-4 py-2.5 text-right text-muted-foreground">{c.fan_count ?? 0}</td>
                   <td className="px-4 py-2.5 text-right text-muted-foreground">{c.content_count ?? 0}</td>
                   <td className="px-4 py-2.5 text-right text-muted-foreground">
-                    {new Date(c.created_at).toLocaleDateString()}
+                    {formatDate(c.created_at)}
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <button

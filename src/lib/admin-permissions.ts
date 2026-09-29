@@ -2,6 +2,15 @@
 import type { AdminRole, AdminAccount } from "@/types";
 import { ADMIN_PERMISSIONS } from "@/types";
 
+/** Display names for admin roles — ONE map (AccountsTable vs ServiceAccessDialog had drifted: "Support Admin"/"Support"). */
+export const ROLE_LABELS: Record<AdminRole, string> = {
+  super_admin: "Super Admin",
+  support_admin: "Support Admin",
+  content_admin: "Content Admin",
+  agent: "Agent",
+};
+
+
 /** Get all permission strings for a given admin role. */
 export function getPermissionsForRole(role: AdminRole): string[] {
   return ADMIN_PERMISSIONS[role] ?? [];

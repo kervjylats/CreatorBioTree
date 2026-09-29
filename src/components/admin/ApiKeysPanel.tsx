@@ -9,6 +9,9 @@ import { useEffect, useState } from "react";
 import { Plus, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { fetchJson } from "@/lib/fetchJson";
+import { formatDate } from "@/lib/format";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import type { AdminAccount } from "@/types";
 
 export function ApiKeysPanel() {
@@ -16,10 +19,10 @@ export function ApiKeysPanel() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { copy } = useCopyToClipboard();
 
   useEffect(() => {
-    fetch("/api/admin/accounts")
-      .then((r) => r.json())
+    fetchJson<unknown>("/api/admin/accounts")
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
         setKeys(list.filter((a: AdminAccount) => a.role === "agent"));
@@ -48,12 +51,12 @@ export function ApiKeysPanel() {
   };
 
   const copyKey = async (key: string, id: string) => {
-    try {
-      await navigator.clipboard.writeText(key);
+    const ok = await copy(key);
+    if (ok) {
       setCopiedId(id);
       toast.success("Key copied to clipboard");
       setTimeout(() => setCopiedId(null), 2000);
-    } catch {
+    } else {
       toast.error("Failed to copy");
     }
   };
@@ -89,7 +92,7 @@ export function ApiKeysPanel() {
                   {k.api_key ?? "no key"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Created {new Date(k.created_at).toLocaleDateString()}
+                  Created {formatDate(k.created_at)}
                 </p>
               </div>
               <Button

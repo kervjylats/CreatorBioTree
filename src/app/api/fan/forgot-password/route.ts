@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { z } from "zod";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 import crypto from "crypto";
 
 const forgotSchema = z.object({
@@ -21,11 +21,8 @@ export async function POST(request: NextRequest) {
 
     const { email, creator_id } = validation.data;
 
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    const allowed = await rateLimiter.check(`forgot-password:${ip}`, 3, 60_000);
-    if (!allowed) {
-      return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
-    }
+    const tooMany = await enforceRateLimit(request, "forgot-password", 3, 60_000);
+    if (tooMany) return tooMany;
 
     const supabase = createServiceClient();
 

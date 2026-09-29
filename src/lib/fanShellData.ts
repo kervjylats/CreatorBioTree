@@ -7,8 +7,9 @@
  */
 import { cookies } from "next/headers";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { resolveBranding } from "@/lib/branding";
+import { resolveBranding, socialLinksToArtistLinks } from "@/lib/branding";
 import { getFanSession } from "@/lib/fanSession";
+import { contentService } from "@/services/contentService";
 import type { Creator, FanPurchase } from "@/types";
 import type { FanIdentity, FanShellData } from "@/components/fan-pwa/fanData";
 
@@ -73,16 +74,16 @@ export async function resolveFanShellData(username: string): Promise<FanShellDat
     purchases = (rows ?? []) as FanPurchase[];
   }
 
-  const { data: items } = await supabase
-    .from("content_items")
-    .select("*")
-    .eq("creator_id", creator.id)
-    .eq("is_published", true)
-    .order("sort_order", { ascending: true });
+  // Published items — the hand-rolled query tolerated failures with [], so
+  // keep that semantics around contentService (which throws on query error).
+  let items: FanShellData["items"] = [];
+  try {
+    items = await contentService.getForCreator(creator.id, supabase);
+  } catch {
+    items = [];
+  }
 
-  const artistLinks = Object.entries((typedCreator.social_links ?? {}) as Record<string, string>)
-    .filter(([, url]) => Boolean(url))
-    .map(([label, url]) => ({ label, url }));
+  const artistLinks = socialLinksToArtistLinks(typedCreator.social_links);
 
   // ── Community (messaging.md Part 3) ──────────────────────────────────────
   let community: FanShellData["community"] = null;

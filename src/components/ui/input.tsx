@@ -2,6 +2,7 @@ import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
 
 import { cn } from "@/lib/utils"
+import { LABEL_CLASS } from "@/lib/ui-constants"
 
 interface InputProps extends React.ComponentProps<"input"> {
   label?: string;
@@ -12,7 +13,7 @@ function Input({ className, type, label, error, ...props }: InputProps) {
   return (
     <div className="space-y-1.5 w-full">
       {label && (
-        <label className="block text-xs font-semibold text-muted uppercase tracking-widest">
+        <label className={LABEL_CLASS}>
           {label}
         </label>
       )}

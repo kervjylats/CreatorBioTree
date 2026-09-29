@@ -2,8 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/admin";
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
+import { MAX_AVATAR_UPLOAD_BYTES } from "@/lib/limits";
 
 // Format conversion map: source mimetype → target mimetype
 const CONVERTIBLE_IMAGE_FORMATS: Record<string, string> = {
@@ -48,9 +47,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > MAX_AVATAR_UPLOAD_BYTES) {
       return NextResponse.json(
-        { error: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB` },
+        { error: `File too large. Maximum size is ${MAX_AVATAR_UPLOAD_BYTES / 1024 / 1024}MB` },
         { status: 400 }
       );
     }

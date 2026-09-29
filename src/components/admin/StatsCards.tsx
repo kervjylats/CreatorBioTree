@@ -7,6 +7,8 @@
 import { useEffect, useState } from "react";
 import { Users, UserCheck, FileText, DollarSign } from "lucide-react";
 import { toast } from "sonner";
+import { fetchJson } from "@/lib/fetchJson";
+import { money } from "@/lib/format";
 
 interface Stats {
   total_creators?: number;
@@ -19,8 +21,7 @@ export function StatsCards() {
   const [stats, setStats] = useState<Stats>({});
 
   useEffect(() => {
-    fetch("/api/admin/stats")
-      .then((r) => r.json())
+    fetchJson<Stats>("/api/admin/stats")
       .then(setStats)
       .catch(() => { toast.error("Failed to load stats"); });
   }, []);
@@ -29,7 +30,7 @@ export function StatsCards() {
     { label: "Total Creators", value: stats.total_creators ?? 0, icon: Users },
     { label: "Total Fans", value: stats.total_fans ?? 0, icon: UserCheck },
     { label: "Content Items", value: stats.total_content ?? 0, icon: FileText },
-    { label: "Total Revenue", value: `$${((stats.total_revenue ?? 0) / 100).toFixed(2)}`, icon: DollarSign },
+    { label: "Total Revenue", value: money(stats.total_revenue ?? 0), icon: DollarSign },
   ];
 
   return (

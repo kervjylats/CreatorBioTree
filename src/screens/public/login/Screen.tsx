@@ -1,12 +1,10 @@
 /** /login screen — creator/staff gateway (login.md): server-side next-path validation + logged-in redirect, renders AuthCard + LoginForm. */
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
 import { AuthCard } from "@/components/auth/AuthCard";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { createClient } from "@/lib/supabase/server";
-import { USE_MOCKS } from "@/lib/mocks/useMocks";
+import { hasCreatorSession } from "@/lib/guards";
 
 export const metadata: Metadata = {
   title: "Log in",
@@ -25,19 +23,8 @@ export default async function LoginScreen({
 }) {
   const { next } = await searchParams;
 
-  if (USE_MOCKS) {
-    const cookieStore = await cookies();
-    if (cookieStore.get("mock_auth_uid")?.value) {
-      redirect("/dashboard");
-    }
-  } else {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      redirect("/dashboard");
-    }
+  if (await hasCreatorSession()) {
+    redirect("/dashboard");
   }
 
   return (

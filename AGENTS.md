@@ -43,6 +43,7 @@ A platform where creators build and publish their own installable PWA apps for f
 | "Where is X in the code?" / "What does the codebase look like?" | `docs/CODEBASE.md` |
 | "How do I migrate mock → production?" | `docs/HOW_IT_WORKS.md` → "Migration Recipe" + `docs/EXTERNAL_SERVICES.md` (the external-service map) |
 | "What's the wiring order / what sheet am I on?" | `WIRING_PLAN.md` (repo root — 23 sheets, Phase F execution map) |
+| "Which files build screen X?" / "Walk me through the UI" | `docs/WALKTHROUGH.md` (screen-by-screen tour: URL → files → what it does) |
 | "What's in the old-code archive?" / "What's dead, what to adopt?" | `docs/archive/` (archived docs) + `docs/BACKLOG.md` (open feedback items) |
 
 ---
@@ -75,6 +76,26 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 ---
 
 ## Impromptu Fix Log
+
+### 2026-09-29 — Phase 3 Naming Option B: `show_in_search` + `open_to_collab` gate
+
+**Code-side rename + new collab gate. Gates green: typecheck 0 · lint 0 · check-docs PASS · smoke (billboard GET/PUT both flags · request 403 when closed → 201 when open · discover q=test · network/guest pages 200). Uncommitted.**
+
+- **Rename `is_discoverable` → `show_in_search`** across types, mock (row builders + seed/heal), `discover/creators` route, `billboard` route, NetworkPage/BillboardEditor/Preview, + specs (`network.md` ×4, `search.md` ×2) + `HOW_IT_WORKS` §4. Route `/api/discover/creators` + "Discover" section name unchanged (per plan).
+- **New `open_to_collab` (default true)** on `Creator`: billboard GET/PUT round-trips it; `POST /api/creator/partners/request` selects it → **403 "This creator isn't accepting collab requests."** when false; mocks seed/heal it true.
+- **UI:** BillboardEditor gained an instant-save Visibility block — switches labeled **"Show me in search"** + **"Accept collab requests"** (with captions); BillboardPreview quick-pill relabeled Visible/Hidden → **In search/Hidden** (prop `isVisible` → `showInSearch`).
+- **Fixed en route:** NetworkPage `handleConnect` mapped *any* server failure to "Connected" — now distinguishes pending/connected and shows a toast + retryable error state (needed for the new 403).
+- **📚 Tooling gotcha (data loss avoided):** a `python -c` one-liner did `open(f,'w').write(open(f).read().replace(...))` — Python evaluates the **write-mode open first, which truncates**, so 6 files (types, mock, discover, billboard, NetworkPage, BillboardEditor) were zeroed. Recovered: 2 restored from git HEAD (verified they had no uncommitted edits), 4 rewritten from full transcript reads. **Rule: never nest `open(f,'w')` and `open(f).read()` in one expression — read fully into a variable first, then open for write.** Also confirmed `.next`/temp cleanup irrelevant; no other files affected.
+
+### 2026-09-29 — Duplication Audit Phases 1+2: shared-helper consolidation (founder-approved audit-first pass)
+
+**Full-project dedupe sweep per `docs/DUPLICATION_AUDIT.md` (Phase 1 = 7 sync fixes, Phase 2 = the big batch). Gates green: typecheck 0 · lint 0 · check-docs PASS (394 files) · smoke (landing/login/guest/network/overview/admin/partner/circle/my-app 200; rate-limiter proven: 20×200 → 429s). Not committed yet (awaiting founder).**
+
+- **Phase 1:** `<Logo>` (3 → 1) · `getInitials` (7 → 1) · `INPUT_CLASS` · 🐛 affiliate rate formatter (`formatDealRate` — Discover was dividing dollars by 100) · `socialLinksToArtistLinks()` ×3 (partner page also gained the empty-URL filter it lacked) · search engine extracted to `hooks/useCreatorSearch` + `shared/SearchBox` (NetworkPage live search + AffiliateDealForm resolve-on-submit now share it).
+- **Phase 2 libs created:** `lib/fetchJson` · `shared/EmptyState` (box/inline variants) · `hooks/useCopyToClipboard` · `lib/format` (money/formatDate/DAY_LABELS) · `lib/username` · `lib/zod-helpers` (idSchema + zodErrorResponse) · `lib/limits` (upload caps + BILLBOARD_LIMITS) · `lib/follow` (submitFollow) · `lib/mockSession` · `lib/guards` (hasCreatorSession + redirectIfNotFan) · `shared/Spinner` · `shared/Sheet` (z default `z-[60]`, above bottom-nav z-40 + dialogs z-50) · `shared/Avatar` · `shared/CountPill` · `ui-constants.LABEL_CLASS` · `admin-permissions.ROLE_LABELS` · `rate-limiter.enforceRateLimit` (IP = first x-forwarded-for hop, unifies the pageview variant). Execution: 4 folder-partitioned agents (routes · admin/overview/settings · network/circle · fan-pwa/messages/my-app/auth) + orchestrator pass.
+- **Bugs fixed en route:** 🐛 both StatCards divided DOLLARS by 100 (a $9 sale rendered "$0.09") — the audit assumed cents, but the whole pipeline (`item.price`, `amount_paid`, deal rates, promoter_cut) stores dollars → `formatCents` removed, `money()` everywhere · BillboardEditor bio/media-kit had NO client cap while the server silently sliced (600/300) → `maxLength` added · `CreatorsTable.toggleFeature` never checked `res.ok` (false success on server failure).
+- **Deliberate behavior deltas:** 429 copy unified to "Too many requests. Try again later." across 13 routes (status/limits unchanged) · ServiceAccessDialog role labels → full names ("Support Admin") · Sheet z 50→60 at 3 sites · `setMockSession` now sets `samesite=lax`.
+- **Intentional skips (logged in BACKLOG):** 3 EmptyState sites with pixel-drift markup (ApiKeysPanel, ActivityTimeline) · `<p>Loading…</p>` text variants · themed brand-color avatar variants (only neutral `bg-foreground/10` circles moved to `<Avatar>`) · platform button string (only lives in `ui/button`+`ui/badge` definitions) · ChatShell's non-backdrop popover sheet.
 
 ### 2026-09-28 — API Namespaces Renamed to Match On-Screen Names (button↔API parity + 3-commit split)
 

@@ -2,8 +2,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, MessageCircle } from "lucide-react";
+import { fetchJson } from "@/lib/fetchJson";
+import { MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/shared/Avatar";
+import { formatDate } from "@/lib/format";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Spinner } from "@/components/shared/Spinner";
+import { LABEL_CLASS } from "@/lib/ui-constants";
 
 interface CollabPartner {
   id: string;
@@ -30,8 +36,7 @@ export function CollabList({ onSelect, selectedId }: CollabListProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/creator/partners/list")
-      .then((r) => r.json())
+    fetchJson<{ partnerships?: CollabRow[] }>("/api/creator/partners/list")
       .then((d) => {
         const all = (d.partnerships ?? []) as CollabRow[];
         setCollabs(all.filter((c) => c.status === "active"));
@@ -43,25 +48,24 @@ export function CollabList({ onSelect, selectedId }: CollabListProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 size={18} className="animate-spin text-muted-foreground" />
+        <Spinner size={18} />
       </div>
     );
   }
 
   if (collabs.length === 0) {
     return (
-      <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
-        <p className="text-sm font-medium text-muted-foreground">No collabs yet</p>
-        <p className="mt-1 text-xs text-muted-foreground/70">
-          Discover creators and send a collab request to get started.
-        </p>
-      </div>
+      <EmptyState
+        title="No collabs yet"
+        hint="Discover creators and send a collab request to get started."
+        className="border-2! p-8!"
+      />
     );
   }
 
   return (
     <div className="space-y-2">
-      <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+      <h2 className={LABEL_CLASS}>
         Collabs
       </h2>
       {collabs.map((c) => {
@@ -79,19 +83,7 @@ export function CollabList({ onSelect, selectedId }: CollabListProps) {
                 : "border-border bg-card hover:bg-accent/30"
             }`}
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-xs font-bold text-foreground overflow-hidden">
-              {p.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.avatar_url} alt={p.display_name} className="h-full w-full object-cover" />
-              ) : (
-                p.display_name
-                  .split(/[\s@._-]+/)
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .map((w) => w[0]?.toUpperCase() ?? "")
-                  .join("")
-              )}
-            </span>
+            <Avatar src={p.avatar_url} name={p.display_name} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="truncate text-sm font-bold text-foreground">{p.display_name}</span>
@@ -99,7 +91,7 @@ export function CollabList({ onSelect, selectedId }: CollabListProps) {
                   Collab
                 </Badge>
               </div>
-              <span className="text-xs text-muted-foreground">Since {new Date(c.created_at).toLocaleDateString()}</span>
+              <span className="text-xs text-muted-foreground">Since {formatDate(c.created_at)}</span>
             </div>
             <MessageCircle size={16} className="shrink-0 text-muted-foreground" />
           </button>

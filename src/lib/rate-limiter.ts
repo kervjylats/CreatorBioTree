@@ -6,6 +6,9 @@
  * See docs/EXTERNAL_SERVICES.md for setup steps.
  */
 
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
 if (process.env.NODE_ENV === "production" && process.env.USE_MOCKS !== "true") {
   throw new Error(
     "In-memory rate limiter is not production-safe. Configure Upstash before deploying to production.",
@@ -59,3 +62,30 @@ export class InMemoryRateLimiter implements IRateLimiter {
 // ─── Singleton ───────────────────────────────────────────────────────────────
 
 export const rateLimiter: IRateLimiter = new InMemoryRateLimiter();
+
+// ————————————————————————————————————————————————————————————————
+// Shared route wrapper (duplication audit 2026-09-29 #13)
+// ————————————————————————————————————————————————————————————————
+
+/**
+ * enforceRateLimit — the IP-extract + check + 429 boilerplate every rate-limited
+ * route re-writes (13 routes). Returns a ready 429 response when blocked, null
+ * when allowed. IP = first x-forwarded-for hop (the old pageview-only variant),
+ * with x-real-ip / "unknown" fallbacks.
+ *
+ * Usage: `const tooMany = await enforceRateLimit(request, "fan/login", 10, 60_000); if (tooMany) return tooMany;`
+ */
+export async function enforceRateLimit(
+  request: NextRequest,
+  key: string,
+  limit: number,
+  windowMs: number
+): Promise<NextResponse | null> {
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown";
+  const allowed = await rateLimiter.check(`${key}:${ip}`, limit, windowMs);
+  if (allowed) return null;
+  return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+}

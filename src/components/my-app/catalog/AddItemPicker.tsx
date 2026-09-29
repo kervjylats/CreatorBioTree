@@ -8,6 +8,8 @@
 
 import { CONTENT_TYPES, TYPE_VALUES } from "@/types/contentTypes";
 import type { ContentType } from "@/types";
+import { Sheet } from "@/components/shared/Sheet";
+import { LABEL_CLASS } from "@/lib/ui-constants";
 
 const CATEGORIES: { name: string; hint: string; types: ContentType[] }[] = [
   { name: "Upload from your device", hint: "Files from your phone or computer", types: ["video", "image", "audio", "pdf"] },
@@ -24,17 +26,16 @@ interface AddItemPickerProps {
 
 export function AddItemPicker({ onPick, onClose }: AddItemPickerProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
-      <div
-        className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-2xl sm:rounded-3xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Sheet
+      onClose={onClose}
+      panelClassName="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-2xl sm:rounded-3xl"
+    >
         <h3 className="text-lg font-bold text-foreground">Add an item</h3>
         <p className="mt-1 text-sm text-muted-foreground">Choose what you&apos;re adding to your app.</p>
         <div className="mt-4 max-h-[60vh] space-y-4 overflow-y-auto">
           {CATEGORIES.map((cat) => (
             <div key={cat.name}>
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{cat.name}</p>
+              <p className={LABEL_CLASS}>{cat.name}</p>
               <p className="text-caption text-muted-foreground/70">{cat.hint}</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {cat.types.map((type) => {
@@ -56,7 +57,6 @@ export function AddItemPicker({ onPick, onClose }: AddItemPickerProps) {
             </div>
           ))}
         </div>
-      </div>
-    </div>
+    </Sheet>
   );
 }

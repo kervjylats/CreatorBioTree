@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Share, AppWindow, Plus } from "lucide-react";
 import type { CreatorBranding } from "@/lib/branding";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { Sheet } from "@/components/shared/Sheet";
 import { contrastText } from "./themeStyles";
 
 const STEPS = [
@@ -34,12 +35,13 @@ export function IOSInstallGuide({ branding }: { branding: CreatorBranding }) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
-      onClick={() => {
+    <Sheet
+      onClose={() => {
         setVisible(false);
         dismiss();
       }}
+      backdropClassName="fixed inset-0 flex items-end justify-center bg-black/50"
+      panelClassName="w-full max-w-lg"
     >
       <div
         className="w-full max-w-lg rounded-t-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl"
@@ -77,6 +79,6 @@ export function IOSInstallGuide({ branding }: { branding: CreatorBranding }) {
           Done
         </button>
       </div>
-    </div>
+    </Sheet>
   );
 }

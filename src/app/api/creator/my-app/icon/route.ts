@@ -9,20 +9,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, handleAuthError } from "@/lib/requireAuth";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
+import { MAX_APP_ICON_BYTES } from "@/lib/limits";
 
 const iconSchema = z.object({
   dataUrl: z.string().regex(/^data:image\/png;base64,/, "Must be a PNG data URL").max(5_000_000),
 });
 
-const MAX_BYTES = 2_000_000;
-
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    if (!(await rateLimiter.check(`my-app-icon:${ip}`, 10, 60_000))) {
-      return NextResponse.json({ error: "Too many uploads — try again in a minute" }, { status: 429 });
-    }
+    const tooMany = await enforceRateLimit(request, "my-app-icon", 10, 60_000);
+    if (tooMany) return tooMany;
 
     const { user, supabase } = await requireAuth();
 
@@ -37,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (buffer.byteLength === 0) {
       return NextResponse.json({ error: "Invalid icon image" }, { status: 400 });
     }
-    if (buffer.byteLength > MAX_BYTES) {
+    if (buffer.byteLength > MAX_APP_ICON_BYTES) {
       return NextResponse.json({ error: "Icon image is too large" }, { status: 400 });
     }
 

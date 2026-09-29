@@ -1,7 +1,7 @@
 /** Fan follow-creator — email-only follow (fan-shell.md Part 1 Layer 1b): creates a NO-password fan_accounts row + fan_session cookie → Follower state. */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 import { setFanSession } from "@/lib/fanSession";
 import { z } from "zod";
 
@@ -12,10 +12,8 @@ const followSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    if (!(await rateLimiter.check(`fan-follow:${ip}`, 10, 60_000))) {
-      return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
-    }
+    const tooMany = await enforceRateLimit(request, "fan-follow", 10, 60_000);
+    if (tooMany) return tooMany;
 
     const body = await request.json();
     const validation = followSchema.safeParse(body);

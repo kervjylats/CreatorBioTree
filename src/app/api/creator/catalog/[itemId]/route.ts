@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { zodErrorResponse } from "@/lib/zod-helpers";
 import { TYPE_VALUES, ACCESS_TYPE_VALUES, PRICING_MODEL_VALUES, BILLING_CYCLE_VALUES, FILE_SUBTYPE_VALUES } from "@/types/contentTypes";
 
 const updateSchema = z.object({
@@ -90,7 +91,7 @@ export async function PATCH(
     const body = await req.json();
     const validation = updateSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error.format() }, { status: 400 });
+      return zodErrorResponse();
     }
 
     const { error: updateError } = await supabase

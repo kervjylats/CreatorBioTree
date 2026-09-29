@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { createClient } from "@/lib/supabase/client";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
+import { setMockSession } from "@/lib/mockSession";
 
 interface LoginFormProps {
   next?: string | null;
@@ -21,11 +22,6 @@ const MOCK_SOCIALS = [
   { key: "instagram", label: "Instagram", email: "instagram-test@creatorpwa.test" },
   { key: "facebook", label: "Facebook", email: "facebook-test@creatorpwa.test" },
 ] as const;
-
-function setMockSession(uid: string, userEmail: string) {
-  document.cookie = `mock_auth_uid=${uid}; path=/; max-age=3600`;
-  document.cookie = `mock_auth_email=${encodeURIComponent(userEmail)}; path=/; max-age=3600`;
-}
 
 function SocialIcon({ platform }: { platform: (typeof MOCK_SOCIALS)[number]["key"] }) {
   return (

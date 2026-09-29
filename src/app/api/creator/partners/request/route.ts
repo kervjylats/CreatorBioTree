@@ -17,11 +17,14 @@ export async function POST(req: NextRequest) {
 
     const { data: partner } = await supabase
       .from("creators")
-      .select("id")
+      .select("id, open_to_collab")
       .eq("id", partner_id)
       .maybeSingle();
     if (!partner) {
       return NextResponse.json({ error: "Partner not found" }, { status: 404 });
+    }
+    if (partner.open_to_collab === false) {
+      return NextResponse.json({ error: "This creator isn't accepting collab requests." }, { status: 403 });
     }
 
     const { data: existing } = await supabase

@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { money } from "@/lib/format";
 
 interface EarningsData {
   settled: number;
@@ -22,10 +23,6 @@ interface EarningsData {
     settlement_status: string;
     settled_at: string | null;
   }>;
-}
-
-function formatCurrency(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`;
 }
 
 export function EarningsSummary() {
@@ -83,15 +80,15 @@ export function EarningsSummary() {
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-center">
           <div className="min-w-[100px] flex-1">
-            <p className="text-2xl font-bold text-green-600 truncate">{formatCurrency(settled)}</p>
+            <p className="text-2xl font-bold text-green-600 truncate">{money(settled)}</p>
             <p className="text-xs text-muted-foreground">Settled</p>
           </div>
           <div className="min-w-[100px] flex-1">
-            <p className="text-2xl font-bold text-amber-600 truncate">{formatCurrency(pending)}</p>
+            <p className="text-2xl font-bold text-amber-600 truncate">{money(pending)}</p>
             <p className="text-xs text-muted-foreground">Pending</p>
           </div>
           <div className="min-w-[100px] flex-1">
-            <p className="text-2xl font-bold text-red-600 truncate">{formatCurrency(disputed)}</p>
+            <p className="text-2xl font-bold text-red-600 truncate">{money(disputed)}</p>
             <p className="text-xs text-muted-foreground">Disputed</p>
           </div>
         </div>
@@ -103,7 +100,7 @@ export function EarningsSummary() {
 
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Total earned</span>
-          <span className="font-semibold">{formatCurrency(total)}</span>
+          <span className="font-semibold">{money(total)}</span>
         </div>
       </CardContent>
     </Card>

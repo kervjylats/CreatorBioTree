@@ -12,8 +12,13 @@ import { PermissionsToggles } from "@/components/circle/staff/PermissionsToggles
 import { ChatIcon } from "@/components/messages/ChatShell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
+import { fetchJson } from "@/lib/fetchJson";
+import { formatDate } from "@/lib/format";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Spinner } from "@/components/shared/Spinner";
+import { LABEL_CLASS } from "@/lib/ui-constants";
 
 interface TeamMember {
   id: string;
@@ -46,8 +51,8 @@ export function StaffPage() {
 
   const fetchAll = useCallback(() => {
     Promise.all([
-      fetch("/api/creator/staff/members").then((r) => r.json()),
-      fetch("/api/creator/staff/invites").then((r) => r.json()),
+      fetchJson<{ members?: TeamMember[] }>("/api/creator/staff/members"),
+      fetchJson<{ invites?: TeamInvite[] }>("/api/creator/staff/invites"),
     ])
       .then(([mData, iData]) => {
         setMembers(mData.members ?? []);
@@ -63,29 +68,29 @@ export function StaffPage() {
 
   const handleSavePermissions = async () => {
     if (!editingId || !draft) return;
-    const res = await fetch(`/api/creator/staff/members/${editingId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ permissions: draft }),
-    });
-    if (res.ok) {
+    try {
+      await fetchJson(`/api/creator/staff/members/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ permissions: draft }),
+      });
       toast.success("Permissions updated");
       setEditingId(null);
       setDraft(null);
       fetchAll();
-    } else {
+    } catch {
       toast.error("Failed to update permissions");
     }
   };
 
   const handleRemove = async (memberId: string) => {
-    const res = await fetch(`/api/creator/staff/members/${memberId}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
+    try {
+      await fetchJson(`/api/creator/staff/members/${memberId}`, {
+        method: "DELETE",
+      });
       toast.success("Member removed");
       fetchAll();
-    } else {
+    } catch {
       toast.error("Failed to remove member");
     }
   };
@@ -112,18 +117,16 @@ export function StaffPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 size={18} className="animate-spin text-muted-foreground" />
+          <Spinner size={18} />
         </div>
       ) : (
         <>
           <section>
-            <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            <h2 className={`mb-2 ${LABEL_CLASS}`}>
               Pending invites
             </h2>
             {pendingInvites.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No pending invites.
-              </div>
+              <EmptyState title="No pending invites." className="p-6!" />
             ) : (
               <div className="space-y-2">
                 {pendingInvites.map((inv) => (
@@ -134,7 +137,7 @@ export function StaffPage() {
                     <div className="min-w-0">
                       <div className="truncate text-sm font-medium">{inv.email}</div>
                       <div className="text-xs text-muted-foreground">
-                        {inv.role} · Invited {new Date(inv.created_at).toLocaleDateString()}
+                        {inv.role} · Invited {formatDate(inv.created_at)}
                       </div>
                     </div>
                     <Badge variant="secondary" className="shrink-0">Pending</Badge>
@@ -145,13 +148,11 @@ export function StaffPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            <h2 className={`mb-2 ${LABEL_CLASS}`}>
               Members
             </h2>
             {members.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No team members yet.
-              </div>
+              <EmptyState title="No team members yet." className="p-6!" />
             ) : (
               <div className="space-y-2">
                 {members.map((m) => (

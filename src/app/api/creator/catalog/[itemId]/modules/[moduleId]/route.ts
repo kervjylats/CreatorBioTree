@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { zodErrorResponse } from "@/lib/zod-helpers";
 
 const updateSchema = z.object({
   title: z.string().min(1).max(255).optional(),
@@ -22,7 +23,7 @@ export async function PATCH(
     const body = await req.json();
     const validation = updateSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error.format() }, { status: 400 });
+      return zodErrorResponse();
     }
 
     const { error: updateError } = await supabase

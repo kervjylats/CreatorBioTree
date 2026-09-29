@@ -5,10 +5,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fetchJson } from "@/lib/fetchJson";
 import Link from "next/link";
 import { ArrowRight, Clock, CreditCard, Tag } from "lucide-react";
 import type { FanShellData } from "./fanData";
-import { isScheduledVisible, money } from "./fanData";
+import { isScheduledVisible } from "./fanData";
+import { money } from "@/lib/format";
 import { cardRadius } from "./themeStyles";
 import { SectionTitle } from "./SectionTitle";
 import { CreatorHeader } from "./CreatorHeader";
@@ -36,8 +38,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
 
   // Fetch the fan's followed partners (real data from Phase 1 persistence).
   useEffect(() => {
-    fetch(`/api/fan/partners?username=${encodeURIComponent(branding.creatorUsername)}`)
-      .then((r) => r.json())
+    fetchJson<{ followed?: Partner[] }>(`/api/fan/partners?username=${encodeURIComponent(branding.creatorUsername)}`)
       .then((d) => setFollowedPartners(d.followed ?? []))
       .catch(() => {});
   }, [branding.creatorUsername]);

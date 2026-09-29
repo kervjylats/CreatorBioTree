@@ -6,7 +6,7 @@
  */
 "use client";
 
-import { resolveBranding, type CreatorBranding } from "@/lib/branding";
+import { resolveBranding, socialLinksToArtistLinks, type CreatorBranding } from "@/lib/branding";
 import type { ContentItem, Creator } from "@/types";
 import type { FanIdentity, FanShellData } from "@/components/fan-pwa/fanData";
 import type { MyAppDraft } from "@/hooks/useMyAppForm";
@@ -40,9 +40,7 @@ export function buildPreviewData(draft: MyAppDraft, base: Creator, items: Conten
     identity: null as FanIdentity | null,
     purchases: [],
     connectEmptyText: draft.connect_empty_text ?? "",
-    artistLinks: Object.entries(draft.social_links ?? {})
-      .filter(([, url]) => Boolean(url))
-      .map(([label, url]) => ({ label, url })),
+    artistLinks: socialLinksToArtistLinks(draft.social_links),
     community: null,
   };
 }

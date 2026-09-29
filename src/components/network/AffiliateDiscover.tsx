@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatDealRate } from "@/lib/affiliate-format";
 
 interface Deal {
   id: string;
@@ -22,13 +23,6 @@ interface Deal {
   custom_terms: string | null;
   status: string;
   created_at: string;
-}
-
-function formatRate(deal: Deal): string {
-  if (deal.deal_type === "percentage") return `${deal.rate ?? 0}%`;
-  if (deal.deal_type === "fixed") return `$${((deal.rate ?? 0) / 100).toFixed(2)}`;
-  if (deal.deal_type === "free") return "Free cross-promo";
-  return deal.custom_terms?.slice(0, 50) ?? "Custom";
 }
 
 export function AffiliateDiscover() {
@@ -94,7 +88,7 @@ export function AffiliateDiscover() {
         <Card key={deal.id}>
           <CardHeader className="pb-2">
             <div className="flex flex-wrap items-start justify-between gap-2">
-              <CardTitle className="min-w-0 text-base">{formatRate(deal)}</CardTitle>
+              <CardTitle className="min-w-0 text-base">{formatDealRate(deal)}</CardTitle>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline">{deal.deal_type}</Badge>
                 <Badge variant="secondary">{deal.trigger}</Badge>

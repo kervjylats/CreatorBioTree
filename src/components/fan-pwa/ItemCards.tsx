@@ -13,7 +13,9 @@ import type { CreatorBranding } from "@/lib/branding";
 import { TYPE_ICONS } from "@/types/contentTypes";
 import { ChatIcon } from "@/components/messages/ChatShell";
 import type { FanIdentity, ItemGate } from "./fanData";
-import { money, computeItemGate } from "./fanData";
+import { computeItemGate } from "./fanData";
+import { money, DAY_LABELS } from "@/lib/format";
+import { Sheet } from "@/components/shared/Sheet";
 import { buttonClass, buttonShape, cardRadius, contrastText } from "./themeStyles";
 
 // ─── Gate-aware card ─────────────────────────────────────────────────────────
@@ -31,8 +33,6 @@ interface ItemCardProps {
 function openUrl(url: string | null | undefined): void {
   if (url) window.open(url, "_blank", "noopener");
 }
-
-const DAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 /** One catalog card — preview for paid/locked items, full card for owned/free. */
 export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuthPrompt }: ItemCardProps) {
@@ -473,7 +473,7 @@ export function CheckoutModal({ item, branding, defaultEmail, onClose }: Checkou
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
+    <Sheet onClose={onClose}>
       <div
         className={cardRadius(branding, "w-full max-w-md p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl")}
         style={{ backgroundColor: branding.cardColor }}
@@ -512,6 +512,6 @@ export function CheckoutModal({ item, branding, defaultEmail, onClose }: Checkou
           </p>
         </form>
       </div>
-    </div>
+    </Sheet>
   );
 }

@@ -5,7 +5,7 @@ import crypto from "crypto";
 
 import { createClient } from "@/lib/supabase/server";
 import { mockResendSend } from "@/lib/mocks/mockResend";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
 
 const forgotSchema = z.object({
@@ -22,11 +22,8 @@ export async function POST(request: NextRequest) {
 
     const { email } = validation.data;
 
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    const allowed = await rateLimiter.check(`creator-forgot-password:${ip}`, 3, 60_000);
-    if (!allowed) {
-      return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
-    }
+    const tooMany = await enforceRateLimit(request, "creator-forgot-password", 3, 60_000);
+    if (tooMany) return tooMany;
 
     const supabase = await createClient();
 

@@ -6,7 +6,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -15,15 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Spinner } from "@/components/shared/Spinner";
 import type { AdminRole, ServiceId } from "@/types";
 import { SERVICE_LABELS, ALL_SERVICE_IDS } from "@/lib/services-config";
-
-const ROLE_LABELS: Record<AdminRole, string> = {
-  super_admin: "Super Admin",
-  support_admin: "Support",
-  content_admin: "Content",
-  agent: "Agent",
-};
+import { fetchJson } from "@/lib/fetchJson";
+import { ROLE_LABELS } from "@/lib/admin-permissions";
 
 interface AccessRow {
   user_id: string;
@@ -42,8 +37,7 @@ export function ServiceAccessDialog({ open, onOpenChange }: ServiceAccessDialogP
   const [toggling, setToggling] = useState<string | null>(null);
 
   const fetchMatrix = () => {
-    fetch("/api/admin/external-services/access")
-      .then((r) => r.json())
+    fetchJson<unknown>("/api/admin/external-services/access")
       .then((data) => setMatrix(Array.isArray(data) ? data : []))
       .catch(() => {
         toast.error("Failed to load access matrix");
@@ -95,7 +89,7 @@ export function ServiceAccessDialog({ open, onOpenChange }: ServiceAccessDialogP
         </DialogHeader>
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 size={20} className="animate-spin text-muted-foreground" />
+            <Spinner size={20} />
           </div>
         ) : matrix.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">No admin accounts found</p>

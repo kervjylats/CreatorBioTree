@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchJson } from "@/lib/fetchJson";
 
 export function MessagingPrivacy() {
   const [allowAny, setAllowAny] = useState(true);
@@ -16,8 +17,7 @@ export function MessagingPrivacy() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/messages/preferences")
-      .then((r) => r.json())
+    fetchJson<{ allow_messages_from_anyone?: boolean }>("/api/messages/preferences")
       .then((data) => {
         if (data && typeof data.allow_messages_from_anyone === "boolean") {
           setAllowAny(data.allow_messages_from_anyone);
@@ -30,15 +30,11 @@ export function MessagingPrivacy() {
   const handleToggle = async (checked: boolean) => {
     setSaving(true);
     try {
-      const res = await fetch("/api/messages/preferences", {
+      await fetchJson("/api/messages/preferences", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ allow_messages_from_anyone: checked }),
       });
-      if (!res.ok) {
-        toast.error("Failed to update preference");
-        return;
-      }
       setAllowAny(checked);
       toast.success("Preference saved");
     } catch {

@@ -17,6 +17,7 @@ import { useState } from "react";
 import { Check, Heart } from "lucide-react";
 import { toast } from "sonner";
 import type { CreatorBranding } from "@/lib/branding";
+import { submitFollow } from "@/lib/follow";
 import { buttonClass, buttonShape, cardRadius, contrastText } from "./themeStyles";
 
 interface FollowBoxProps {
@@ -72,21 +73,14 @@ export function FollowBox({ creatorUsername, branding, alreadyFollowing, viewOnl
     if (!email.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/fan/follow-creator", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), creator_username: creatorUsername }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast(typeof data?.error === "string" ? data.error : "Couldn't follow — try again.");
+      const r = await submitFollow(email, creatorUsername);
+      if (!r.ok) {
+        toast(r.error ?? "Couldn't follow — try again.");
         return;
       }
       setFollowed(true);
       toast("Following — thanks for joining!");
       window.setTimeout(() => window.location.reload(), 600);
-    } catch {
-      toast("Couldn't follow — try again.");
     } finally {
       setLoading(false);
     }

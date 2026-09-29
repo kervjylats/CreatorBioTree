@@ -127,7 +127,9 @@ export interface Creator {
   country:      string | null;
 
   // ── Discovery & Categorisation ───────────────────────────────────────────
-  is_discoverable: boolean;
+  show_in_search: boolean;
+  /** Accept collab Connect-requests from other creators (default true; partners/request 403s when false). */
+  open_to_collab: boolean;
   is_featured:     boolean;
   tags:            string[];
   niches:          string[];

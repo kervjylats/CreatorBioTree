@@ -4,27 +4,27 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { fetchJson } from "@/lib/fetchJson";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 /** Shareable partner invite card showing invite link URL, copy button, and expiration info (partnership.md Part 1). */
 export function PartnerInviteCard() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   useEffect(() => {
-    fetch("/api/creator/partners/invite")
-      .then((r) => r.json())
+    fetchJson<{ url?: string }>("/api/creator/partners/invite")
       .then((data) => {
         if (data.url) setInviteUrl(data.url);
       })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   const handleCopy = async () => {
     if (!inviteUrl) return;
-    await navigator.clipboard.writeText(inviteUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    await copy(inviteUrl);
   };
 
   if (loading) {

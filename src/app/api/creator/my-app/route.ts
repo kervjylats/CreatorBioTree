@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, handleAuthError } from "@/lib/requireAuth";
+import { zodErrorResponse } from "@/lib/zod-helpers";
 
 const deploySchema = z.object({
   display_name: z.string().min(1).max(80).nullable().optional(),
@@ -60,7 +61,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const validation = deploySchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error.format() }, { status: 400 });
+      return zodErrorResponse();
     }
 
     const { error: updateError } = await supabase

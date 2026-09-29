@@ -9,7 +9,9 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Loader2 } from "lucide-react";
+import { FileText } from "lucide-react";
+import { Spinner } from "@/components/shared/Spinner";
+import { LABEL_CLASS } from "@/lib/ui-constants";
 
 export type UploadKind = "video" | "image" | "audio" | "pdf";
 
@@ -60,11 +62,11 @@ export function FileUploadField({ kind, label, value, onChange }: FileUploadFiel
 
   return (
     <div>
-      {label && <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</label>}
+      {label && <label className={LABEL_CLASS}>{label}</label>}
       <div className={label ? "mt-1.5 flex items-center gap-3" : "flex items-center gap-3"}>
         {uploading ? (
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-input bg-background">
-            <Loader2 size={18} className="animate-spin text-muted-foreground" />
+            <Spinner size={18} />
           </div>
         ) : value ? (
           kind === "image" ? (

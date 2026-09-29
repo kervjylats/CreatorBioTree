@@ -1,12 +1,10 @@
 /** /onboarding screen — creator signup (onboarding.md): server-side already-logged-in redirect + ?invite= passthrough, renders AuthCard + OnboardingForm. */
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
 import { AuthCard } from "@/components/auth/AuthCard";
 import { OnboardingForm } from "@/components/auth/OnboardingForm";
-import { createClient } from "@/lib/supabase/server";
-import { USE_MOCKS } from "@/lib/mocks/useMocks";
+import { hasCreatorSession } from "@/lib/guards";
 
 export const metadata: Metadata = {
   title: "Create your page",
@@ -27,19 +25,8 @@ export default async function OnboardingScreen({
   const { invite } = await searchParams;
   const inviteCode = sanitizeInviteCode(invite);
 
-  if (USE_MOCKS) {
-    const cookieStore = await cookies();
-    if (cookieStore.get("mock_auth_uid")?.value) {
-      redirect("/dashboard/my-app");
-    }
-  } else {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      redirect("/dashboard/my-app");
-    }
+  if (await hasCreatorSession()) {
+    redirect("/dashboard/my-app");
   }
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "creatorpwa.app";

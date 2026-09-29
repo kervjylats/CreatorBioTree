@@ -8,12 +8,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { fetchJson } from "@/lib/fetchJson";
 import { ExternalLink } from "lucide-react";
 import type { CreatorBranding } from "@/lib/branding";
 import type { ContentItem } from "@/types";
 import { contrastText } from "./themeStyles";
 import { SectionTitle } from "./SectionTitle";
 import { getInitials } from "@/lib/fan-helpers";
+import { money } from "@/lib/format";
 
 interface PartnerBodyProps {
   branding: CreatorBranding;
@@ -26,8 +28,7 @@ export function usePartnerFollow(partnerUsername: string, hostUsername: string) 
   const [following, setFollowing] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/fan/partners?username=${encodeURIComponent(hostUsername)}`)
-      .then((r) => r.json())
+    fetchJson<{ followed?: { username: string }[] }>(`/api/fan/partners?username=${encodeURIComponent(hostUsername)}`)
       .then((d) => {
         const followedList: { username: string }[] = d.followed ?? [];
         setFollowing(followedList.some((p) => p.username === partnerUsername));
@@ -124,7 +125,7 @@ export function PartnerBody({ branding, items, socialLinks }: PartnerBodyProps) 
                     className="mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold"
                     style={{ backgroundColor: branding.accentColor, color: contrastText(branding.accentColor) }}
                   >
-                    Buy — ${item.price.toFixed(2)}
+                    Buy — {money(item.price)}
                   </span>
                 )}
                 {item.access_type === "free" && (

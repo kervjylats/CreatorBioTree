@@ -2,7 +2,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { resolveBranding } from "@/lib/branding";
+import { resolveBranding, socialLinksToArtistLinks } from "@/lib/branding";
+import { contentService } from "@/services/contentService";
 import { PartnerPageContent } from "@/components/fan-pwa/PartnerPageContent";
 
 interface PartnerPageProps {
@@ -34,21 +35,13 @@ export default async function PartnerPageScreen({ params }: PartnerPageProps) {
 
   if (!partnerCreator) return notFound();
 
-  const { data: items } = await supabase
-    .from("content_items")
-    .select("*")
-    .eq("creator_id", partnerCreator.id)
-    .eq("is_published", true)
-    .order("sort_order", { ascending: true });
+  const items = await contentService
+    .getForCreator(partnerCreator.id, supabase)
+    .catch(() => []);
 
   const branding = resolveBranding(partnerCreator);
 
-  const socialLinks = partnerCreator.social_links
-    ? Object.entries(partnerCreator.social_links).map(([label, url]) => ({
-        label,
-        url: url as string,
-      }))
-    : [];
+  const socialLinks = socialLinksToArtistLinks(partnerCreator.social_links);
 
   return (
     <PartnerPageContent

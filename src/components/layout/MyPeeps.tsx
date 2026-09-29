@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Users, Heart, Briefcase } from "lucide-react";
 import { toast } from "sonner";
+import { fetchJson } from "@/lib/fetchJson";
+import { CountPill } from "@/components/shared/CountPill";
 
 interface Counts {
   partners: number;
@@ -45,10 +47,9 @@ export function MyPeeps() {
 
   useEffect(() => {
     const fetchCounts = () => {
-      fetch("/api/creator/peeps")
-        .then((r) => r.json())
+      fetchJson<Partial<Counts>>("/api/creator/peeps")
         .then((data) => {
-          if (data.partners !== undefined) setCounts(data);
+          if (data.partners !== undefined) setCounts(data as Counts);
         })
         .catch(() => { toast.error("Failed to load counts"); });
     };
@@ -83,9 +84,7 @@ export function MyPeeps() {
           >
             <row.icon size={17} strokeWidth={active ? 2.5 : 2} />
             {badge > 0 && !active && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-caption font-bold text-white">
-                {badge > 99 ? "99+" : badge}
-              </span>
+              <CountPill count={badge} />
             )}
           </button>
         );

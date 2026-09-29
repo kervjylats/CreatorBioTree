@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
-
-const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
+import { USERNAME_PATTERN, cleanUsernameInput } from "@/lib/username";
+import { setMockSession } from "@/lib/mockSession";
 
 interface OnboardingFormProps {
   inviteCode?: string;
@@ -26,11 +26,6 @@ interface OnboardingFormProps {
 }
 
 type Availability = "idle" | "checking" | "available" | "taken" | "invalid" | "error";
-
-function setMockSession(uid: string, userEmail: string) {
-  document.cookie = `mock_auth_uid=${uid}; path=/; max-age=3600`;
-  document.cookie = `mock_auth_email=${encodeURIComponent(userEmail)}; path=/; max-age=3600`;
-}
 
 export function OnboardingForm({ inviteCode, rootDomain }: OnboardingFormProps) {
   const router = useRouter();
@@ -88,7 +83,7 @@ export function OnboardingForm({ inviteCode, rootDomain }: OnboardingFormProps) 
   }, []);
 
   const handleLinkAddressChange = (value: string) => {
-    const cleaned = value.toLowerCase().replace(/[^a-z0-9_]/g, "");
+    const cleaned = cleanUsernameInput(value);
     setLinkAddress(cleaned);
     checkAvailability(cleaned);
   };

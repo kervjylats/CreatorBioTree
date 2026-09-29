@@ -2,12 +2,12 @@
  * Connect tab screen — /[username]/connect (fan-shell.md Part 4c): Artist Links
  * + empty state (partner billboard lands with Sheet 20). Fan-only.
  */
-import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { resolveFanShellData } from "@/lib/fanShellData";
 import { FanAppShell } from "@/components/fan-pwa/FanAppShell";
 import { FanConnectTab } from "@/components/fan-pwa/FanConnectTab";
+import { redirectIfNotFan } from "@/lib/guards";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export default async function ConnectScreen({
   const { username } = await params;
   const data = await resolveFanShellData(username);
   if (!data) notFound();
-  if (!data.identity?.hasPassword) redirect(`/${username}/guest`);
+  redirectIfNotFan(username, data.identity);
 
   return (
     <FanAppShell branding={data.branding} creatorId={data.branding.creatorId}>

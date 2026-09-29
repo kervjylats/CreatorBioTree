@@ -2,10 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { getFanSession } from "@/lib/fanSession";
-import { z } from "zod";
-import { USE_MOCKS } from "@/lib/mocks/useMocks";
-
-const idSchema = USE_MOCKS ? z.string().min(1) : z.string().uuid();
+import { idSchema } from "@/lib/zod-helpers";
 
 export async function GET(request: NextRequest) {
   try {

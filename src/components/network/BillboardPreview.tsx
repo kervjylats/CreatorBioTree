@@ -8,6 +8,9 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { getInitials } from "@/lib/fan-helpers";
+import { Avatar } from "@/components/shared/Avatar";
+import { LABEL_CLASS } from "@/lib/ui-constants";
 
 interface BillboardPreviewProps {
   displayName: string;
@@ -16,7 +19,7 @@ interface BillboardPreviewProps {
   tagline: string;
   tags: string[];
   collabStyle: string;
-  isVisible: boolean;
+  showInSearch: boolean;
   onToggleVisibility?: () => void;
 }
 
@@ -27,50 +30,34 @@ export function BillboardPreview({
   tagline,
   tags,
   collabStyle,
-  isVisible,
+  showInSearch,
   onToggleVisibility,
 }: BillboardPreviewProps) {
-  const initials = displayName
-    .split(/[\s@._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
+  const initials = getInitials(displayName);
 
   return (
     <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        <p className={LABEL_CLASS}>
           My Billboard
         </p>
         <button
           type="button"
           onClick={onToggleVisibility}
           className={`inline-flex min-h-9 items-center gap-1 rounded-full px-3 text-micro font-semibold transition-colors ${
-            isVisible
+            showInSearch
               ? "bg-green-100 text-green-700 hover:bg-green-200"
               : "bg-muted text-muted-foreground hover:bg-muted/80"
           }`}
         >
-          {isVisible ? <Eye size={10} /> : <EyeOff size={10} />}
-          {isVisible ? "Visible" : "Hidden"}
+          {showInSearch ? <Eye size={10} /> : <EyeOff size={10} />}
+          {showInSearch ? "In search" : "Hidden"}
         </button>
       </div>
 
       {/* Identity row */}
       <div className="flex items-center gap-3">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-sm font-bold text-foreground overflow-hidden">
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={avatarUrl}
-              alt={displayName}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            initials
-          )}
-        </span>
+        <Avatar src={avatarUrl} name={displayName} size="h-12 w-12" textClass="text-sm" />
         <div className="min-w-0 flex-1">
           <span className="block truncate text-sm font-bold text-foreground">
             {displayName || "Your Name"}

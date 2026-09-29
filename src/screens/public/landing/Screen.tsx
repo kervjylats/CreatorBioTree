@@ -5,7 +5,7 @@
  */
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Trees } from "lucide-react";
+import { Logo } from "@/components/shared/Logo";
 
 export const metadata: Metadata = {
   title: "CreatorBioTree — Your fans deserve more than a Linktree",
@@ -22,12 +22,7 @@ export default function LandingScreen() {
     <div className="min-h-screen-safe bg-background text-foreground flex flex-col">
       {/* NAV */}
       <nav className="flex items-center justify-between px-4 sm:px-10 py-4 sm:py-6 max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
-            <Trees size={20} />
-          </div>
-          <span className="font-serif text-2xl font-bold tracking-tight text-foreground">BioTree</span>
-        </div>
+        <Logo size={20} wordmark="BioTree" />
         <div className="flex items-center gap-4">
           <Link
             href="/login"

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Download } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { toast } from "sonner";
+import { fetchJson } from "@/lib/fetchJson";
 
 export function YourPageSection() {
   const [username, setUsername] = useState<string | null>(null);
@@ -18,8 +19,7 @@ export function YourPageSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/creator/my-app")
-      .then((r) => r.json())
+    fetchJson<{ creator?: { username?: string } }>("/api/creator/my-app")
       .then((data) => {
         const u = data?.creator?.username;
         if (u) setUsername(u);

@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 interface AffiliateLink {
   id: string;
@@ -32,6 +34,7 @@ export function AffiliateLinks() {
   const [links, setLinks] = useState<AffiliateLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { copy } = useCopyToClipboard();
 
   const fetchLinks = useCallback(async () => {
     try {
@@ -51,9 +54,11 @@ export function AffiliateLinks() {
 
   async function handleCopy(link: AffiliateLink) {
     const url = `${window.location.origin}/ref/${link.ref_code}`;
-    await navigator.clipboard.writeText(url);
-    setCopiedId(link.id);
-    setTimeout(() => setCopiedId(null), 2000);
+    const ok = await copy(url);
+    if (ok) {
+      setCopiedId(link.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
   }
 
   async function handleToggle(link: AffiliateLink) {
@@ -80,8 +85,12 @@ export function AffiliateLinks() {
   if (links.length === 0) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          No affiliate links yet. Browse deals or create one from a collaboration.
+        <CardContent className="p-0">
+          <EmptyState
+            variant="inline"
+            title="No affiliate links yet. Browse deals or create one from a collaboration."
+            className="px-6 text-base"
+          />
         </CardContent>
       </Card>
     );

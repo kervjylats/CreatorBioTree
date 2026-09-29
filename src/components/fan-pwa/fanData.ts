@@ -5,6 +5,7 @@
  * are computed here so guest page + Content tab + My App preview all agree.
  */
 import type { CreatorBranding } from "@/lib/branding";
+import { money } from "@/lib/format";
 import type { ContentItem, FanPurchase } from "@/types";
 
 /** Who the fan_session cookie identifies (if anyone). */
@@ -69,17 +70,6 @@ export function isScheduledVisible(item: ContentItem, now = new Date()): boolean
   return true;
 }
 
-function formatMoney(price: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency?.toUpperCase() || "USD",
-    }).format(price);
-  } catch {
-    return `$${price.toFixed(2)}`;
-  }
-}
-
 /**
  * The Three Gates (fan-shell.md Part 2). `identity` = fan_session recognition;
  * `purchasedItemIds` = content ids with completed purchases under the session email.
@@ -99,15 +89,10 @@ export function computeItemGate(
 
   if (isPaid && purchasedItemIds.has(item.id)) return { state: "purchased", cta: "Purchased ✓", externalUrl: null };
   if (isMember) return { state: "member", cta: "Join membership", externalUrl: external };
-  if (isPaid) return { state: "paid", cta: `Buy — ${formatMoney(item.price, item.currency)}`, externalUrl: external };
+  if (isPaid) return { state: "paid", cta: `Buy — ${money(item.price, item.currency)}`, externalUrl: external };
   if (isEmailGated) {
     if (identity) return { state: "free", cta: "Unlocked ✓", externalUrl: null };
     return { state: "email-gated", cta: "Sign up to unlock", externalUrl: null };
   }
   return { state: "free", cta: item.type === "newsletter" ? "Subscribe" : "Open", externalUrl: external };
-}
-
-/** Money formatter shared by cards (e.g. "$9.00"). */
-export function money(price: number, currency: string): string {
-  return formatMoney(price, currency);
 }

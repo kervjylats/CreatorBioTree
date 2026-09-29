@@ -1,7 +1,7 @@
 /** Fan register — creates fan_account with hashed password, sets session cookie. */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 import { z } from "zod";
 import { hashPassword, setFanSession, verifyPassword } from "@/lib/fanSession";
 
@@ -21,11 +21,8 @@ export async function POST(request: NextRequest) {
 
     const { email, password, creator_id } = validation.data;
 
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    const allowed = await rateLimiter.check(`register:${ip}`, 5, 60_000);
-    if (!allowed) {
-      return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
-    }
+    const tooMany = await enforceRateLimit(request, "register", 5, 60_000);
+    if (tooMany) return tooMany;
 
     const supabase = createServiceClient();
 

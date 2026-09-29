@@ -11,14 +11,14 @@ import { toast } from "sonner";
 import { CheckCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchJson } from "@/lib/fetchJson";
 
 export function PaymentsPanel() {
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/creator/my-app")
-      .then((r) => r.json())
+    fetchJson<{ creator?: { paypal_email?: string | null } }>("/api/creator/my-app")
       .then((data) => {
         setConnected(!!data?.creator?.paypal_email);
       })

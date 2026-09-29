@@ -152,3 +152,17 @@ export function resolveBranding(creator: Creator): CreatorBranding {
     aiSummary:       creator.ai_summary ?? null,
   };
 }
+
+/**
+ * socialLinksToArtistLinks — convert a creator's `social_links` record
+ * ({ platform: url }) into the `{ label, url }[]` shape the Connect tab,
+ * partner pages, and My App preview render. Empty URLs are dropped.
+ * Single source so partner-page no longer shows blank links (2026-09-29 audit).
+ */
+export function socialLinksToArtistLinks(
+  socialLinks: Record<string, string> | null | undefined
+): { label: string; url: string }[] {
+  return Object.entries(socialLinks ?? {})
+    .filter(([, url]) => Boolean(url))
+    .map(([label, url]) => ({ label, url }));
+}

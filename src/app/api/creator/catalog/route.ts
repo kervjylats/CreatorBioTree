@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { zodErrorResponse } from "@/lib/zod-helpers";
 import { TYPE_VALUES } from "@/types/contentTypes";
 
 const createSchema = z.object({
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const validation = createSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error.format() }, { status: 400 });
+      return zodErrorResponse();
     }
 
     const { type, title, description } = validation.data;

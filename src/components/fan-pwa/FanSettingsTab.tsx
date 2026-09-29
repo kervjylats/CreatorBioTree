@@ -9,9 +9,10 @@ import { useState } from "react";
 import { Bell, CreditCard, LogOut, Receipt, Shield, Tag, Zap } from "lucide-react";
 import { toast } from "sonner";
 import type { FanShellData } from "./fanData";
-import { money } from "./fanData";
+import { money, formatDate } from "@/lib/format";
 import { buttonClass, buttonShape, cardRadius } from "./themeStyles";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { Switch } from "@/components/ui/switch";
 
 interface FanSettingsTabProps {
   data: FanShellData;
@@ -156,19 +157,10 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
                   <p className="text-sm font-medium" style={{ color: branding.textColor }}>{t.label}</p>
                   <p className="text-caption" style={{ color: branding.textColor + "77" }}>{t.desc}</p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={toggles[t.key]}
-                  onClick={() => toggleNotification(t.key)}
-                  className="h-6 w-11 rounded-full transition-colors"
-                  style={{ backgroundColor: toggles[t.key] ? branding.accentColor : branding.textColor + "33" }}
-                >
-                  <span
-                    className="block h-5 w-5 rounded-full bg-white transition-transform"
-                    style={{ transform: toggles[t.key] ? "translateX(22px)" : "translateX(2px)" }}
-                  />
-                </button>
+                <Switch
+                  checked={toggles[t.key]}
+                  onCheckedChange={() => toggleNotification(t.key)}
+                />
               </div>
             ))}
           </div>
@@ -198,7 +190,7 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{titleFor(p.content_item_id) ?? "Purchase"}</p>
                   <p className="text-xs" style={{ color: branding.textColor + "77" }}>
-                    {new Date(p.purchased_at).toLocaleDateString()}
+                    {formatDate(p.purchased_at)}
                   </p>
                 </div>
                 <p className="shrink-0 text-sm font-bold">{money(p.amount_paid ?? 0, p.currency)}</p>

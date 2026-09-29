@@ -16,6 +16,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ChatIcon } from "@/components/messages/ChatShell";
 import { toast } from "sonner";
+import { fetchJson } from "@/lib/fetchJson";
+import { formatDate } from "@/lib/format";
 
 interface FanProfile {
   fan: {
@@ -52,8 +54,7 @@ export function FanProfileDrawer({
       return;
     }
     setLoading(true);
-    fetch(`/api/creator/fans/${fanId}`)
-      .then((r) => r.json())
+    fetchJson<FanProfile>(`/api/creator/fans/${fanId}`)
       .then((data) => {
         if (data.fan) setProfile(data);
       })
@@ -109,7 +110,7 @@ export function FanProfileDrawer({
               </div>
               <p className="text-sm">{profile.fan.email}</p>
               <p className="text-xs text-muted-foreground">
-                Joined {new Date(profile.fan.created_at).toLocaleDateString()}
+                Joined {formatDate(profile.fan.created_at)}
               </p>
             </div>
             <Separator />
@@ -121,7 +122,7 @@ export function FanProfileDrawer({
               </div>
               {profile.last_purchase_at && (
                 <p className="text-xs text-muted-foreground">
-                  Last: {new Date(profile.last_purchase_at).toLocaleDateString()}
+                  Last: {formatDate(profile.last_purchase_at)}
                 </p>
               )}
             </div>

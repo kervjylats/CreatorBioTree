@@ -8,7 +8,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import type { AccessType, BillingCycle, ContentItem, PricingModel } from "@/types";
-import { INPUT_CLASS } from "@/lib/ui-constants";
+import { INPUT_CLASS, LABEL_CLASS} from "@/lib/ui-constants";
 
 interface PricingEditorProps {
   item: ContentItem;
@@ -29,7 +29,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
     <div className="space-y-4">
       {/* Access */}
       <div>
-        <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Who can see it?</label>
+        <label className={LABEL_CLASS}>Who can see it?</label>
         <div className="mt-2 flex flex-col gap-2">
           {(Object.keys(ACCESS_LABELS) as AccessType[]).map((access) => (
             <label
@@ -66,7 +66,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
           {/* Price */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Price</label>
+              <label className={LABEL_CLASS}>Price</label>
               <input
                 type="number"
                 min={0}
@@ -77,7 +77,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
               />
             </div>
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Currency</label>
+              <label className={LABEL_CLASS}>Currency</label>
               <select
                 value={item.currency}
                 onChange={(e) => patch({ currency: e.target.value })}
@@ -95,7 +95,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
           {/* Pricing model + billing cycle */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Billing model</label>
+              <label className={LABEL_CLASS}>Billing model</label>
               <select
                 value={!item.pricing_model || item.pricing_model === "free" ? "paid_one_time" : item.pricing_model}
                 onChange={(e) => patch({ pricing_model: e.target.value as PricingModel })}
@@ -108,7 +108,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
             </div>
             {item.pricing_model === "recurring" && (
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Billing cycle</label>
+                <label className={LABEL_CLASS}>Billing cycle</label>
                 <select
                   value={item.billing_cycle ?? "monthly"}
                   onChange={(e) => patch({ billing_cycle: e.target.value as BillingCycle })}
@@ -126,7 +126,7 @@ export function PricingEditor({ item, patch }: PricingEditorProps) {
 
           {/* Payment handling */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">How is it paid?</label>
+            <label className={LABEL_CLASS}>How is it paid?</label>
             <div className="mt-2 flex flex-col gap-2">
               <label
                 className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2.5 text-sm ${

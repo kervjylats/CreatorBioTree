@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchJson } from "@/lib/fetchJson";
 
 export function ProfileSection() {
   const [displayName, setDisplayName] = useState("");
@@ -18,8 +19,7 @@ export function ProfileSection() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/creator/my-app")
-      .then((r) => r.json())
+    fetchJson<{ creator?: { display_name?: string | null; tagline?: string | null } }>("/api/creator/my-app")
       .then((data) => {
         const c = data?.creator;
         if (c) {
@@ -34,17 +34,13 @@ export function ProfileSection() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch("/api/creator/my-app", {
+      await fetchJson("/api/creator/my-app", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           display_name: displayName.trim() || null,
         }),
       });
-      if (!res.ok) {
-        toast.error("Failed to save profile");
-        return;
-      }
       toast.success("Profile saved");
     } catch {
       toast.error("Failed to save profile");

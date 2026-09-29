@@ -830,7 +830,8 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
         email: args.p_email ? String(args.p_email) : currentAuthUser.email ?? null,
         role: "creator" as const,
         country: null,
-        is_discoverable: false,
+        show_in_search: false,
+        open_to_collab: true,
         is_featured: false,
         tags: [],
         niches: args.p_niche ? [String(args.p_niche)] : [],
@@ -992,7 +993,8 @@ function buildMockCreatorRow(id: string, email: string, displayName: string): Cr
     email,
     role: "creator",
     country: null,
-    is_discoverable: false,
+    show_in_search: false,
+    open_to_collab: true,
     is_featured: false,
     tags: [],
     niches: [],
@@ -1216,7 +1218,8 @@ export function seedMockAdmin(): void {
       email: MOCK_ADMIN_EMAIL,
       role: "admin",
       country: null,
-      is_discoverable: false,
+      show_in_search: false,
+      open_to_collab: true,
       is_featured: false,
       tags: [],
       niches: [],
@@ -1286,11 +1289,13 @@ export function seedMockTestCreator(): void {
   const creators = getTable<Creator>("creators");
   const existing = creators.find((c) => c.id === MOCK_TEST_CREATOR_ID);
   if (existing) {
-    existing.is_discoverable = true;
+    existing.show_in_search = true;
+    if (existing.open_to_collab === undefined) existing.open_to_collab = true;
   } else {
     creators.push({
       ...buildMockCreatorRow(MOCK_TEST_CREATOR_ID, MOCK_TEST_CREATOR_EMAIL, "Test Creator"),
-      is_discoverable: true,
+      show_in_search: true,
+      open_to_collab: true,
     });
     setTable("creators", creators);
   }

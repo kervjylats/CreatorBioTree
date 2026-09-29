@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import type { CreatorBranding } from "@/lib/branding";
+import { Sheet } from "@/components/shared/Sheet";
 import { buttonClass, buttonShape, cardRadius } from "./themeStyles";
 
 interface FanAuthModalProps {
@@ -136,7 +137,7 @@ export function FanAuthModal({ creatorId, creatorUsername, branding, onSuccess, 
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
+    <Sheet onClose={onClose}>
       <div
         className={cardRadius(branding, "w-full max-w-md p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl")}
         style={{ backgroundColor: branding.cardColor }}
@@ -266,6 +267,6 @@ export function FanAuthModal({ creatorId, creatorUsername, branding, onSuccess, 
           Your account is linked to @{creatorUsername}. You can unsubscribe anytime.
         </p>
       </div>
-    </div>
+    </Sheet>
   );
 }

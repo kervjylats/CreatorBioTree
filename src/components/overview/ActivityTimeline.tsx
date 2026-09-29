@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { fetchJson } from "@/lib/fetchJson";
 
 interface Activity {
   id: string;
@@ -36,8 +37,7 @@ export function ActivityTimeline() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/creator/activity")
-      .then((r) => r.json())
+    fetchJson<unknown>("/api/creator/activity")
       .then((data) => setActivities(Array.isArray(data) ? data : []))
       .catch(() => { toast.error("Failed to load activity"); })
       .finally(() => setLoading(false));

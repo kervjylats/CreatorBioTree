@@ -10,13 +10,12 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
+import { idSchema } from "@/lib/zod-helpers";
 import { contentService } from "@/services/contentService";
 import { setFanSession } from "@/lib/fanSession";
 import { z } from "zod";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
-
-const idSchema = USE_MOCKS ? z.string().min(1) : z.string().uuid();
 
 const completeSchema = z.object({
   content_item_id: idSchema,
@@ -27,10 +26,8 @@ const completeSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    if (!(await rateLimiter.check(`fan-purchase-complete:${ip}`, 20, 60_000))) {
-      return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
-    }
+    const tooMany = await enforceRateLimit(request, "fan-purchase-complete", 20, 60_000);
+    if (tooMany) return tooMany;
 
     // No payment verification in mock — real mode must verify PayPal webhook signature
     // before recording a purchase (WIRING_PLAN Sheet 21).

@@ -9,21 +9,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getChatIdentity } from "@/lib/chat";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
+import { MAX_CHAT_UPLOAD_BYTES } from "@/lib/limits";
 
 const uploadSchema = z.object({
   dataUrl: z.string().regex(/^data:([a-zA-Z0-9/+-]+);base64,/, "Must be a base64 data URL").max(12_000_000),
   name: z.string().min(1).max(255),
 });
 
-const MAX_BYTES = 8_000_000;
-
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    if (!(await rateLimiter.check(`chat-upload:${ip}`, 10, 60_000))) {
-      return NextResponse.json({ error: "Too many uploads — try again in a minute" }, { status: 429 });
-    }
+    const tooMany = await enforceRateLimit(request, "chat-upload", 10, 60_000);
+    if (tooMany) return tooMany;
 
     const supabase = await createClient();
     const me = await getChatIdentity(supabase);
@@ -37,7 +34,7 @@ export async function POST(request: NextRequest) {
     const mime = /^data:([^;]+)/.exec(header ?? "")?.[1] ?? "application/octet-stream";
     const buffer = Buffer.from(base64 ?? "", "base64");
     if (buffer.byteLength === 0) return NextResponse.json({ error: "Empty file" }, { status: 400 });
-    if (buffer.byteLength > MAX_BYTES) return NextResponse.json({ error: "File is too large (max 8MB)" }, { status: 400 });
+    if (buffer.byteLength > MAX_CHAT_UPLOAD_BYTES) return NextResponse.json({ error: "File is too large (max 8MB)" }, { status: 400 });
 
     const safeName = validation.data.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
     const path = `chat/${me.key}-${Date.now()}-${safeName}`;

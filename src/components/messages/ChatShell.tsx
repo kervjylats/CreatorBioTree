@@ -26,6 +26,15 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { submitFollow } from "@/lib/follow";
+import { formatDate } from "@/lib/format";
+import { Sheet } from "@/components/shared/Sheet";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Spinner } from "@/components/shared/Spinner";
+import { Avatar } from "@/components/shared/Avatar";
+import { CountPill } from "@/components/shared/CountPill";
+import { Switch } from "@/components/ui/switch";
+import { LABEL_CLASS } from "@/lib/ui-constants";
 
 // ─── Shared types + fetch helper ─────────────────────────────────────────────
 
@@ -118,16 +127,7 @@ function timeAgo(iso: string): string {
   if (hrs < 24) return `${hrs}h`;
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d`;
-  return new Date(iso).toLocaleDateString();
-}
-
-function initials(name: string): string {
-  return name
-    .split(/[\s@._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
+  return formatDate(iso);
 }
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
@@ -190,9 +190,7 @@ function ConversationRow({ convo, onClick }: { convo: ChatConversation; onClick:
       : "Start the conversation";
   return (
     <button type="button" onClick={onClick} className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/40">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-sm font-bold text-foreground">
-        {initials(convo.title)}
-      </span>
+      <Avatar name={convo.title} size="h-10 w-10" textClass="text-sm" />
       <span className="min-w-0 flex-1">
         <span className="flex items-center justify-between gap-2">
           <span className="truncate text-sm font-semibold text-foreground">{convo.title}</span>
@@ -201,9 +199,7 @@ function ConversationRow({ convo, onClick }: { convo: ChatConversation; onClick:
         <span className="flex items-center justify-between gap-2">
           <span className="truncate text-xs text-muted-foreground">{preview}</span>
           {convo.unread > 0 && (
-            <span className="flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-red-500 px-1 text-micro font-bold text-white">
-              {convo.unread}
-            </span>
+            <CountPill count={convo.unread} variant="row" />
           )}
         </span>
       </span>
@@ -254,9 +250,7 @@ export function ChatInboxPopover({ onOpenFull }: ChatInboxPopoverProps) {
         >
           <MessageCircle size={22} />
           {unread > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-caption font-bold text-white">
-              {unread > 99 ? "99+" : unread}
-            </span>
+            <CountPill count={unread} />
           )}
         </button>
 
@@ -270,7 +264,7 @@ export function ChatInboxPopover({ onOpenFull }: ChatInboxPopoverProps) {
             </div>
             <div className="max-h-96 overflow-y-auto">
               {conversations.length === 0 ? (
-                <p className="px-4 py-8 text-center text-sm text-muted-foreground">No conversations yet</p>
+                <EmptyState variant="inline" title="No conversations yet" />
               ) : (
                 conversations.map((c) => (
                   <ConversationRow key={c.id} convo={c} onClick={() => handleOpenFull(c.id)} />
@@ -386,12 +380,10 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
           )}
           <label className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-input px-2.5 py-1 text-xs font-semibold text-foreground">
             <ShieldCheck size={12} />
-            <input
-              type="checkbox"
-              className="accent-foreground"
+            <Switch
               checked={allowAnyone ?? true}
               disabled={allowAnyone === null}
-              onChange={(e) => void toggleAllowAnyone(e.target.checked)}
+              onCheckedChange={(checked) => void toggleAllowAnyone(checked)}
             />
             Allow anyone
           </label>
@@ -405,7 +397,7 @@ export function ChatShell({ onClose, initialConversationId }: ChatShellProps) {
           {/* Requests folder */}
           {requests.length > 0 && (
             <div className="border-b border-border px-4 py-3">
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Requests</p>
+              <p className={LABEL_CLASS}>Requests</p>
               <div className="mt-2 flex flex-col gap-2">
                 {requests.map((r) => (
                   <div key={r.id} className="rounded-xl border border-border bg-card p-3">
@@ -523,9 +515,7 @@ export function ChatThread({ conversationId, onBack, onOpenFull, compact, accent
         <button type="button" aria-label="Back" onClick={onBack} className="rounded-full p-1.5 hover:bg-accent">
           <ArrowLeft size={18} className="text-foreground" />
         </button>
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground/10 text-xs font-bold text-foreground">
-          {initials(title)}
-        </span>
+        <Avatar name={title} size="h-8 w-8" textClass="text-xs" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-bold text-foreground">{title}</p>
           {isGroup && data && (
@@ -740,7 +730,7 @@ function MessageComposer({
         onClick={() => fileRef.current?.click()}
         className="rounded-full p-2 text-muted-foreground hover:bg-accent disabled:opacity-40"
       >
-        {uploading ? <Loader2 size={18} className="animate-spin" /> : <Paperclip size={18} />}
+        {uploading ? <Spinner size={18} /> : <Paperclip size={18} />}
       </button>
       <textarea
         rows={1}
@@ -860,7 +850,7 @@ export function ChatIcon({ otherKey, otherParty, name, accentColor, guest, onGue
               <ChatThread conversationId={convoId} onBack={() => setOpen(false)} accentColor={accentColor} />
             ) : (
               <div className="flex h-full items-center justify-center">
-                <Loader2 size={20} className="animate-spin text-muted-foreground" />
+                <Spinner size={20} />
               </div>
             )}
           </div>
@@ -891,11 +881,8 @@ export function GuestContactModal({ creatorId, creatorUsername, displayName, onC
     if (!email.trim()) return;
     setBusy(true);
     try {
-      const follow = await api<{ followed: boolean }>("/api/fan/follow-creator", {
-        method: "POST",
-        body: JSON.stringify({ email: email.trim().toLowerCase(), creator_username: creatorUsername }),
-      });
-      if (!follow.followed) throw new Error("Couldn't connect");
+      const follow = await submitFollow(email, creatorUsername);
+      if (!follow.ok) throw new Error(follow.error ?? "Couldn't connect");
       const res = await api<{ status: string }>("/api/messages/conversations", {
         method: "POST",
         body: JSON.stringify({
@@ -915,9 +902,12 @@ export function GuestContactModal({ creatorId, creatorUsername, displayName, onC
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
-      <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-bold text-foreground">Contact {displayName}</h3>
+    <Sheet
+      onClose={onClose}
+      zClassName="z-[90]"
+      panelClassName="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-2xl sm:rounded-3xl"
+    >
+      <h3 className="text-lg font-bold text-foreground">Contact {displayName}</h3>
         <p className="mt-1 text-sm text-muted-foreground">Your email stays private — it&apos;s how they reply.</p>
         <form onSubmit={(e) => void submit(e)} className="mt-4 space-y-3">
           <input
@@ -944,8 +934,7 @@ export function GuestContactModal({ creatorId, creatorUsername, displayName, onC
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Sheet>
   );
 }
 

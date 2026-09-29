@@ -6,9 +6,15 @@
  */
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Search, Loader2, ExternalLink } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { Avatar } from "@/components/shared/Avatar";
+import { fetchJson } from "@/lib/fetchJson";
+import { useCreatorSearch, type CreatorSearchResult } from "@/hooks/useCreatorSearch";
+import { SearchBox } from "@/components/shared/SearchBox";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Spinner } from "@/components/shared/Spinner";
 
 import { BillboardPreview } from "./BillboardPreview";
 import { BillboardEditor, type BillboardSettings } from "./BillboardEditor";
@@ -20,15 +26,7 @@ import { YourDealsCard } from "@/components/network/YourDealsCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-
-interface SearchResult {
-  id: string;
-  username: string;
-  display_name: string;
-  tagline: string | null;
-  avatar_url: string | null;
-  is_featured: boolean | null;
-}
+import { LABEL_CLASS } from "@/lib/ui-constants";
 
 const EMPTY_BILLBOARD: BillboardSettings = {
   display_name: "",
@@ -37,7 +35,8 @@ const EMPTY_BILLBOARD: BillboardSettings = {
   tagline: "",
   tags: [],
   collab_style: "",
-  is_discoverable: true,
+  show_in_search: true,
+  open_to_collab: true,
   bio: "",
   rate_card: { post: "", story: "", video: "" },
   media_kit_message: "",
@@ -51,15 +50,11 @@ export function NetworkPage() {
   const [showDealForm, setShowDealForm] = useState(false);
   const [dealsKey, setDealsKey] = useState(0);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const { query, setQuery, results: searchResults, loading: searchLoading, search } = useCreatorSearch();
   const [connectState, setConnectState] = useState<Record<string, string>>({});
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => {
-    fetch("/api/creator/partners/billboard")
-      .then((r) => r.json())
+    fetchJson<Partial<BillboardSettings>>("/api/creator/partners/billboard")
       .then((d) =>
         setBillboard({
           display_name: d.display_name ?? "",
@@ -68,7 +63,8 @@ export function NetworkPage() {
           tagline: d.tagline ?? "",
           tags: d.tags ?? [],
           collab_style: d.collab_style ?? "",
-          is_discoverable: d.is_discoverable ?? true,
+          show_in_search: d.show_in_search ?? true,
+          open_to_collab: d.open_to_collab ?? true,
           bio: d.bio ?? "",
           rate_card: d.rate_card ?? { post: "", story: "", video: "" },
           media_kit_message: d.media_kit_message ?? "",
@@ -85,27 +81,28 @@ export function NetworkPage() {
   const handleBillboardSave = useCallback(async () => {
     setBillboardSaving(true);
     try {
-      const res = await fetch("/api/creator/partners/billboard", {
+      const d = await fetchJson<Partial<BillboardSettings>>("/api/creator/partners/billboard", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tagline: billboard.tagline,
           tags: billboard.tags,
           collab_style: billboard.collab_style,
-          is_discoverable: billboard.is_discoverable,
+          show_in_search: billboard.show_in_search,
+          open_to_collab: billboard.open_to_collab,
           bio: billboard.bio,
           rate_card: billboard.rate_card,
           media_kit_message: billboard.media_kit_message,
         }),
-      });
-      if (res.ok) {
-        const d = await res.json();
+      }).catch(() => null);
+      if (d) {
         setBillboard((prev) => ({
           ...prev,
           tagline: d.tagline ?? "",
           tags: d.tags ?? [],
           collab_style: d.collab_style ?? "",
-          is_discoverable: d.is_discoverable ?? true,
+          show_in_search: d.show_in_search ?? true,
+          open_to_collab: d.open_to_collab ?? true,
           bio: d.bio ?? "",
           rate_card: d.rate_card ?? prev.rate_card,
           media_kit_message: d.media_kit_message ?? "",
@@ -116,15 +113,18 @@ export function NetworkPage() {
     }
   }, [billboard]);
 
-  const handleToggleVisibility = useCallback(async () => {
-    const next = !billboard.is_discoverable;
-    setBillboard((prev) => ({ ...prev, is_discoverable: next }));
-    await fetch("/api/creator/partners/billboard", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_discoverable: next }),
-    });
-  }, [billboard.is_discoverable]);
+  // Visibility switches save instantly (independent of the Save Billboard button).
+  const handleInstantToggle = useCallback(
+    async (field: "show_in_search" | "open_to_collab") => {
+      setBillboard((prev) => ({ ...prev, [field]: !prev[field] }));
+      await fetch("/api/creator/partners/billboard", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: !billboard[field] }),
+      });
+    },
+    [billboard],
+  );
 
   const handleDealSubmit = useCallback(async (deal: DealFormData) => {
     const res = await fetch("/api/creator/affiliates/deals", {
@@ -141,7 +141,7 @@ export function NetworkPage() {
     setDealsKey((k) => k + 1);
   }, []);
 
-  const handleConnect = useCallback(async (creator: SearchResult) => {
+  const handleConnect = useCallback(async (creator: CreatorSearchResult) => {
     if (connectState[creator.id] === "loading") return;
     setConnectState((prev) => ({ ...prev, [creator.id]: "loading" }));
     try {
@@ -150,36 +150,22 @@ export function NetworkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ partner_id: creator.id }),
       });
-      const data = await res.json();
-      if (res.ok || data.error === "Request already pending") {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
         setConnectState((prev) => ({ ...prev, [creator.id]: "requested" }));
-      } else {
+      } else if (data.error === "Request already pending") {
+        setConnectState((prev) => ({ ...prev, [creator.id]: "requested" }));
+      } else if (data.error === "Already connected") {
         setConnectState((prev) => ({ ...prev, [creator.id]: "connected" }));
+      } else {
+        setConnectState((prev) => ({ ...prev, [creator.id]: "error" }));
+        toast.error(typeof data.error === "string" ? data.error : "Couldn't send the request.");
       }
     } catch {
       setConnectState((prev) => ({ ...prev, [creator.id]: "error" }));
+      toast.error("Couldn't send the request.");
     }
   }, [connectState]);
-
-  const doSearch = useCallback((q: string) => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (!q.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    timerRef.current = setTimeout(async () => {
-      setSearchLoading(true);
-      try {
-        const res = await fetch(`/api/discover/creators?q=${encodeURIComponent(q.trim())}`);
-        const data = await res.json();
-        setSearchResults(data.results ?? []);
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setSearchLoading(false);
-      }
-    }, 300);
-  }, []);
 
   return (
     <div className="px-4 py-6 lg:px-8">
@@ -195,7 +181,7 @@ export function NetworkPage() {
         <aside className="order-2 space-y-6 md:order-1">
           {billboardLoading ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 size={16} className="animate-spin text-muted-foreground" />
+              <Spinner size={16} />
             </div>
           ) : (
             <BillboardPreview
@@ -205,8 +191,8 @@ export function NetworkPage() {
               tagline={billboard.tagline}
               tags={billboard.tags}
               collabStyle={billboard.collab_style}
-              isVisible={billboard.is_discoverable}
-              onToggleVisibility={handleToggleVisibility}
+              showInSearch={billboard.show_in_search}
+              onToggleVisibility={() => handleInstantToggle("show_in_search")}
             />
           )}
           <BillboardEditor
@@ -214,10 +200,11 @@ export function NetworkPage() {
             onFieldChange={handleBillboardChange}
             onSave={handleBillboardSave}
             saving={billboardSaving}
+            onInstantToggle={handleInstantToggle}
           />
           {/* Affiliate block (network.md §7): deal maker → your deals → earnings → discover → links */}
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            <h2 className={LABEL_CLASS}>
               Affiliates
             </h2>
             <Button
@@ -239,37 +226,27 @@ export function NetworkPage() {
 
         {/* CENTER — Discover grid */}
         <section className="order-1 md:order-2">
-          <div className="relative mb-4">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); doSearch(e.target.value); }}
-              placeholder="Search creators by name or username..."
-              className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none focus:border-foreground"
-            />
-            {searchLoading && (
-              <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />
-            )}
-          </div>
+          <SearchBox
+            value={query}
+            onChange={(v) => {
+              setQuery(v);
+              search(v);
+            }}
+            loading={searchLoading}
+            className="mb-4"
+          />
 
-          <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          <h2 className={`mb-3 ${LABEL_CLASS}`}>
             Discover
           </h2>
 
-          {searchQuery.trim() === "" ? (
-            <div className="rounded-xl border border-dashed border-border p-10 text-center">
-              <p className="text-sm font-medium text-foreground">Find creators to collab with</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Search by name or link address, then send a Connect request.
-              </p>
-            </div>
+          {query.trim() === "" ? (
+            <EmptyState
+              title="Find creators to collab with"
+              hint="Search by name or link address, then send a Connect request."
+            />
           ) : searchResults.length === 0 && !searchLoading ? (
-            <div className="rounded-xl border border-dashed border-border p-10 text-center">
-              <p className="text-sm text-muted-foreground">
-                No creators match &ldquo;{searchQuery}&rdquo;
-              </p>
-            </div>
+            <EmptyState title={`No creators match \u201C${query}\u201D`} />
           ) : (
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               {searchResults.map((c) => {
@@ -279,14 +256,7 @@ export function NetworkPage() {
                     key={c.id}
                     className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:bg-accent/30"
                   >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-xs font-bold text-foreground overflow-hidden">
-                      {c.avatar_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={c.avatar_url} alt={c.display_name} className="h-full w-full object-cover" />
-                      ) : (
-                        c.display_name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
-                      )}
-                    </span>
+                    <Avatar src={c.avatar_url} name={c.display_name} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
                         <span className="truncate text-sm font-bold text-foreground">{c.display_name}</span>

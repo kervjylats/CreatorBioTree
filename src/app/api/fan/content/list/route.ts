@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { z } from "zod";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
+import { idSchema } from "@/lib/zod-helpers";
+import { contentService } from "@/services/contentService";
 
-const idSchema = USE_MOCKS ? z.string().min(1) : z.string().uuid();
 const querySchema = z.object({ creator_id: idSchema });
 
 export async function GET(request: NextRequest) {
@@ -15,9 +16,15 @@ export async function GET(request: NextRequest) {
 
     const { creator_id } = validation.data;
     const supabase = createServiceClient();
-    const { data, error } = await supabase.from("content_items").select("*").eq("creator_id", creator_id).eq("is_published", true).order("sort_order", { ascending: true });
-    if (error) return NextResponse.json({ error: "Failed to load content" }, { status: 500 });
-    return NextResponse.json(data ?? []);
+    // contentService.getForCreator throws on query error — this route's contract
+    // is a 500 {error:"Failed to load content"} (not the outer "Internal error").
+    let items;
+    try {
+      items = await contentService.getForCreator(creator_id, supabase);
+    } catch {
+      return NextResponse.json({ error: "Failed to load content" }, { status: 500 });
+    }
+    return NextResponse.json(items);
   } catch (err) {
     console.error("[fan/content/list]", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

@@ -50,7 +50,7 @@ Two audiences, one search engine:
 
 ### Discoverability gate
 
-- Only creators with `is_discoverable = true` appear in public search. Opt-out creators are invisible to everyone (they can still send collab requests from the Network).
+- Only creators with `show_in_search = true` appear in public search (renamed from `is_discoverable` 2026-09-29). Opt-out creators are invisible to everyone, and their own searches return no results (they can still send collab requests from the Network unless their `open_to_collab` switch is off).
 - Featured creators (`is_featured`) float to the top.
 
 ---
@@ -101,7 +101,7 @@ Results ordered (best first):
 |---|---|---|
 | Matching | In-memory JS similarity (edit distance) + partial match | Postgres `pg_trgm` trigram similarity (indexed) for fast fuzzy name/username search |
 | Ranking | Simple sort in code | SQL ordering: exact match → featured → similarity → created_at |
-| Volume | In-memory creators table | Indexed `creators` table (`is_discoverable` partial index); if search volume grows, evaluate a dedicated search service |
+| Volume | In-memory creators table | Indexed `creators` table (`show_in_search` partial index); if search volume grows, evaluate a dedicated search service |
 
 ---
 

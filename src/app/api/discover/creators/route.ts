@@ -1,6 +1,6 @@
 /**
  * GET /api/discover/creators — public creator discovery (search.md). Filters
- * by is_discoverable, matches on display_name/username via case-insensitive
+ * by show_in_search, matches on display_name/username via case-insensitive
  * partial match, ranks by exact-username → featured → partial → newest.
  * Accepts ?q= query param; empty = show all discoverable (featured first).
  */
@@ -13,7 +13,7 @@ interface CreatorRow {
   display_name: string;
   tagline: string | null;
   avatar_url: string | null;
-  is_discoverable: boolean | null;
+  show_in_search: boolean | null;
   is_featured: boolean | null;
   created_at: string;
 }
@@ -28,18 +28,18 @@ export async function GET(req: NextRequest) {
     if (user) {
       const { data: me } = await supabase
         .from("creators")
-        .select("is_discoverable")
+        .select("show_in_search")
         .eq("id", user.id)
         .maybeSingle();
-      if (me && me.is_discoverable === false) {
+      if (me && me.show_in_search === false) {
         return NextResponse.json({ results: [], query: q });
       }
     }
 
     const { data: creators, error } = await supabase
       .from("creators")
-      .select("id, username, display_name, tagline, avatar_url, is_discoverable, is_featured, created_at")
-      .eq("is_discoverable", true);
+      .select("id, username, display_name, tagline, avatar_url, show_in_search, is_featured, created_at")
+      .eq("show_in_search", true);
 
     if (error) {
       console.error("[discover/creators] query error:", error);

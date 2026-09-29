@@ -1,7 +1,7 @@
 /** Device push subscription (VAPID) keyed to fan or anonymous endpoint */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 import webpush from "web-push";
 
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
@@ -14,11 +14,8 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    const allowed = await rateLimiter.check(`push-subscribe:${ip}`, 10, 60_000);
-    if (!allowed) {
-      return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
-    }
+    const tooMany = await enforceRateLimit(request, "push-subscribe", 10, 60_000);
+    if (tooMany) return tooMany;
 
     const { subscription, fan_id, creator_id } = await request.json();
 

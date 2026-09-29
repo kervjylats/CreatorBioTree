@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchJson } from "@/lib/fetchJson";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 function generateQrPattern(size: number): boolean[][] {
   const grid: boolean[][] = [];
@@ -42,11 +44,11 @@ export function QrCard() {
   const [url, setUrl] = useState("");
   const [grid, setGrid] = useState<boolean[][]>(() => Array.from({ length: 21 }, () => Array(21).fill(false)));
   const svgRef = useRef<SVGSVGElement>(null);
+  const { copy } = useCopyToClipboard();
 
   useEffect(() => {
     setGrid(generateQrPattern(21));
-    fetch("/api/creator/my-app")
-      .then((r) => r.json())
+    fetchJson<{ creator?: { username?: string } }>("/api/creator/my-app")
       .then((data) => {
         const username = data?.creator?.username;
         if (username) setUrl(`${window.location.origin}/${username}`);
@@ -58,8 +60,9 @@ export function QrCard() {
   const qrSize = 21 * cellSize;
 
   const copyLink = () => {
-    void navigator.clipboard.writeText(url);
-    toast.success("Link copied");
+    void copy(url).then((ok) => {
+      if (ok) toast.success("Link copied");
+    });
   };
 
   const download = () => {

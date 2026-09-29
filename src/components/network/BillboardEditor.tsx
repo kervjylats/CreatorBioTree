@@ -1,8 +1,8 @@
 /**
  * BillboardEditor — controlled form for editing billboard settings (tagline,
- * tags, collab style) and Media Kit fields (bio, rate card, custom message).
- * State is lifted to the parent (NetworkPage) so the preview card updates live.
- * No internal data fetching.
+ * tags, collab style, visibility switches) and Media Kit fields (bio, rate card,
+ * custom message). State is lifted to the parent (NetworkPage) so the preview
+ * card updates live. No internal data fetching.
  */
 "use client";
 
@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { BILLBOARD_LIMITS } from "@/lib/limits";
 
 export interface BillboardSettings {
   display_name: string;
@@ -20,7 +22,8 @@ export interface BillboardSettings {
   tagline: string;
   tags: string[];
   collab_style: string;
-  is_discoverable: boolean;
+  show_in_search: boolean;
+  open_to_collab: boolean;
   // Media Kit
   bio: string;
   rate_card: { post: string; story: string; video: string };
@@ -32,6 +35,8 @@ interface BillboardEditorProps {
   onFieldChange: (partial: Partial<BillboardSettings>) => void;
   onSave: () => Promise<void>;
   saving: boolean;
+  /** Instant-save visibility switches (independent of the Save button). */
+  onInstantToggle: (field: "show_in_search" | "open_to_collab") => void;
 }
 
 function Section({ title, badge, defaultOpen = false, children }: {
@@ -63,20 +68,46 @@ function Section({ title, badge, defaultOpen = false, children }: {
   );
 }
 
-export function BillboardEditor({ settings, onFieldChange, onSave, saving }: BillboardEditorProps) {
+export function BillboardEditor({ settings, onFieldChange, onSave, saving, onInstantToggle }: BillboardEditorProps) {
   return (
     <div className="space-y-4">
+      {/* Visibility (network.md — instant save) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="min-w-0">
+            <span className="block text-sm font-medium text-foreground">Show me in search</span>
+            <span className="block text-xs text-muted-foreground">Other creators can find you in Discover.</span>
+          </span>
+          <Switch
+            checked={settings.show_in_search}
+            onCheckedChange={() => onInstantToggle("show_in_search")}
+            aria-label="Show me in search"
+          />
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="min-w-0">
+            <span className="block text-sm font-medium text-foreground">Accept collab requests</span>
+            <span className="block text-xs text-muted-foreground">Let creators send you Connect requests.</span>
+          </span>
+          <Switch
+            checked={settings.open_to_collab}
+            onCheckedChange={() => onInstantToggle("open_to_collab")}
+            aria-label="Accept collab requests"
+          />
+        </div>
+      </div>
+
       {/* Billboard fields */}
       <div>
         <label className="text-xs font-medium text-muted-foreground">Tagline</label>
         <Input
           value={settings.tagline}
-          onChange={(e) => onFieldChange({ tagline: e.target.value.slice(0, 60) })}
+          onChange={(e) => onFieldChange({ tagline: e.target.value.slice(0, BILLBOARD_LIMITS.tagline) })}
           placeholder="One-liner pitch (max 60 chars)"
           className="mt-1"
         />
         <p className="mt-1 text-right text-micro text-muted-foreground">
-          {settings.tagline.length}/60
+          {settings.tagline.length}/{BILLBOARD_LIMITS.tagline}
         </p>
       </div>
 
@@ -94,7 +125,7 @@ export function BillboardEditor({ settings, onFieldChange, onSave, saving }: Bil
                 } else {
                   newTags.splice(i, 1);
                 }
-                onFieldChange({ tags: newTags.slice(0, 3) });
+                onFieldChange({ tags: newTags.slice(0, BILLBOARD_LIMITS.tags) });
               }}
               placeholder={`Tag ${i + 1}`}
               className="flex-1"
@@ -129,6 +160,7 @@ export function BillboardEditor({ settings, onFieldChange, onSave, saving }: Bil
               placeholder="A short bio about you and your audience..."
               rows={2}
               className="mt-1"
+              maxLength={BILLBOARD_LIMITS.bio}
             />
           </div>
 
@@ -170,6 +202,7 @@ export function BillboardEditor({ settings, onFieldChange, onSave, saving }: Bil
               placeholder="Let's work together!"
               rows={2}
               className="mt-1"
+              maxLength={BILLBOARD_LIMITS.mediaKit}
             />
           </div>
         </div>

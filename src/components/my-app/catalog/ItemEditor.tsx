@@ -14,6 +14,9 @@ import type { ContentItem, BookingSlot } from "@/types";
 import { TYPE_ICONS } from "@/types/contentTypes";
 import { PricingEditor } from "./PricingEditor";
 import { FileUploadField } from "./FileUploadField";
+import { INPUT_CLASS, LABEL_CLASS} from "@/lib/ui-constants";
+import { DAY_LABELS } from "@/lib/format";
+import { Sheet } from "@/components/shared/Sheet";
 
 interface ItemEditorProps {
   item: ContentItem;
@@ -23,13 +26,9 @@ interface ItemEditorProps {
   onClose: () => void;
 }
 
-const DAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
 const LESSON_TYPES = ["video", "pdf", "audio"] as const;
 
 const LIVE_PLATFORMS = ["YouTube", "Twitch", "TikTok Live", "Kick", "Other"];
-
-const inputClass = "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm";
 
 export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorProps) {
   const [draft, setDraft] = useState<ContentItem>(() => ({ ...item, metadata: { ...item.metadata } }));
@@ -56,8 +55,9 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
   };
 
   return (
-    <div data-tl="ItemEditor" className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
+    <Sheet onClose={onClose} panelClassName="w-full max-w-lg">
       <div
+        data-tl="ItemEditor"
         className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-card p-6 shadow-2xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -75,33 +75,33 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
 
         <div className="mt-4 space-y-4">
           <div>
-            <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Title</label>
+            <label className={LABEL_CLASS}>Title</label>
             <input
               value={draft.title}
               onChange={(e) => patch({ title: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+              className={INPUT_CLASS}
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Description</label>
+            <label className={LABEL_CLASS}>Description</label>
             <textarea
               value={draft.description ?? ""}
               onChange={(e) => patch({ description: e.target.value })}
               rows={3}
-              className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+              className={INPUT_CLASS}
             />
           </div>
 
           {item.type === "link" && (
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Destination URL</label>
+              <label className={LABEL_CLASS}>Destination URL</label>
               <input
                 type="url"
                 value={draft.external_url ?? ""}
                 onChange={(e) => patch({ external_url: e.target.value })}
                 placeholder="https://…"
-                className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                className={INPUT_CLASS}
               />
             </div>
           )}
@@ -141,13 +141,13 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           {/* Page — rich text body (rendered on the fan card) */}
           {item.type === "page" && (
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Page content</label>
+              <label className={LABEL_CLASS}>Page content</label>
               <textarea
                 value={(draft.metadata.body as string) ?? ""}
                 onChange={(e) => patchMetadata("body", e.target.value)}
                 rows={8}
                 placeholder="Write your page…"
-                className={inputClass}
+                className={INPUT_CLASS}
               />
             </div>
           )}
@@ -156,7 +156,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           {item.type === "course" && (
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                <label className={LABEL_CLASS}>
                   Lessons ({lessons.length})
                 </label>
                 <button
@@ -234,7 +234,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           {item.type === "session" && (
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                <label className={LABEL_CLASS}>
                   Booking slots ({slots.length})
                 </label>
                 <button
@@ -339,7 +339,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           {/* Membership — benefits list */}
           {item.type === "membership" && (
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              <label className={LABEL_CLASS}>
                 Benefits (one per line)
               </label>
               <textarea
@@ -347,7 +347,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
                 onChange={(e) => patchMetadata("benefits", e.target.value.split("\n").map((b) => b.trim()).filter(Boolean))}
                 rows={4}
                 placeholder={"Exclusive posts\nMonthly Q&A call\nEarly access"}
-                className={inputClass}
+                className={INPUT_CLASS}
               />
             </div>
           )}
@@ -356,7 +356,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           {(item.type === "physical" || item.type === "product") && (
             <>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                <label className={LABEL_CLASS}>
                   Variants (name: option1, option2)
                 </label>
                 <div className="mt-1 flex flex-col gap-2">
@@ -405,13 +405,13 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Stock quantity</label>
+                  <label className={LABEL_CLASS}>Stock quantity</label>
                   <input
                     type="number"
                     min={0}
                     value={draft.stock_quantity ?? 0}
                     onChange={(e) => patch({ stock_quantity: Math.max(0, Number(e.target.value)) })}
-                    className={inputClass}
+                    className={INPUT_CLASS}
                   />
                 </div>
                 <div className="flex items-end">
@@ -431,7 +431,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           {/* Bundle — pick items to include */}
           {item.type === "bundle" && (
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              <label className={LABEL_CLASS}>
                 Included items ({includedIds.length})
               </label>
               <div className="mt-2 flex max-h-48 flex-col gap-1 overflow-y-auto">
@@ -474,11 +474,11 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           {item.type === "live" && (
             <>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Stream platform</label>
+                <label className={LABEL_CLASS}>Stream platform</label>
                 <select
                   value={draft.platform ?? "YouTube"}
                   onChange={(e) => patch({ platform: e.target.value })}
-                  className={inputClass}
+                  className={INPUT_CLASS}
                 >
                   {LIVE_PLATFORMS.map((p) => (
                     <option key={p} value={p}>
@@ -488,13 +488,13 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
                 </select>
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Stream link</label>
+                <label className={LABEL_CLASS}>Stream link</label>
                 <input
                   type="url"
                   value={draft.external_url ?? ""}
                   onChange={(e) => patch({ external_url: e.target.value })}
                   placeholder="https://youtube.com/live/…"
-                  className={inputClass}
+                  className={INPUT_CLASS}
                 />
               </div>
             </>
@@ -503,7 +503,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           {item.type === "tip_jar" && (
             <>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                <label className={LABEL_CLASS}>
                   Suggested amounts (comma-separated)
                 </label>
                 <input
@@ -515,16 +515,16 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
                     )
                   }
                   placeholder="5, 10, 25"
-                  className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  className={INPUT_CLASS}
                 />
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Support message</label>
+                <label className={LABEL_CLASS}>Support message</label>
                 <input
                   value={(draft.metadata.support_message as string) ?? ""}
                   onChange={(e) => patchMetadata("support_message", e.target.value)}
                   placeholder="Fuel the channel — every tip counts"
-                  className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  className={INPUT_CLASS}
                 />
               </div>
             </>
@@ -532,24 +532,24 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
 
           {item.type === "newsletter" && (
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Welcome message</label>
+              <label className={LABEL_CLASS}>Welcome message</label>
               <input
                 value={(draft.metadata.welcome_email as string) ?? ""}
                 onChange={(e) => patchMetadata("welcome_email", e.target.value)}
                 placeholder="Thanks for subscribing!"
-                className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                className={INPUT_CLASS}
               />
             </div>
           )}
 
           {item.type === "messaging" && (
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Auto-reply</label>
+              <label className={LABEL_CLASS}>Auto-reply</label>
               <input
                 value={(draft.metadata.auto_response as string) ?? ""}
                 onChange={(e) => patchMetadata("auto_response", e.target.value)}
                 placeholder="Hi! I reply within a day — chat arrives post-launch."
-                className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                className={INPUT_CLASS}
               />
             </div>
           )}
@@ -559,23 +559,23 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           {/* Scheduling (my-app.md — link scheduling) */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Publish at (optional)</label>
+              <label className={LABEL_CLASS}>Publish at (optional)</label>
               <input
                 type="datetime-local"
                 value={draft.scheduled_publish_at ? draft.scheduled_publish_at.slice(0, 16) : ""}
                 onChange={(e) => patch({ scheduled_publish_at: e.target.value ? new Date(e.target.value).toISOString() : null })}
-                className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                className={INPUT_CLASS}
               />
             </div>
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Unpublish at (optional)</label>
+              <label className={LABEL_CLASS}>Unpublish at (optional)</label>
               <input
                 type="datetime-local"
                 value={draft.scheduled_unpublish_at ? draft.scheduled_unpublish_at.slice(0, 16) : ""}
                 onChange={(e) =>
                   patch({ scheduled_unpublish_at: e.target.value ? new Date(e.target.value).toISOString() : null })
                 }
-                className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                className={INPUT_CLASS}
               />
             </div>
           </div>
@@ -599,6 +599,6 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
           </button>
         </div>
       </div>
-    </div>
+    </Sheet>
   );
 }

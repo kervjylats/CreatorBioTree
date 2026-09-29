@@ -2,10 +2,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Check, X } from "lucide-react";
+import { fetchJson } from "@/lib/fetchJson";
+import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Avatar } from "@/components/shared/Avatar";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Spinner } from "@/components/shared/Spinner";
+import { LABEL_CLASS } from "@/lib/ui-constants";
 
 interface RequestRow {
   id: string;
@@ -30,8 +35,7 @@ export function InboxRequests({ onAccepted }: InboxRequestsProps) {
   const [acting, setActing] = useState<string | null>(null);
 
   const fetchRequests = () => {
-    fetch("/api/creator/partners/list")
-      .then((r) => r.json())
+    fetchJson<{ partnerships?: RequestRow[] }>("/api/creator/partners/list")
       .then((d) => {
         const all = (d.partnerships ?? []) as RequestRow[];
         setRequests(all.filter((p) => p.status === "pending"));
@@ -64,22 +68,20 @@ export function InboxRequests({ onAccepted }: InboxRequestsProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-6">
-        <Loader2 size={16} className="animate-spin text-muted-foreground" />
+        <Spinner size={16} />
       </div>
     );
   }
 
   if (requests.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border p-6 text-center">
-        <p className="text-sm text-muted-foreground">No collab requests yet</p>
-      </div>
+      <EmptyState title="No collab requests yet" className="p-6!" />
     );
   }
 
   return (
     <div className="space-y-2">
-      <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+      <h2 className={LABEL_CLASS}>
         Requests
       </h2>
       {requests.map((r) => {
@@ -90,19 +92,7 @@ export function InboxRequests({ onAccepted }: InboxRequestsProps) {
             key={r.id}
             className="flex items-center gap-3 p-3"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-xs font-bold text-foreground overflow-hidden">
-              {p.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.avatar_url} alt={p.display_name} className="h-full w-full object-cover" />
-              ) : (
-                p.display_name
-                  .split(/[\s@._-]+/)
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .map((w) => w[0]?.toUpperCase() ?? "")
-                  .join("")
-              )}
-            </span>
+            <Avatar src={p.avatar_url} name={p.display_name} />
             <div className="min-w-0 flex-1">
               <span className="block truncate text-sm font-bold text-foreground">{p.display_name}</span>
               <span className="text-xs text-muted-foreground">@{p.username}</span>

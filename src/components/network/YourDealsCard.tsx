@@ -11,6 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { formatDealRate } from "@/lib/affiliate-format";
+import { formatDate } from "@/lib/format";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 interface Deal {
   id: string;
@@ -30,14 +33,6 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
   expired: "outline",
   revoked: "outline",
 };
-
-function dealLabel(deal: Deal): string {
-  if (deal.deal_type === "free") return "Free cross-promo";
-  if (deal.deal_type === "fixed") return `$${deal.rate ?? 0}`;
-  if (deal.deal_type === "percentage") return `${deal.rate ?? 0}%`;
-  if (deal.custom_terms) return deal.custom_terms.slice(0, 40);
-  return deal.deal_type;
-}
 
 export function YourDealsCard({ refreshKey = 0 }: { refreshKey?: number }) {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -103,15 +98,16 @@ export function YourDealsCard({ refreshKey = 0 }: { refreshKey?: number }) {
         {loading ? (
           <p className="text-xs text-muted-foreground">Loading…</p>
         ) : deals.length === 0 ? (
-          <p className="text-xs text-muted-foreground">
-            No deals yet — hit “New deal” to create your first.
-          </p>
+          <EmptyState
+            variant="inline"
+            title="No deals yet — hit “New deal” to create your first."
+          />
         ) : (
           deals.map((deal) => (
             <div key={deal.id} className="space-y-2 rounded-lg border border-border p-3">
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-xs font-bold text-foreground">
-                  {dealLabel(deal)} · {deal.trigger}
+                  {formatDealRate(deal)} · {deal.trigger}
                 </span>
                 <Badge
                   variant={STATUS_VARIANT[deal.status] ?? "secondary"}
@@ -122,7 +118,7 @@ export function YourDealsCard({ refreshKey = 0 }: { refreshKey?: number }) {
               </div>
               <p className="text-[11px] text-muted-foreground">
                 {deal.scope === "item" ? "Per-item" : "Per-creator"} ·{" "}
-                {new Date(deal.created_at).toLocaleDateString()}
+                {formatDate(deal.created_at)}
                 {!deal.is_owner && " · you promote this"}
               </p>
               {deal.is_owner && (deal.status === "active" || deal.status === "paused") && (

@@ -7,6 +7,8 @@
 import { useEffect, useState } from "react";
 import { DollarSign, Users, Eye, Heart } from "lucide-react";
 import { toast } from "sonner";
+import { fetchJson } from "@/lib/fetchJson";
+import { money } from "@/lib/format";
 
 interface Stats {
   totalSales: number;
@@ -24,8 +26,12 @@ export function StatCards() {
   });
 
   useEffect(() => {
-    fetch("/api/creator/my-app")
-      .then((r) => r.json())
+    fetchJson<{
+      items?: Record<string, unknown>[];
+      fans_count?: number;
+      page_views?: number;
+      subscribers_count?: number;
+    }>("/api/creator/my-app")
       .then((data) => {
         const items = data?.items ?? [];
         const totalSales = items.reduce(
@@ -45,7 +51,7 @@ export function StatCards() {
   const cards = [
     {
       label: "Total Sales",
-      value: `$${(stats.totalSales / 100).toFixed(2)}`,
+      value: money(stats.totalSales),
       icon: DollarSign,
     },
     { label: "Total Fans", value: stats.totalFans, icon: Users },

@@ -1,16 +1,13 @@
 /** Link Address availability check (onboarding.md) — anonymous, rate-limited; returns available + format reason. */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 
 const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
 
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-  const allowed = await rateLimiter.check(`check-username:${ip}`, 20, 60_000);
-  if (!allowed) {
-    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
-  }
+  const tooMany = await enforceRateLimit(request, "check-username", 20, 60_000);
+  if (tooMany) return tooMany;
 
   const username = request.nextUrl.searchParams.get("username");
   const exclude = request.nextUrl.searchParams.get("exclude");

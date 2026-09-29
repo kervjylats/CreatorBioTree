@@ -7,6 +7,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { fetchJson } from "@/lib/fetchJson";
 import Link from "next/link";
 import { ExternalLink, Users } from "lucide-react";
 import type { FanShellData } from "./fanData";
@@ -39,8 +40,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
 
   const fetchPartners = useCallback(() => {
-    fetch(`/api/fan/partners?username=${encodeURIComponent(branding.creatorUsername)}`)
-      .then((r) => r.json())
+    fetchJson<{ partners?: Partner[]; followed?: Partner[] }>(`/api/fan/partners?username=${encodeURIComponent(branding.creatorUsername)}`)
       .then((d) => {
         setPartners(d.partners ?? []);
         setFollowed(d.followed ?? []);
@@ -109,12 +109,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    currentPartner.display_name
-                      .split(/[\s@._-]+/)
-                      .filter(Boolean)
-                      .slice(0, 2)
-                      .map((w) => w[0]?.toUpperCase() ?? "")
-                      .join("")
+                    getInitials(currentPartner.display_name)
                   )}
                 </span>
                 <div className="min-w-0 flex-1">

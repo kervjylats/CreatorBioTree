@@ -12,6 +12,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getVisibleNavItems } from "@/lib/nav-config";
+import { Logo } from "@/components/shared/Logo";
 
 interface DashboardSidebarProps {
   creator: {
@@ -45,9 +46,12 @@ export function DashboardSidebar({
     <div className="flex h-full flex-col">
       {/* Brand */}
       <div className="px-4 py-5">
-        <span className="flex items-center gap-2 text-lg font-bold text-foreground">
-          🌳 CreatorBioTree
-        </span>
+        <Logo
+          size={16}
+          wordmark="CreatorBioTree"
+          className="gap-2"
+          wordmarkClassName="text-lg font-bold text-foreground"
+        />
       </div>
 
       {/* Creator identity */}

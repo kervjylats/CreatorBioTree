@@ -7,7 +7,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 import { getFanSession } from "@/lib/fanSession";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
 
@@ -32,16 +32,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid content_item_id" }, { status: 400 });
     }
 
-    // Resolve the real IP (Vercel forwards via x-forwarded-for)
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      request.headers.get("x-real-ip") ??
-      "unknown";
-
-    // Silently drop rate-limited requests — don't inflate error logs
-    if (!(await rateLimiter.check(`pageview:${ip}:${creator_id}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS))) {
-      return NextResponse.json({ ok: true });
-    }
+    // Silently drop rate-limited requests — don't inflate error logs.
+    // enforceRateLimit resolves the real IP (x-forwarded-for first hop, the
+    // same split this route used to hand-roll) and keys per IP + creator.
+    const tooMany = await enforceRateLimit(
+      request,
+      `pageview:${creator_id}`,
+      RATE_LIMIT_MAX,
+      RATE_LIMIT_WINDOW_MS
+    );
+    if (tooMany) return NextResponse.json({ ok: true });
 
     const supabase = createServiceClient();
 

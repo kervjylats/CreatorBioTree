@@ -6,14 +6,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { getFanSession } from "@/lib/fanSession";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for") ?? "unknown";
-  const allowed = await rateLimiter.check(`follow:${ip}`, 10, 60_000);
-  if (!allowed) {
-    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
-  }
+  const tooMany = await enforceRateLimit(req, "follow", 10, 60_000);
+  if (tooMany) return tooMany;
 
   const { partner_username, current_creator_username } = await req.json();
   const supabase = createServiceClient();

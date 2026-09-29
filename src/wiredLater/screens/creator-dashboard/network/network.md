@@ -51,10 +51,11 @@ Each creator can write a mini billboard:
 
 Billboard appears on the search result card and on the creator's own Network settings.
 
-### 3. Visibility Switch
-- ON = visible in search, can browse other creators
-- OFF = invisible to everyone, cannot browse/search the Network
-- Stored in `creators.is_discoverable`
+### 3. Visibility Switches (in BillboardEditor, instant-save — renamed 2026-09-29, Naming Option B)
+- **Show me in search** — ON = discoverable in Discover (and can browse others); OFF = excluded from every search result (mutual: an opted-out creator's own searches return nothing)
+- **Accept collab requests** — ON = anyone can send a Connect request; OFF = `POST /api/creator/partners/request` returns 403 ("This creator isn't accepting collab requests.")
+- Stored in `creators.show_in_search` + `creators.open_to_collab` (both boolean, default true)
+- The BillboardPreview card keeps a quick-toggle pill mirroring "Show me in search" (label: In search / Hidden)
 
 ### 4. Collab Flow
 Simple friend-request style:
@@ -145,7 +146,7 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 
 ### CreatorSearch
 - Search Input + optional tag filter Select dropdown
-- Fetches discoverable creators from Supabase: `creators` table, `is_discoverable=true`, ordered by `is_featured` desc then `created_at` desc
+- Fetches discoverable creators from Supabase: `creators` table, `show_in_search=true`, ordered by `is_featured` desc then `created_at` desc
 - Client-side tag filtering after fetch
 - Loading state: "Searching…", Empty state: "No creators match your search" / "No discoverable creators yet"
 - Results in 2-column grid (responsive)
@@ -195,7 +196,7 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 
 ### NetworkSettings
 - Composes VisibilitySwitch + BillboardEditor
-- Loads current creator settings from Supabase (`is_discoverable`, `tagline`, `tags`, `collab_style`)
+- Loads current creator settings from Supabase (`show_in_search`, `open_to_collab`, `tagline`, `tags`, `collab_style`)
 - Save saves billboard fields; toggle saves immediately
 - Loading state while fetching settings
 
@@ -217,7 +218,8 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 
 | Field | Table | Type | Notes |
 |---|---|---|---|
-| `is_discoverable` | `creators` | boolean | Exists |
+| `show_in_search` | `creators` | boolean | Exists (renamed from `is_discoverable` 2026-09-29) |
+| `open_to_collab` | `creators` | boolean | Exists (new 2026-09-29, default true; partners/request 403 gate) |
 | `tags` | `creators` | string[] | Exists |
 | `tagline` | `creators` | string? | Need to add to Creator type |
 | `collab_style` | `creators` | string? | Need to add to Creator type |

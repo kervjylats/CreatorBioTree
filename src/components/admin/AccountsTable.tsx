@@ -25,13 +25,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AdminAccount, AdminRole } from "@/types";
-
-const ROLE_LABELS: Record<AdminRole, string> = {
-  super_admin: "Super Admin",
-  support_admin: "Support Admin",
-  content_admin: "Content Admin",
-  agent: "Agent",
-};
+import { fetchJson } from "@/lib/fetchJson";
+import { formatDate } from "@/lib/format";
+import { ROLE_LABELS } from "@/lib/admin-permissions";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export function AccountsTable() {
   const [accounts, setAccounts] = useState<AdminAccount[]>([]);
@@ -45,8 +42,7 @@ export function AccountsTable() {
   const [editRole, setEditRole] = useState<AdminRole>("support_admin");
 
   const fetchAccounts = () => {
-    fetch("/api/admin/accounts")
-      .then((r) => r.json())
+    fetchJson<unknown>("/api/admin/accounts")
       .then((data) => setAccounts(Array.isArray(data) ? data : []))
       .catch(() => { toast.error("Failed to load accounts"); })
       .finally(() => setLoading(false));
@@ -88,15 +84,11 @@ export function AccountsTable() {
 
   const handleRoleUpdate = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/accounts/${id}`, {
+      await fetchJson(`/api/admin/accounts/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: editRole }),
       });
-      if (!res.ok) {
-        toast.error("Failed to update role");
-        return;
-      }
       toast.success("Role updated");
       setEditingId(null);
       fetchAccounts();
@@ -107,13 +99,9 @@ export function AccountsTable() {
 
   const handleRevoke = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/accounts/${id}`, {
+      await fetchJson(`/api/admin/accounts/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) {
-        toast.error("Failed to revoke access");
-        return;
-      }
       toast.success("Access revoked");
       fetchAccounts();
     } catch {
@@ -134,7 +122,7 @@ export function AccountsTable() {
       {loading ? (
         <p className="py-8 text-center text-sm text-muted-foreground">Loading accounts...</p>
       ) : accounts.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">No staff accounts yet</p>
+        <EmptyState variant="inline" title="No staff accounts yet" />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full text-sm">
@@ -193,7 +181,7 @@ export function AccountsTable() {
                     {a.api_key ? `${a.api_key.slice(0, 12)}...` : "-"}
                   </td>
                   <td className="px-4 py-2.5 text-muted-foreground">
-                    {new Date(a.created_at).toLocaleDateString()}
+                    {formatDate(a.created_at)}
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-1">

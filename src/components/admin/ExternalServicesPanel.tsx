@@ -6,9 +6,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ExternalLink, Loader2, Settings } from "lucide-react";
+import { ExternalLink, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/shared/Spinner";
+import { fetchJson } from "@/lib/fetchJson";
 import { SERVICE_CATEGORY_COLORS } from "@/lib/services-config";
 import { ServiceAccessDialog } from "@/components/admin/ServiceAccessDialog";
 
@@ -28,8 +30,7 @@ export function ExternalServicesPanel() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/external-services")
-      .then((r) => r.json())
+    fetchJson<{ services?: Service[]; role?: string }>("/api/admin/external-services")
       .then((data) => {
         setServices(data.services ?? []);
         setRole(data.role ?? "");
@@ -43,7 +44,7 @@ export function ExternalServicesPanel() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 size={20} className="animate-spin text-muted-foreground" />
+        <Spinner size={20} />
       </div>
     );
   }

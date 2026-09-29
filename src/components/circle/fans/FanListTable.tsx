@@ -9,6 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
+import { fetchJson } from "@/lib/fetchJson";
+import { formatDate } from "@/lib/format";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 interface FanRow {
   id: string;
@@ -38,8 +41,7 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("/api/creator/fans/list")
-      .then((r) => r.json())
+    fetchJson<unknown>("/api/creator/fans/list")
       .then((data) => {
         if (Array.isArray(data)) {
           setFans(
@@ -115,7 +117,7 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
         onChange={(e) => setSearch(e.target.value)}
         className="max-w-xs"
       />
-      <div className="overflow-x-auto rounded-xl border">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left">
@@ -129,8 +131,12 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-4 text-center text-muted-foreground">
-                  No fans found.
+                <td colSpan={5} className="p-0">
+                  <EmptyState
+                    variant="inline"
+                    title="No fans found."
+                    className="py-4!"
+                  />
                 </td>
               </tr>
             )}
@@ -144,7 +150,7 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
                 >
                   <td className="px-4 py-2.5 font-medium">{fan.email}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">
-                    {new Date(fan.created_at).toLocaleDateString()}
+                    {formatDate(fan.created_at)}
                   </td>
                   <td className="px-4 py-2.5 text-muted-foreground">{fan.referred_by ?? "—"}</td>
                   <td className="px-4 py-2.5">

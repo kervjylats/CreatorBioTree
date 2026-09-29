@@ -4,15 +4,12 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { fanService } from "@/services/fanService";
 import { cookies } from "next/headers";
 import { getFanSession } from "@/lib/fanSession";
-import { rateLimiter } from "@/lib/rate-limiter";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    const allowed = await rateLimiter.check(`install:${ip}`, 10, 60_000);
-    if (!allowed) {
-      return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
-    }
+    const tooMany = await enforceRateLimit(request, "install", 10, 60_000);
+    if (tooMany) return tooMany;
 
     const { creator_id, platform } = await request.json();
     if (!creator_id) return NextResponse.json({ error: "Missing creator_id" }, { status: 400 });
