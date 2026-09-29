@@ -77,6 +77,16 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 
 ## Impromptu Fix Log
 
+### 2026-09-29 — Phase 4: Landing Extras (showcase, hero auth modal, install button, returning-fan row)
+
+**Landing Phase 4 done; landing.md un-parked. Gates green: typecheck 0 · lint 0 · check-docs PASS (398 files) · smoke (showcase cards + modal trigger + privacy + fan-row assertions all true; login/guest 200).**
+
+- **New `src/components/landing/`:** `CreatorShowcase` (auto-scroll marquee of `show_in_search` creators — featured-first/max-12, hidden below 2, duplicated-track CSS loop in `globals.css` with hover-pause + `prefers-reduced-motion`) · `LandingAuthModal` (nav Sign in → real `LoginForm` in a dialog; sign-UP stays a link to /onboarding) · `LandingInstallButton` (platform PWA #1 via `usePWAInstall`; hidden when installed/unsupported, iOS/in-app show manual steps) · `YourCreatorsRow` (returning-fan row: `fan_session` → email → `fan_accounts` → creators; renders only when recognized).
+- **`Screen.tsx`** went async: two never-throwing loaders (`getShowcaseCreators`, `getYourCreators`) via `Promise.all`; sections placed under-nav (fan row), hero (install), after How-it-works (showcase).
+- **En-route fixes:** mock new-creator default `show_in_search: false` → **true** (search.md says visibility is *opt-out* + NetworkPage treats undefined as true; admin seed stays false) · base-ui `Dialog.Trigger` has **no `asChild`** (controlled `open` + own button) · `display_name ??` → `||` (empty-string names from email-prefix signups).
+- **Docs:** `landing.md` un-parked (full status + live inventory) · HOW_IT_WORKS §1/§2/§8/§16 "only unwired screen" claims removed → ✅ · WIRING_PLAN Sheet 19b DEFERRED → LIVE (landing search section stays deferred, Sheet 11).
+- **Mock-smoke trick:** browser-side signups don't hit the server store — send any request with `mock_auth_uid=<new>`/`mock_auth_email` cookies to hydrate a server-side creator row (now discoverable by default), which is how the showcase got ≥2 cards in the smoke.
+
 ### 2026-09-29 — Phase 3 Naming Option B: `show_in_search` + `open_to_collab` gate
 
 **Code-side rename + new collab gate. Gates green: typecheck 0 · lint 0 · check-docs PASS · smoke (billboard GET/PUT both flags · request 403 when closed → 201 when open · discover q=test · network/guest pages 200). Uncommitted.**

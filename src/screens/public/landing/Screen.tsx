@@ -2,10 +2,19 @@
  * Landing screen at / — the public homepage (landing.md).
  * Responsive: 1-col phone → 2/3-col tablet/desktop. Platform tokens, not creator branding.
  * Old-code pattern adapted: hero, how-it-works, features, comparison, footer.
+ * Phase 4 (2026-09-29): returning-fan row, creator showcase marquee, hero
+ * auth modal (sign in without leaving), platform install button.
  */
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Logo } from "@/components/shared/Logo";
+import { LandingAuthModal } from "@/components/landing/LandingAuthModal";
+import { LandingInstallButton } from "@/components/landing/LandingInstallButton";
+import { CreatorShowcase, type ShowcaseCreator } from "@/components/landing/CreatorShowcase";
+import { YourCreatorsRow, type FollowedCreator } from "@/components/landing/YourCreatorsRow";
+import { createClient } from "@/lib/supabase/server";
+import { getFanSession } from "@/lib/fanSession";
 
 export const metadata: Metadata = {
   title: "CreatorBioTree — Your fans deserve more than a Linktree",
@@ -17,21 +26,82 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LandingScreen() {
+type CreatorRow = {
+  id?: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  is_featured?: boolean | null;
+  created_at?: string | null;
+};
+
+/** Discoverable creators for the showcase marquee (featured first, newest, max 12). Never throws. */
+async function getShowcaseCreators(): Promise<ShowcaseCreator[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("creators")
+      .select("id, username, display_name, avatar_url, is_featured, created_at")
+      .eq("show_in_search", true);
+    if (error || !data) return [];
+    return (data as CreatorRow[])
+      .filter((c) => c.username)
+      .sort(
+        (a, b) =>
+          Number(!!b.is_featured) - Number(!!a.is_featured) ||
+          String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")),
+      )
+      .slice(0, 12)
+      .map((c) => ({ username: c.username as string, display_name: c.display_name, avatar_url: c.avatar_url }));
+  } catch {
+    return [];
+  }
+}
+
+/** Returning-fan row (landing.md: fan_session → email → all fan_accounts → creators). Never throws. */
+async function getYourCreators(): Promise<FollowedCreator[]> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = await createClient();
+    const session = await getFanSession(cookieStore, supabase);
+    if (!session?.email) return [];
+    const { data: accounts } = await supabase
+      .from("fan_accounts")
+      .select("creator_id")
+      .eq("email", session.email);
+    const ids = new Set((accounts ?? []).map((a: { creator_id: string }) => a.creator_id));
+    if (ids.size === 0) return [];
+    const { data: creators } = await supabase
+      .from("creators")
+      .select("id, username, display_name, avatar_url");
+    if (!creators) return [];
+    return (creators as CreatorRow[])
+      .filter((c) => c.username && c.id && ids.has(c.id))
+      .slice(0, 12)
+      .map((c) => ({ username: c.username as string, display_name: c.display_name, avatar_url: c.avatar_url }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function LandingScreen() {
+  const [showcaseCreators, yourCreators] = await Promise.all([
+    getShowcaseCreators(),
+    getYourCreators(),
+  ]);
+
   return (
     <div className="min-h-screen-safe bg-background text-foreground flex flex-col">
       {/* NAV */}
       <nav className="flex items-center justify-between px-4 sm:px-10 py-4 sm:py-6 max-w-7xl mx-auto w-full">
         <Logo size={20} wordmark="BioTree" />
         <div className="flex items-center gap-4">
-          <Link
-            href="/login"
-            className="inline-flex min-h-11 items-center rounded-lg bg-foreground px-5 text-sm font-bold text-primary-foreground hover:opacity-90 transition-colors shadow-sm"
-          >
-            Sign in
-          </Link>
+          <LandingAuthModal />
         </div>
       </nav>
+
+      {/* Returning fan/follower recognition (landing.md — hidden for logged-out visitors) */}
+      <YourCreatorsRow creators={yourCreators} />
 
       {/* HERO */}
       <section className="px-6 pt-16 sm:pt-24 pb-12 sm:pb-16 text-center max-w-3xl mx-auto flex-1 flex flex-col justify-center">
@@ -67,6 +137,10 @@ export default function LandingScreen() {
         <p className="mt-6 text-sm text-muted-foreground">
           No app store. No monthly fees to start. Set up in 2 minutes.
         </p>
+
+        <div className="mt-5">
+          <LandingInstallButton />
+        </div>
       </section>
 
       {/* HOW IT WORKS */}
@@ -98,6 +172,9 @@ export default function LandingScreen() {
           </div>
         </div>
       </section>
+
+      {/* CREATOR SHOWCASE — auto-scrolling social proof (hidden under 2 creators) */}
+      <CreatorShowcase creators={showcaseCreators} />
 
       {/* FEATURES GRID */}
       <section className="px-6 py-16 sm:py-20 max-w-5xl mx-auto">

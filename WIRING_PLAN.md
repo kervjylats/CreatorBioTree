@@ -609,18 +609,20 @@ STORAGE  NEW small-pocket: localStorage for offline queue + draft auto-save (my-
 DEPENDED
 ```
 
-## SHEET 19b — Landing (DEFERRED)
+## SHEET 19b — Landing (LIVE — base 2026-09-14, Phase 4 extras 2026-09-29)
 
 ```
-SCREEN: Landing → /  · spec: landing.md (DEFERRED post-launch)
+SCREEN: Landing → /  · spec: landing.md (full — un-parked 2026-09-29)
 ────────────────────
-KEEP NAKED  for now. Wire when the project goes to market (post-launch polish pass).
-Archive has the full old kit: LandingHeader, + HeroSection etc — untouched.
-When wiring, embed the shared Search component (Sheet 11).
-RETURNING-FAN ROW (spec'd 2026-08-08): “Your creators” = fans AND email-only followers
-(fan_session cookie → email → all fan_accounts rows; follow-creator route sets the same
-cookie — Sheet 21). Query can ship with the fan shell.
-DEPENDED  NOT NOW — leave page.tsx naked (`export { default } from screen`).
+LIVE  base page (hero / how-it-works / features / comparison / footer) +
+      Phase 4 extras (components/landing/):
+      - CreatorShowcase — marquee of show_in_search creators (featured first,
+        max 12, hidden below 2; CSS loop in styles/globals.css)
+      - LandingAuthModal — nav Sign in opens LoginForm in a dialog (stays on /)
+      - LandingInstallButton — platform PWA #1 install (iOS/in-app show manual steps)
+      - YourCreatorsRow — returning-fan row (fan_session → email → fan_accounts
+        → creators; renders ONLY when recognized — privacy rule, landing.md)
+STILL DEFERRED: landing search section (embed shared Search per Sheet 11).
 ```
 
 ---

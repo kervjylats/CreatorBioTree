@@ -1,6 +1,6 @@
 # How the App Works — Complete Reference
 
-> As-of: August 2026. Running in **mock mode** (`USE_MOCKS=true`). All external services are in-memory mocks. **Wired so far (Phase F):** login, onboarding, forgot-password, the My App editor (all 16 catalog item types incl. device file uploads), the fan shell (guest + 4-tab app, mock PayPal checkout), the full messaging engine, dashboard overview, network, settings, search, admin, and all feature families (partnerships, team, relationships, affiliates, community). Landing page is the only unwired screen. "Mock-as-Draft Philosophy" below explains the mock system.
+> As-of: August 2026. Running in **mock mode** (`USE_MOCKS=true`). All external services are in-memory mocks. **Wired so far (Phase F):** login, onboarding, forgot-password, the My App editor (all 16 catalog item types incl. device file uploads), the fan shell (guest + 4-tab app, mock PayPal checkout), the full messaging engine, dashboard overview, network, settings, search, admin, and all feature families (partnerships, team, relationships, affiliates, community), plus the landing page (Phase 4 extras: showcase, hero auth modal, install button, returning-fan row). "Mock-as-Draft Philosophy" below explains the mock system.
 
 ---
 
@@ -22,7 +22,7 @@ Each has its own `manifest.json` — browsers treat them as separate installable
 
 ## 2. The Visitor (Landing Page — `/`)
 
-A basic marketing page with hero section, "How it works" steps, feature comparison vs Linktree, and CTA to sign up. **Status: Skeleton.** Will be enhanced later.
+A marketing page with hero section, "How it works" steps, creator showcase marquee, feature comparison vs Linktree, and CTAs to sign up. **Status: ✅ wired** (base 2026-09-14; Phase 4 extras 2026-09-29 — returning-fan row, hero auth modal, platform install button).
 
 ---
 
@@ -195,11 +195,11 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 
 ## 8. What's Skeleton / Placeholder
 
-**Phase F wiring is nearly complete** (map: `WIRING_PLAN.md`, repo root — 23 sheets; Sheets 6–12, 18–22 done). Landing page is the only unwired screen. Specs for all screens live in `src/wiredLater/` (specs only — the parts archive `src/old-code/` is reference-only).
+**Phase F wiring is complete** (map: `WIRING_PLAN.md`, repo root — 23 sheets; Sheets 6–12, 18–23 done). Specs for all screens live in `src/wiredLater/` (specs only — the parts archive `src/old-code/` is reference-only).
 
 | Screen | Current state | Spec |
 |---|---|---|
-| Landing page (`/`) | Not wired (deferred) | `screens/public/landing.md` (deferred) |
+| Landing page (`/`) | ✅ Wired — base page + Phase 4 extras (creator showcase, hero auth modal, install button, returning-fan row) | `screens/public/landing.md` (full) |
 | Login (`/login`) | ✅ Wired (Sheet 6) — AuthCard + LoginForm, `?next=` redirect, mock-only social buttons | `screens/public/login.md` (full) |
 | Onboarding (`/onboarding`) | ✅ Wired (Sheet 7) — Link Address availability check + permanence dialog + register route | `screens/public/onboarding.md` (full) |
 | Forgot-password (`/forgot-password`) | ✅ Wired — anonymous, no enumeration, mock logs reset link | `screens/public/login.md` Part 4 |
@@ -398,7 +398,7 @@ These have full specs in `src/wiredLater/`:
 | **Admin rebuild** — founder setup, RBAC, audit log, API keys | `screens/admin/admin.md` | ✅ DONE (Sheet 8) |
 | **AI personal assistant** (creator-facing floating widget) | `ai/ai-features.md` | 🔵 Not built |
 | **AI agent workforce** (heads-up only — design TBD) | `ai/ai-agents.md` | ⚪ Not designed |
-| **Landing page** | `screens/public/landing.md` | ⚪ Deferred |
+| **Landing page** — base + showcase marquee, hero auth modal, install button, returning-fan row | `screens/public/landing.md` | ✅ DONE (2026-09-29) |
 
 ### Production migration (P1)
 

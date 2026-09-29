@@ -237,3 +237,28 @@ a {
   margin-inline: auto;
   padding-inline: 1rem;
 }
+
+
+/* Landing creator showcase marquee (landing.md Phase 4, 2026-09-29)
+   Duplicated track + translateX(-50%) = seamless loop; each card carries
+   its own trailing margin so both halves are exactly equal width. */
+.showcase-mask {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.showcase-track {
+  display: flex;
+  width: max-content;
+  animation: showcase-marquee 45s linear infinite;
+}
+.showcase-mask:hover .showcase-track,
+.showcase-mask:focus-within .showcase-track {
+  animation-play-state: paused;
+}
+@keyframes showcase-marquee {
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showcase-track { animation: none; }
+}
