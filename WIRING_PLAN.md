@@ -66,7 +66,7 @@
 | **12** | **Messaging** — `MessagesShell` + 12 routes + 7 tables | feature — ✅ done 2026-08-17 (engine + inbox) · ✅ **Part 3 Community wired 2026-08-31** (fan Home section + guest CTA + Connect card + channels + join/leave) |
 | **13** | **Partnerships** — 2 routes + invite card + `source` column | feature — ✅ done 2026-08-30 |
 | **14** | **Relationships / My Peeps** — 3 routes + 3 fan_accounts cols | feature — ✅ done 2026-08-30 |
-| **15** | **Team** — 8 routes + 3 tables | feature — ✅ done 2026-08-30 |
+| **15** | **Staff** — 8 routes + 3 tables | feature — ✅ done 2026-08-30 |
 | **16** | **Affiliates** — 7 routes + 4 tables + `content_items` cols | feature — ✅ done 2026-08-30 |
 | **17** | **Branding utilities** — shared components (PreviewStateToggle, brand presets applied) | feature — 🔄 partial: PreviewStateToggle + ElementPopover shipped in 19-V1; preset application follows 19-B/20 |
 | **18** | **Network** `/dashboard/network` — hosts 13–16 + search | screen — ✅ done 2026-08-30 |
@@ -105,13 +105,13 @@ CHECK       typecheck + lint + check-docs green
 |---|---|
 | ~~`RENAME`~~ ✅ | `PlaygroundTheme` → `MyAppTheme`; `PlaygroundColors` → `MyAppColors`; `PlaygroundProfile` → `MyAppProfile` — **done 2026-08-07** |
 | ~~`ADD`~~ ✅ | messaging types: `Conversation`, `ConversationMember`, `Message`, `MessageAttachment`, `MessageRequest`, `BlockedUser`, `CommunityChannel` — **done 2026-08-07** |
-| ~~`ADD`~~ ✅ | team types: `TeamMember`, `TeamInvite`, `TeamActivity` — **done 2026-08-07** |
+| ~~`ADD`~~ ✅ | staff types: `StaffMember`, `StaffInvite`, `StaffActivity` — **done 2026-08-07** |
 | ~~`ADD`~~ ✅ | affiliate types: `AffiliateDeal` (deal_type/scope/trigger/rate/status), `AffiliateAttribution`, `AffiliateConversion`, `AffiliateLink` — **done 2026-08-07** |
 | ~~`ADD`~~ ✅ | relationships: `FanAccount` + `do_not_contact`/`notes`; `Partnership` + `source` (`invited`/`collab`); `FanProfile` — **done 2026-08-07** |
 | ~~`EXTEND`~~ ✅ | `Creator` → `tagline`, `collab_style` (network.md); `connect_empty_text` (branding.md Part 9 #5) — **done 2026-08-07** |
 | ~~`EXTEND`~~ ✅ | `ContentItem` → `affiliate_enabled`, `scheduled_publish_at`, `scheduled_unpublish_at` (affiliate_rate already existed) — **done 2026-08-07** |
 | `ADD` | `theme_presets` type (if using standalone `themePresets.ts`) — decide at wiring |
-| SPEC | branding.md · network.md · relationships.md · team.md · partnership.md · my-app.md · monetization/creators.md |
+| SPEC | branding.md · network.md · relationships.md · staff.md · partnership.md · my-app.md · monetization/creators.md |
 | DEPENDS ON | none |
 
 ---
@@ -138,10 +138,10 @@ CHECK       typecheck + lint + check-docs green
 
 | Change | Tables added |
 |---|---|
-| `mockDataStore.ts` → `TableName` union | ~~`conversations`, `conversation_members`, `messages`, `message_attachments`, `message_requests`, `blocked_users`, `communities`, `creator_team_members`, `creator_team_invites`, `creator_team_activity`, `affiliate_deals`, `affiliate_attributions`, `affiliate_conversions`, `affiliate_links`~~ — **all 14 done ✅ 2026-08-07 (29 total)** |
-| `mockSupabaseClient.ts` | JOIN_REGISTRY entries for each new FK + RPC handlers for affiliate/team/community where the spec calls for them |
+| `mockDataStore.ts` → `TableName` union | ~~`conversations`, `conversation_members`, `messages`, `message_attachments`, `message_requests`, `blocked_users`, `communities`, `creator_staff_members`, `creator_staff_invites`, `creator_staff_activity`, `affiliate_deals`, `affiliate_attributions`, `affiliate_conversions`, `affiliate_links`~~ — **all 14 done ✅ 2026-08-07 (29 total)** |
+| `mockSupabaseClient.ts` | JOIN_REGISTRY entries for each new FK + RPC handlers for affiliate/staff/community where the spec calls for them |
 | Keep | all 15 existing tables + no `admin_accounts` seeding (starts empty) |
-| SPEC | messaging.md Part 5 · team.md · monetization/creators.md Part 2f |
+| SPEC | messaging.md Part 5 · staff.md · monetization/creators.md Part 2f |
 | DEPENDS ON | none |
 
 ---
@@ -229,10 +229,16 @@ ROUTES      GET /api/admin/stats       LIVE
             PATCH/DEL /api/admin/accounts/[id]   LIVE
             POST /api/admin/api-keys             LIVE
 LIB         admin-permissions.ts (canPerform/getAdminAccount) — the guard
-TABLES      admin_accounts · admin_activity_log · admin_invites (new audit log if live only)
+TABLES      admin_accounts · admin_activity_log · admin_invites (spec'd — link invite not built)
 OLDCODE     dashboard-admin/page-old.tsx · requireAuth.ts
 DEPENDS ON  1 2 5 — RBAC+all 7 routes already live; re-skin UI from spec
 NOTE        founder setup `/founder/setup?token=` — spec only, skip in Phase F
+NOTE        invite model (2026-09-29, spec'd only): link-first — role + optional email
+            (pre-fill) → shareable 7-day token → shared PUBLIC accept `/accept?token=…`
+            creates account + minimal creators row (username=null) + keycard.
+            LIVE form is the pre-/accept state: POST /api/admin/accounts needs an
+            EXISTING account (404 "No user found with that email" otherwise).
+            `admin_invites` table = spec, not built (phase gate).
 ```
 
 ---
@@ -375,17 +381,22 @@ DEPENDED     #3 #4 (columns) #12 (MessagesShell in profile drawer) — builds in
 
 ---
 
-## SHEET 15 — Team (Staffs row, My Peeps)
+## SHEET 15 — Staff (Staffs row, My Peeps)
 
 ```
-FEATURE: TEAM  ·  spec: team.md  (Model A — regular accounts, permission toggles)
+FEATURE: STAFF  ·  spec: staff.md  (Model A — regular accounts, permission toggles)
 ──────────────────────────────────────────────────────────────────────────
-COMPONENTS   TeamRow (My Peeps Staffs row) · PermissionsToggles · InviteEmail · ContextSwitcher
+COMPONENTS   StaffRow (My Peeps Staffs row) · PermissionsToggles · InviteEmail · ContextSwitcher
 ROUTES (8, all NEW, /api/creator/staff/*)    POST invite · GET invites · POST invites/accept
            GET members · PATCH/DEL member · GET activity · GET contexts
-TABLES       creator_team_members · creator_team_invites · creator_team_activity  (NEW, #4)
+TABLES       creator_staff_members · creator_staff_invites · creator_staff_activity  (NEW, #4)
 AUDIT        audit log IN v1 (owner only)
-REUSE       creators table + mock_auth_uid (no auth change)
+REUSE        creators table + mock_auth_uid (no auth change)
+INVITE       link-first (spec'd 2026-09-29): optional email (pre-fill only) → shareable
+             7-day token → shared PUBLIC accept `/accept?token=…` (email + password,
+             no Link Address, minimal creators row username=null). Same screen as the
+             admin invite (admin.md) — ONE accept door for staff + admins.
+             LIVE form still requires email + an existing account — pre-/accept state.
 DEPENDED     #1 3 4 — wiring home = Network My Peeps → Staff row (Sheet 18)
 ```
 
@@ -452,13 +463,13 @@ ORDER     18/23 — the most shelf-heavy (Need Themes like).
 > **✅ DONE 2026-08-30 + ADDENDUM (2026-09-26, `docs/archive/NETWORK_REDESIGN_PLAN.md`) — layout OVERRIDDEN.**
 > The 3-section anchored layout is superseded by **hub + floating dock + 3 sub-screens**:
 > - **Hub `/dashboard/network`** — 2-col at `lg`: LEFT rail (BillboardPreview/Editor + affiliate block: `＋ New deal` → AffiliateDealForm → YourDealsCard → EarningsSummary → AffiliateDiscover → AffiliateLinks — mounted 2026-09-27, components in `src/components/network/`) · CENTER = **Discover grid** (`/api/discover/creators?q=` + result cards with Visit + Connect buttons). Right rail removed. Mobile order: Discover → Billboard → Affiliates.
-> - **3 sub-screens:** `/dashboard/circle/partners` (InboxRequests pending-only + CollabList active-only + CollabDetail w/ MessageIcon + PartnerInviteCard) · `/dashboard/circle/fans` (FanListTable full-width + FanProfileDrawer w/ MessageIcon) · `/dashboard/circle/staff` (pending invites + TeamRow members + PermissionsToggles + InviteEmail + MessageIcon per row). Route chain per sub-screen: `page.tsx` re-export → `screens/creator/circle/<name>/Screen.tsx` → `components/circle/<Name>Page.tsx`.
+> - **3 sub-screens:** `/dashboard/circle/partners` (InboxRequests pending-only + CollabList active-only + CollabDetail w/ MessageIcon + PartnerInviteCard) · `/dashboard/circle/fans` (FanListTable full-width + FanProfileDrawer w/ MessageIcon) · `/dashboard/circle/staff` (pending invites + StaffRow members + PermissionsToggles + InviteEmail + MessageIcon per row). Route chain per sub-screen: `page.tsx` re-export → `screens/creator/circle/<name>/Screen.tsx` → `components/circle/<Name>Page.tsx`.
 > - **My Peeps + 💬 = ONE unified dock stack** (`components/layout/MyPeeps.tsx` + `MessageInboxPopover`), mounted in `app/(shell)/layout.tsx` inside the **single** floating wrapper `fixed bottom-20 right-4 z-50 flex flex-col items-center gap-2 sm:bottom-6 sm:right-6` — vertical order top→bottom = Partners · Fans · Staff · Messages. Both components are **position-less** (MyPeeps = fragment of 3 buttons; MessageInboxPopover root = `relative`) — the mount site owns placement, so there is no hardcoded offset to keep in sync. All four buttons are uniform `h-11 w-11` round icon buttons (icon-only every breakpoint, `title` tooltips); active page from `usePathname()`; red combined pill per chip (Partners = pending_requests + unread · Fans = unread · Staff = pending_invites + unread; "99+" cap; hidden at 0); 30s poll. Fan shell wraps its bubble independently in `FanAppShell.tsx` (different surface, not a sync pair).
-> - **`GET /api/creator/peeps` re-shaped:** `{ partners, fans, staff, pending_requests, pending_invites, unread: { partners, fans, staff } }` — unread classifies each active direct convo's other participant (fan_accounts → fans · creator_team_members → staff · non-ended partnership → partners), skipping muted + deleted + own messages.
+> - **`GET /api/creator/peeps` re-shaped:** `{ partners, fans, staff, pending_requests, pending_invites, unread: { partners, fans, staff } }` — unread classifies each active direct convo's other participant (fan_accounts → fans · creator_staff_members → staff · non-ended partnership → partners), skipping muted + deleted + own messages.
 > - **`GET /api/creator/partners/list`** now returns ALL non-ended rows (active + pending) + computed `direction` (`"incoming"` when `creator_b === user.id`, else `"outgoing"`).
 > - **`GET /api/creator/fans/list`** now returns `id`, `do_not_contact`, computed `total_spent` (sum of completed `fan_purchases.amount_paid` per fan).
 > - **Billboard GET/PUT** adds `bio` (600) + `rate_card {post,story,video}` + `media_kit_message` (300) on the creators row; dead `/media-kit` shareable-URL block removed from BillboardEditor.
-> - **Mock fixes on the spot (2026-09-26):** mock query builder gained `.gt()`, `.is()`, and `select(…, { count })` support (were missing entirely → 500s in mock for relationships / team+partner invites / count queries).
+> - **Mock fixes on the spot (2026-09-26):** mock query builder gained `.gt()`, `.is()`, and `select(…, { count })` support (were missing entirely → 500s in mock for relationships / staff+partner invites / count queries).
 
 ---
 

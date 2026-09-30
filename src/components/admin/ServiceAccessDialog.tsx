@@ -1,6 +1,6 @@
 /**
  * ServiceAccessDialog — super_admin only dialog to toggle which external
- * services each staff admin can access. Shows a matrix of admins × services
+ * services each admin can access. Shows a matrix of admins × services
  * with on/off switches. Controlled via open/onOpenChange props from parent.
  */
 "use client";

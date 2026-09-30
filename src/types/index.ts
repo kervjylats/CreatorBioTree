@@ -578,9 +578,9 @@ export interface CommunityChannel {
   created_at: string;
 }
 
-// ─── Team (team.md — Model A: regular accounts granted roles) ────────────────
+// ─── Staff (staff.md — Model A: regular accounts granted roles) ────────────────
 
-export interface TeamMember {
+export interface StaffMember {
   id: string;
   creator_id: string;
   user_id: string;
@@ -590,7 +590,7 @@ export interface TeamMember {
   updated_at: string;
 }
 
-export interface TeamInvite {
+export interface StaffInvite {
   id: string;
   creator_id: string;
   email: string;
@@ -602,7 +602,7 @@ export interface TeamInvite {
   created_at: string;
 }
 
-export interface TeamActivity {
+export interface StaffActivity {
   id: string;
   creator_id: string;
   member_id: string;

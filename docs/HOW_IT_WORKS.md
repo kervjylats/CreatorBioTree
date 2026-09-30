@@ -1,6 +1,6 @@
 # How the App Works — Complete Reference
 
-> As-of: August 2026. Running in **mock mode** (`USE_MOCKS=true`). All external services are in-memory mocks. **Wired so far (Phase F):** login, onboarding, forgot-password, the My App editor (all 16 catalog item types incl. device file uploads), the fan shell (guest + 4-tab app, mock PayPal checkout), the full messaging engine, dashboard overview, network, settings, search, admin, and all feature families (partnerships, team, relationships, affiliates, community), plus the landing page (Phase 4 extras: showcase, hero auth modal, install button, returning-fan row). "Mock-as-Draft Philosophy" below explains the mock system.
+> As-of: August 2026. Running in **mock mode** (`USE_MOCKS=true`). All external services are in-memory mocks. **Wired so far (Phase F):** login, onboarding, forgot-password, the My App editor (all 16 catalog item types incl. device file uploads), the fan shell (guest + 4-tab app, mock PayPal checkout), the full messaging engine, dashboard overview, network, settings, search, admin, and all feature families (partnerships, staff, relationships, affiliates, community), plus the landing page (Phase 4 extras: showcase, hero auth modal, install button, returning-fan row). "Mock-as-Draft Philosophy" below explains the mock system.
 
 ---
 
@@ -80,7 +80,7 @@ Full spec: `src/wiredLater/screens/creator-dashboard/my-app/my-app.md`.
 
 Creator-to-creator discovery + collab + people hub (B2B — fans never see it). **REBUILT 2026-09-26 (hub + dock + 3 sub-screens, per `docs/archive/NETWORK_REDESIGN_PLAN.md`):**
 - **Hub (`/dashboard/network`)** — 2 columns: left rail (Billboard + Affiliates: `＋ New deal` deal form → Your deals card → EarningsSummary/AffiliateDiscover/AffiliateLinks) · center = **Discover** (search box + result cards with Visit + Connect). The old 3-section layout's right rail is gone.
-- **3 dock pages** (routes under `/dashboard/circle/…` since 2026-09-27): `/partners` (collab requests → active collabs → invite card), `/fans` (full-width fan table + profile drawer), `/staff` (team invites + members + permissions).
+- **3 dock pages** (routes under `/dashboard/circle/…` since 2026-09-27): `/partners` (collab requests → active collabs → invite card), `/fans` (full-width fan table + profile drawer), `/staff` (staff invites + members + permissions).
 - **My Peeps = unified dock stack** — ONE component in the single floating stack bottom-right (`Partners · Fans · Staff · 💬`, top→bottom): 3 icon buttons (Partners / Fans / Staff), active page highlights, each gets a single red combined-badge (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread). Counts come from `GET /api/creator/peeps` (polled 30s). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement (no hardcoded offsets).
 - Original feature set (kept): visibility switches (`show_in_search` = appear in Discover, `open_to_collab` = accept Connect requests — both renamed/added 2026-09-29, Naming Option B), billboard (tagline/tags/collab-style/bio/rate-card/media-kit message), search, friend-request collabs, affiliates (Section 7) — economics in `monetization/creators.md` Part 2; deal maker + Your deals card + My Earnings / Discover / My Links live in the hub left rail (affiliate mount 2026-09-27).
 - **Deal Maker deferred to end of development** (messaging is already wired — see Section on chat; it no longer belongs to Network's deferred list).
@@ -91,12 +91,12 @@ Creator-to-creator discovery + collab + people hub (B2B — fans never see it). 
 
 ### 4.6 Admin Panel (`/admin`)
 
-**Full spec: `src/wiredLater/screens/admin/admin.md`. WIRED (Sheet 8, 2026-08-30).** 5-tab panel: Overview (stats), Creators (search + feature toggle), Staff Accounts (invite/role/revoke), Audit Log (placeholder), API Keys.
+**Full spec: `src/wiredLater/screens/admin/admin.md`. WIRED (Sheet 8, 2026-08-30).** 5-tab panel: Overview (stats), Creators (search + feature toggle), Admins (invite/role/revoke), Audit Log (placeholder), API Keys.
 
 Platform owner's control room. One door, different keycards:
 - **Founder setup** (planned) — `/founder/setup?token=...`, one-time, token-gated. The owner claims the platform once; after that, logs in at `/login` like everyone else
 - **Overview** — platform-wide stats (creators, fans, revenue) + activity feed + staff status strip
-- **Admins tab** — invite staff by email + role, custom permission toggles per person, revoke, last-active
+- **Admins tab** — invite admins by email + role, custom permission toggles per person, revoke, last-active
 - **Roles:** super_admin / support_admin / content_admin / agent (permission tiers in `src/types/index.ts`)
 - **Audit log** (planned) — every admin action recorded (`admin_activity_log`)
 - **API keys** — for AI agent accounts

@@ -54,10 +54,10 @@ export type TableName =
   | "blocked_users"
   | "communities"
   | "message_prefs"
-  // ── Team (team.md) ──
-  | "creator_team_members"
-  | "creator_team_invites"
-  | "creator_team_activity"
+  // ── Staff (staff.md) ──
+  | "creator_staff_members"
+  | "creator_staff_invites"
+  | "creator_staff_activity"
   // ── Fan follows (fan-shell.md Part 4c + partner-page.md) ──
   | "fan_follows"
   // ── Affiliates (network.md §7 + monetization/creators.md Part 2f) ──
@@ -115,9 +115,9 @@ function initStore(): void {
   mockStore.set("blocked_users", []);
   mockStore.set("communities", []);
   mockStore.set("message_prefs", []);
-  mockStore.set("creator_team_members", []);
-  mockStore.set("creator_team_invites", []);
-  mockStore.set("creator_team_activity", []);
+  mockStore.set("creator_staff_members", []);
+  mockStore.set("creator_staff_invites", []);
+  mockStore.set("creator_staff_activity", []);
   mockStore.set("fan_follows", []);
   mockStore.set("affiliate_deals", []);
   mockStore.set("affiliate_attributions", []);

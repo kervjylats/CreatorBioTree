@@ -1,5 +1,5 @@
 /**
- * GET /api/creator/staff/activity — audit log for team actions (team.md Part 5).
+ * GET /api/creator/staff/activity — audit log for staff actions (staff.md Part 5).
  * Returns empty array in mock; owner only.
  */
 import { NextResponse } from "next/server";
@@ -14,12 +14,12 @@ export async function GET() {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data: myActivity } = await supabase
-      .from("creator_team_activity")
+      .from("creator_staff_activity")
       .select("*")
       .eq("creator_id", user.id);
     return NextResponse.json({ activity: myActivity ?? [] });
   } catch (err) {
-    console.error("[team/activity] GET:", err);
+    console.error("[staff/activity] GET:", err);
     return NextResponse.json({ error: "Failed to fetch activity" }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
-/** Team invite form (email + permission toggles) */
+/** Staff invite form (email + permission toggles) */
 /**
- * Email input with role select and send-invite button (team.md Part 2).
+ * Email input with role select and send-invite button (staff.md Part 2).
  */
 "use client";
 
@@ -20,7 +20,7 @@ interface InviteEmailProps {
   onInvited?: () => void;
 }
 
-/** Email input with role select and send-invite button. Calls POST /api/creator/staff/invite (team.md Part 2). */
+/** Email input with role select and send-invite button. Calls POST /api/creator/staff/invite (staff.md Part 2). */
 export function InviteEmail({ onInvited }: InviteEmailProps) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");

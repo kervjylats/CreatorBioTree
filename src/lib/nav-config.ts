@@ -82,7 +82,7 @@ export interface AdminTab {
 export const ADMIN_TABS: AdminTab[] = [
   { value: "overview", label: "Overview" },
   { value: "creators", label: "Creators" },
-  { value: "accounts", label: "Staff Accounts" },
+  { value: "accounts", label: "Admins" },
   { value: "audit", label: "Audit Log" },
   { value: "api-keys", label: "API Keys" },
   { value: "services", label: "Services" },

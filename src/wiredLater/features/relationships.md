@@ -12,9 +12,9 @@ Three relationship types, three spec homes:
 |---|---|
 | **Partners / collabs** | `network.md` — creator discovery, collabs, affiliates. The collab list lives there |
 | **Fans / clients** | THIS FILE (Part 2 — the fan list, Part 3 — profile drawer) |
-| **Staff (team)** | `team.md` — creator staff access, permission toggles, audit log. The team list lives there |
+| **Staff** | `staff.md` — creator staff access, permission toggles, audit log. The staff list lives there |
 
-This spec defines the **umbrella hub (Part 1)**, the **fan/client list** (the gap), the **profile drawer** (shared by all three), and the **consent/privacy layer**. It does NOT duplicate collab, partnership, or team specs — it points at them.
+This spec defines the **umbrella hub (Part 1)**, the **fan/client list** (the gap), the **profile drawer** (shared by all three), and the **consent/privacy layer**. It does NOT duplicate collab, partnership, or staff specs — it points at them.
 
 **Wiring home: ✅ DECIDED (2026-08-05)** — My Peeps is the **anchored right rail of the Network page** (`network.md` top layout diagram). The 3 rows of the umbrella = Partners / Fans / Staffs. No own tab, no Overview section.
 
@@ -28,7 +28,7 @@ This spec defines the **umbrella hub (Part 1)**, the **fan/client list** (the ga
 |---|---|---|
 | **Partners** | Count of active partners (collabs + partnerships). Expanded: the collab list + partnership invites + "Invite a partner" button (`partnership.md`) | Collab detail (see `network.md`) |
 | **Fans** | Count of fan accounts — **grouped: Fans (password) vs Followers (email-only)**. Expanded: the fan list (Part 2) — email, joined, status, LTV | Fan profile (Part 3) |
-| **Staffs** | Count of team members. Expanded: the team list + "Invite member" (`team.md` Part 4) | Team member detail (see `team.md`) |
+| **Staffs** | Count of staff members. Expanded: the staff list + "Invite member" (`staff.md` Part 4) | Staff member detail (see `staff.md`) |
 
 A person who is both a fan and a community member appears ONCE (matched by fan account), showing both badges.
 
@@ -177,11 +177,11 @@ Auth: creator-only (`mock_auth_uid` / Supabase) — fans never see this data.
 
 | Topic | Status |
 |---|---|
-| #1 File structure | ✅ Decided — ONE umbrella spec; collabs stay in `network.md`, community stays in `messaging.md` Part 3, staff stays in `team.md` (founder decision 2026-08-04) |
+| #1 File structure | ✅ Decided — ONE umbrella spec; collabs stay in `network.md`, community stays in `messaging.md` Part 3, staff stays in `staff.md` (founder decision 2026-08-04) |
 | #2 Hub concept ("My Peeps") | ✅ Decided 2026-08-05 — the umbrella is **My Peeps**: 3 rows (Partners / Fans / Staffs) in an expandable table, no one-search box |
 | #3 Fan list | ✅ Decided — table (email/joined/referred-by/status/LTV/last-purchase) + quick filters + CSV export (competitor floor) |
 | #4 Profile drawer | ✅ Decided — purchases, subscription, installs/activity, MESSAGES (MessagesShell reuse), notes, actions. The differentiator |
 | #5 Referred-by | ✅ Decided — column + filter + tie-in to collab stats (data exists) |
 | #6 Consent | ✅ Decided — do-not-contact flag, email opt-out (flag exists, fan toggle parked), GDPR note, no imports |
 | #7 Deferred | ✅ Decided — tags/segments, MRR-per-fan, product progress, multi-notes, access-grant/refund actions, fan opt-out UI |
-| #8 Wiring home | ✅ **Decided 2026-08-05 — Network page, right rail, anchored (Layout B).** My Peeps = Partners / Fans / Staffs rows. Team → Staffs row (`team.md`), Partnership → Partners row (`partnership.md`). NOT an own tab, NOT Overview |
+| #8 Wiring home | ✅ **Decided 2026-08-05 — Network page, right rail, anchored (Layout B).** My Peeps = Partners / Fans / Staffs rows. Staff → Staffs row (`staff.md`), Partnership → Partners row (`partnership.md`). NOT an own tab, NOT Overview |

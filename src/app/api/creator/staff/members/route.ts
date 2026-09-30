@@ -1,6 +1,6 @@
 /**
- * GET /api/creator/staff/members — list team members with roles for the
- * authenticated creator (team.md Part 4).
+ * GET /api/creator/staff/members — list staff members with roles for the
+ * authenticated creator (staff.md Part 4).
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -14,7 +14,7 @@ export async function GET() {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data: myMembers } = await supabase
-      .from("creator_team_members")
+      .from("creator_staff_members")
       .select("*")
       .eq("creator_id", user.id);
 
@@ -31,7 +31,7 @@ export async function GET() {
 
     return NextResponse.json({ members: enriched });
   } catch (err) {
-    console.error("[team/members] GET:", err);
+    console.error("[staff/members] GET:", err);
     return NextResponse.json({ error: "Failed to fetch members" }, { status: 500 });
   }
 }

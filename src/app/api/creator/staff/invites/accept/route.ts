@@ -1,6 +1,6 @@
 /**
  * POST /api/creator/staff/invites/accept — validate invite code, create
- * creator_team_members row, mark invite accepted (team.md Part 2 step 5-6).
+ * creator_staff_members row, mark invite accepted (staff.md Part 2 step 5-6).
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: invite } = await supabase
-      .from("creator_team_invites")
+      .from("creator_staff_invites")
       .select("*")
       .eq("invite_code", code)
       .maybeSingle();
@@ -34,13 +34,13 @@ export async function POST(request: NextRequest) {
     }
 
     await supabase
-      .from("creator_team_invites")
+      .from("creator_staff_invites")
       .update({ used_by: user.id })
       .eq("id", invite.id);
 
     const now = new Date().toISOString();
     const { data: member } = await supabase
-      .from("creator_team_members")
+      .from("creator_staff_members")
       .insert({
         creator_id: invite.creator_id,
         user_id: user.id,
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true, member });
   } catch (err) {
-    console.error("[team/invites/accept] POST:", err);
+    console.error("[staff/invites/accept] POST:", err);
     return NextResponse.json({ error: "Failed to accept invite" }, { status: 500 });
   }
 }

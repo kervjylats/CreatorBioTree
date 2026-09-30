@@ -1,12 +1,12 @@
 /**
- * StaffPage — /dashboard/circle/staff content (network.md): pending team
+ * StaffPage — /dashboard/circle/staff content (network.md): pending staff
  * invites, the member list with permission toggles, and the invite-by-email
  * form. Owner only.
  */
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { TeamRow } from "@/components/circle/staff/TeamRow";
+import { StaffRow } from "@/components/circle/staff/StaffRow";
 import { InviteEmail } from "@/components/shared/InviteEmail";
 import { PermissionsToggles } from "@/components/circle/staff/PermissionsToggles";
 import { MessageIcon } from "@/components/messages/MessagesShell";
@@ -20,7 +20,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { Spinner } from "@/components/shared/Spinner";
 import { LABEL_CLASS } from "@/lib/ui-constants";
 
-interface TeamMember {
+interface StaffMember {
   id: string;
   user_id: string;
   role: string;
@@ -34,7 +34,7 @@ interface TeamMember {
   } | null;
 }
 
-interface TeamInvite {
+interface StaffInvite {
   id: string;
   email: string;
   role: string;
@@ -43,16 +43,16 @@ interface TeamInvite {
 }
 
 export function StaffPage() {
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [invites, setInvites] = useState<TeamInvite[]>([]);
+  const [members, setMembers] = useState<StaffMember[]>([]);
+  const [invites, setInvites] = useState<StaffInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Record<string, boolean> | null>(null);
 
   const fetchAll = useCallback(() => {
     Promise.all([
-      fetchJson<{ members?: TeamMember[] }>("/api/creator/staff/members"),
-      fetchJson<{ invites?: TeamInvite[] }>("/api/creator/staff/invites"),
+      fetchJson<{ members?: StaffMember[] }>("/api/creator/staff/members"),
+      fetchJson<{ invites?: StaffInvite[] }>("/api/creator/staff/invites"),
     ])
       .then(([mData, iData]) => {
         setMembers(mData.members ?? []);
@@ -102,13 +102,13 @@ export function StaffPage() {
       <div>
         <h1 className="text-2xl font-extrabold text-foreground">Staff</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Team members and helpers with per-person permissions.
+          Staff members and helpers with per-person permissions.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Invite a team member</CardTitle>
+          <CardTitle className="text-lg">Invite a staff member</CardTitle>
         </CardHeader>
         <CardContent>
           <InviteEmail onInvited={fetchAll} />
@@ -152,13 +152,13 @@ export function StaffPage() {
               Members
             </h2>
             {members.length === 0 ? (
-              <EmptyState title="No team members yet." className="p-6!" />
+              <EmptyState title="No staff members yet." className="p-6!" />
             ) : (
               <div className="space-y-2">
                 {members.map((m) => (
                   <div key={m.id} className="flex items-center gap-2">
                     <div className="flex-1">
-                      <TeamRow
+                      <StaffRow
                         member={m}
                         onEdit={(id) => {
                           setEditingId(id);
@@ -171,7 +171,7 @@ export function StaffPage() {
                       <MessageIcon
                         otherKey={m.user_id}
                         otherParty="creator"
-                        name={m.user?.display_name ?? m.user?.email ?? "Team member"}
+                        name={m.user?.display_name ?? m.user?.email ?? "Staff member"}
                       />
                     )}
                   </div>

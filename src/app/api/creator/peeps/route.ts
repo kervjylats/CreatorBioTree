@@ -1,7 +1,7 @@
 /**
  * GET /api/creator/peeps — My Peeps umbrella (relationships.md Part 1)
  * extended for the Network rebuild: partner/fan/staff counts plus the data the
- * floating dock badges need — pending collab requests, pending team invites,
+ * floating dock badges need — pending collab requests, pending staff invites,
  * and per-group unread message totals (partners/fans/staff).
  */
 import { NextResponse } from "next/server";
@@ -31,7 +31,7 @@ export async function GET() {
         .select("*", { count: "exact", head: true })
         .eq("creator_id", user.id),
       supabase
-        .from("creator_team_members")
+        .from("creator_staff_members")
         .select("*", { count: "exact", head: true })
         .eq("creator_id", user.id),
     ]);
@@ -43,7 +43,7 @@ export async function GET() {
       .eq("creator_b", user.id);
 
     const { count: pendingInvites } = await supabase
-      .from("creator_team_invites")
+      .from("creator_staff_invites")
       .select("*", { count: "exact", head: true })
       .eq("creator_id", user.id)
       .is("used_by", null)
@@ -52,7 +52,7 @@ export async function GET() {
     // ── Per-group unread ───────────────────────────────────────────────────────
     // Classify each of my active direct conversations by the OTHER participant
     // (fans = fan_accounts of this creator, partners = non-ended partnership,
-    // staff = team members), then COUNT messages newer than my last_read_at with
+    // staff = creator staff), then COUNT messages newer than my last_read_at with
     // a server-side filtered query — never load full message history. Muted and
     // left conversations are excluded server-side. The dock polls this every 30s.
     const { data: memberships } = await supabase
@@ -66,7 +66,7 @@ export async function GET() {
     if (active.length > 0) {
       const convoIds = active.map((m) => m.conversation_id as string);
 
-      const [{ data: convos }, { data: others }, { data: fansData }, { data: partnerships }, { data: teamRows }] =
+      const [{ data: convos }, { data: others }, { data: fansData }, { data: partnerships }, { data: staffRows }] =
         await Promise.all([
           supabase.from("conversations").select("id, type").in("id", convoIds).eq("type", "direct"),
           supabase
@@ -80,7 +80,7 @@ export async function GET() {
             .select("creator_a, creator_b")
             .neq("status", "ended")
             .or(`creator_a.eq.${user.id},creator_b.eq.${user.id}`),
-          supabase.from("creator_team_members").select("user_id").eq("creator_id", user.id),
+          supabase.from("creator_staff_members").select("user_id").eq("creator_id", user.id),
         ]);
 
       const directIds = new Set((convos ?? []).map((c) => c.id as string));
@@ -92,7 +92,7 @@ export async function GET() {
       for (const p of partnerships ?? []) {
         partnerIds.add(p.creator_a === user.id ? p.creator_b : p.creator_a);
       }
-      const staffIds = new Set((teamRows ?? []).map((t) => t.user_id));
+      const staffIds = new Set((staffRows ?? []).map((t) => t.user_id));
 
       const jobs: Promise<void>[] = [];
       for (const memberRow of active) {

@@ -1,15 +1,15 @@
 /**
- * team-permissions.ts — single source of truth for team permission keys,
- * labels, and warning flags. Used by PermissionsToggles and TeamRow.
+ * staff-permissions.ts — single source of truth for staff permission keys,
+ * labels, and warning flags. Used by PermissionsToggles and StaffRow.
  */
 
-export interface TeamPermission {
+export interface StaffPermission {
   key: string;
   label: string;
   warning: boolean;
 }
 
-export const TEAM_PERMISSIONS: TeamPermission[] = [
+export const STAFF_PERMISSIONS: StaffPermission[] = [
   { key: "content", label: "Content", warning: false },
   { key: "stats", label: "Overview & Stats", warning: false },
   { key: "relationships", label: "Relationships", warning: false },
@@ -20,7 +20,7 @@ export const TEAM_PERMISSIONS: TeamPermission[] = [
   { key: "money", label: "Money", warning: true },
 ];
 
-/** Permission key → display label map (for TeamRow). */
-export const TEAM_PERMISSION_LABELS: Record<string, string> = Object.fromEntries(
-  TEAM_PERMISSIONS.map((p) => [p.key, p.label]),
+/** Permission key → display label map (for StaffRow). */
+export const STAFF_PERMISSION_LABELS: Record<string, string> = Object.fromEntries(
+  STAFF_PERMISSIONS.map((p) => [p.key, p.label]),
 );

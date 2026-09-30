@@ -1,6 +1,6 @@
 /**
  * GET /api/creator/staff/contexts — list managed dashboards for the context
- * switcher (team.md Part 3). Returns own context plus any team memberships.
+ * switcher (staff.md Part 3). Returns own context plus any staff memberships.
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -28,7 +28,7 @@ export async function GET() {
     ];
 
     const { data: myRoles } = await supabase
-      .from("creator_team_members")
+      .from("creator_staff_members")
       .select("creator_id, role")
       .eq("user_id", user.id);
 
@@ -47,7 +47,7 @@ export async function GET() {
 
     return NextResponse.json({ contexts });
   } catch (err) {
-    console.error("[team/contexts] GET:", err);
+    console.error("[staff/contexts] GET:", err);
     return NextResponse.json({ error: "Failed to fetch contexts" }, { status: 500 });
   }
 }

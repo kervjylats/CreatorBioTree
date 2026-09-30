@@ -32,7 +32,7 @@ This folder contains **ONLY spec `.md` files** — the blueprints. No code lives
 
 | Spec | What it covers |
 |---|---|
-| [admin.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens\admin\admin.md) | Admin `/admin` — platform stats, RBAC, audit log, founder setup. Staff team access spec'd in `features/team.md` |
+| [admin.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens\admin\admin.md) | Admin `/admin` — platform stats, RBAC, audit log, founder setup. Creator staff access spec'd in `features/staff.md` |
 
 ### Screens — Fan Shell (what fans experience)
 
@@ -51,14 +51,14 @@ This folder contains **ONLY spec `.md` files** — the blueprints. No code lives
 
 ### Features — Cross-Cutting (NOT standalone screens)
 
-Live as tabs/sections inside the major screens above. **Wiring homes: ALL DECIDED (2026-08-05)** — see the per-spec rows below (Network = My Peeps right rail for relationships/team/partnership; Messaging = floating inbox + Home tab; Branding = fan shell + My App; Partner page = Connect tab; Search = public + embedded). None have their own sidebar entry.
+Live as tabs/sections inside the major screens above. **Wiring homes: ALL DECIDED (2026-08-05)** — see the per-spec rows below (Network = My Peeps right rail for relationships/staff/partnership; Messaging = floating inbox + Home tab; Branding = fan shell + My App; Partner page = Connect tab; Search = public + embedded). None have their own sidebar entry.
 
 | Spec | What it covers | Likely home (TBD) |
 |---|---|---|
 | [messaging.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\messaging.md) | Messaging — FREE WhatsApp-style chat: floating inbox (both sides), 1-on-1 (creator↔creator / creator↔fan / fan↔partner / guest contact), requests + block + toggles, group chats + announcements, files. **Part 3 = Community (DECIDED):** chat channels only, free, Home-tab section, per-channel gates, roles, creator-only moderation, all 3 join rules, guest CTA | Floating inbox = every screen; Community = fan Home tab |
 | [branding.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\branding.md) | Branding — single home for the full rebrand system: 2-layer theme model (preset + override), the 9 presets, the resolver (`resolveBranding`), the global set (colors + font + button style + PWA), what the theme does NOT control (messaging inbox, partner page = partner's own, dashboard/platform), 7 easy-win v1 extensions (branded 404/share/loading/empty states, status bar, font pairs, saved palettes), 5 touch-native later extensions (haptics, swipe, transitions, long-press, splash), 4 safety rules (validation / fallback / performance / accessibility), 7-day lock on App Name + Icon + Display Name | Fan shell (every page); editor in My App Design tab + tap-to-edit popovers; Preview state toggle in My App + on owner's "View My App" |
-| [relationships.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\relationships.md) | Relationships — **"My Peeps"** (umbrella): fan/client list (table + filters + CSV export), per-person profile drawer (purchases + messages via MessagesShell + notes), referred-by/source, consent flags. Collabs → network.md, community → messaging.md Part 3, staff → team.md | **Network page — My Peeps right rail, anchored (DECIDED)** |
-| [team.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\team.md) | Team — creator staff access: Model A identity (members are regular accounts, can be creators too), permission toggles per person, invite flow, context switcher, audit log | **My Peeps → Staffs row (DECIDED)** |
+| [relationships.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\relationships.md) | Relationships — **"My Peeps"** (umbrella): fan/client list (table + filters + CSV export), per-person profile drawer (purchases + messages via MessagesShell + notes), referred-by/source, consent flags. Collabs → network.md, community → messaging.md Part 3, staff → staff.md | **Network page — My Peeps right rail, anchored (DECIDED)** |
+| [staff.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\staff.md) | Staff — creator staff access: Model A identity (members are regular accounts, can be creators too), permission toggles per person, invite flow, context switcher, audit log | **My Peeps → Staffs row (DECIDED)** |
 | [partnership.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\partnership.md) | Partnership — inviting creators from OUTSIDE the app via `?invite=CODE` link → auto-connected on signup. Built on old code. Shared `partnerships` table + `source` flag | **My Peeps → Partners row (DECIDED)** |
 | [partner-page.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\partner-page.md) | Partner page `/[username]/partner/[partnerUsername]` — fan-only bottom modal, Follow / + / unfollow. Reached from the Connect tab (fan shell) | Fan Connect tab |
 | [search.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\search.md) | Search — unique @handle, discoverable-only, featured first, "Did you mean?" on zero results. Placements: Network hub Discover (live) + landing page (deferred). Standalone `/search` page removed 2026-09-28 | Embedded (landing, Network hub) |

@@ -1,6 +1,6 @@
 /**
- * POST /api/creator/staff/invite — create a team invite row with a 7-day
- * expiry token (team.md Part 2). Owner only.
+ * POST /api/creator/staff/invite — create a staff invite row with a 7-day
+ * expiry token (staff.md Part 2). Owner only.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: existing } = await supabase
-      .from("creator_team_invites")
+      .from("creator_staff_invites")
       .select("id")
       .eq("creator_id", user.id)
       .eq("email", email)
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const { data: invite } = await supabase
-      .from("creator_team_invites")
+      .from("creator_staff_invites")
       .insert({
         creator_id: user.id,
         email,
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ invite }, { status: 201 });
   } catch (err) {
-    console.error("[team/invite] POST:", err);
+    console.error("[staff/invite] POST:", err);
     return NextResponse.json({ error: "Failed to create invite" }, { status: 500 });
   }
 }

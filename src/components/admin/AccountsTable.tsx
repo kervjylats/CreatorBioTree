@@ -1,5 +1,5 @@
 /**
- * AdminAccountsTable — staff admin accounts management (admin.md Part 3).
+ * AdminAccountsTable — platform admin accounts management (admin.md Part 3). (admin.md Part 3).
  * Lists all admin accounts, supports invite (POST), role edit (PATCH), and
  * revoke (DELETE). Fetches from GET /api/admin/accounts.
  */
@@ -66,17 +66,17 @@ export function AccountsTable() {
       if (!res.ok) {
         const err = await res.json();
         console.error("[admin invite] error:", err);
-        setInviteError(err.error || "Failed to invite staff");
+        setInviteError(err.error || "Failed to invite admin");
         return;
       }
-      toast.success("Staff member invited");
+      toast.success("Admin invited");
       setInviteOpen(false);
       setInviteEmail("");
       setInviteRole("support_admin");
       fetchAccounts();
     } catch (e) {
       console.error("[admin invite] fetch error:", e);
-      setInviteError("Failed to invite staff");
+      setInviteError("Failed to invite admin");
     } finally {
       setInviteLoading(false);
     }
@@ -112,17 +112,17 @@ export function AccountsTable() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Staff Accounts</h3>
+        <h3 className="text-sm font-semibold text-foreground">Admins</h3>
         <Button size="sm" onClick={() => { setInviteError(""); setInviteOpen(true); }}>
           <Plus size={14} />
-          Invite staff
+          Invite admin
         </Button>
       </div>
 
       {loading ? (
         <p className="py-8 text-center text-sm text-muted-foreground">Loading accounts...</p>
       ) : accounts.length === 0 ? (
-        <EmptyState variant="inline" title="No staff accounts yet" />
+        <EmptyState variant="inline" title="No admins yet" />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full text-sm">
@@ -214,13 +214,13 @@ export function AccountsTable() {
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Invite Staff Member</DialogTitle>
+            <DialogTitle>Invite Admin</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <Input
               label="Email"
               type="email"
-              placeholder="staff@example.com"
+              placeholder="admin@example.com"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
             />

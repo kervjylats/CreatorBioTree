@@ -25,12 +25,12 @@ The Network page is **3 sections, no tabs** (founder decision — tabs rejected)
 └───────────────┴──────────────┴───────────────────────┘
 ```
 
-- **Right rail = "My Peeps"** — the anchored umbrella (see `relationships.md`): 3 rows (Partners / Fans / Staffs), each with a count. Tap a row → expands to that group's list (Partners → collab list + partnership invites; Fans → fan list; Staffs → team list). Selections open their detail in the center column
+- **Right rail = "My Peeps"** — the anchored umbrella (see `relationships.md`): 3 rows (Partners / Fans / Staffs), each with a count. Tap a row → expands to that group's list (Partners → collab list + partnership invites; Fans → fan list; Staffs → staff list). Selections open their detail in the center column
 - **Left rail** = the Network tools: **Discover** (search + billboard) and **Affiliates** (My Earnings / Discover / My Links)
-- **Center** = detail view of whatever is selected (collab detail, fan profile drawer, team member, affiliate page)
+- **Center** = detail view of whatever is selected (collab detail, fan profile drawer, staff member, affiliate page)
 - **Mobile** = stacks vertically: My Peeps anchored at top, then Discover, then Affiliates
 
-**Wiring homes (DECIDED 2026-08-05):** Relationships (My Peeps) → Network page right rail. Team → My Peeps → Staffs row. Partnership invites → My Peeps → Partners row (plus the invite button in Discover). All three spec files have their wiring home notes updated to match.
+**Wiring homes (DECIDED 2026-08-05):** Relationships (My Peeps) → Network page right rail. Staff → My Peeps → Staffs row. Partnership invites → My Peeps → Partners row (plus the invite button in Discover). All three spec files have their wiring home notes updated to match.
 
 ---
 
@@ -205,7 +205,7 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 - Tap a row → expands in the rail to that group's list; selection opens detail in the center column
 - Partners row = collab list + partnership invites + "Invite a partner" button (`partnership.md`)
 - Fans row = the fan list (`relationships.md` Part 2)
-- Staffs row = the team list (`team.md` Part 4)
+- Staffs row = the staff list (`staff.md` Part 4)
 
 ### NetworkPage (main page) — layout DECIDED
 - Page heading + subtitle
@@ -265,7 +265,7 @@ NetworkPage
 │   │   │   └── CollabDetail (CENTER when opened)
 │   │   └── PartnershipInviteCard (partnership.md)
 │   ├── FansRow → FanList (relationships.md Part 2)
-│   └── StaffsRow → TeamList (team.md Part 4)
+│   └── StaffsRow → StaffList (staff.md Part 4)
 ├── LEFT RAIL
 │   ├── Discover
 │   │   ├── NetworkSettings
@@ -283,7 +283,7 @@ NetworkPage
 │       ├── AffiliateDiscover
 │       └── AffiliateLinks
 └── CENTER
-    └── Detail view of selected row (collab / fan / team member / affiliate page)
+    └── Detail view of selected row (collab / fan / staff member / affiliate page)
 ```
 
 ---

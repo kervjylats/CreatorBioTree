@@ -2,7 +2,17 @@
 
 ## Concept
 
-`/login` is the **creator/staff gateway** — one door for everyone on the platform side: the owner, future staff admins, and creators. Fans never land here — their auth lives inside the fan shell (see `fan-shell.md` Part 5: per-creator fan accounts, email + password).
+`/login` is the **platform gateway** — one door for everyone on the platform side: the founder (owner), admins, and creators. Fans never land here — their auth lives inside the fan shell (see `fan-shell.md` Part 5: per-creator fan accounts, email + password).
+
+**One door, three keycards (naming law, founder decision 2026-09-29):** the account type decides what's behind the door. Three types, one word each, everywhere (UI + code + spec) — never mix them:
+
+| Who | Gets in via | Lands on | Spec |
+|---|---|---|---|
+| **Creator** (self-signup) | "Create one free" → `/onboarding` (picks a Link Address) | `/dashboard` — the 4-tab creator shell | `onboarding.md` |
+| **Staff** (a creator's invited helper) | The creator shares an invite link → shared accept screen `/accept?token=…` (email + password, **no Link Address**) | `/dashboard` — same shell, granted sections only (context switcher) | `features/staff.md` |
+| **Admin** (the platform's staff: founder + invited admins) | Founder setup (`/founder/setup?token=…`) or an invite link → same `/accept?token=…` | `/admin` — the Admin Panel | `screens/admin/admin.md` |
+
+"Staff" NEVER means platform staff; "Admin" NEVER means creator staff (the old "staff admin" phrasing is retired). The `/accept` screen is **spec'd, not built** (phase gate) — today a new account only comes from `/onboarding` (creator mode) or the mock signup fallback at this form.
 
 The page has one job: **verify the creator's identity fast and get them to the dashboard.** Nothing more.
 

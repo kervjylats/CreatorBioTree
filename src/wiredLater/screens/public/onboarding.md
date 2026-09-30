@@ -8,7 +8,7 @@ Two invite modes exist — only ONE flows through onboarding:
 | Invite type | Path | Spec |
 |---|---|---|
 | Partnership (`partner_invites` code) | Outsider clicks `?invite=CODE` → completes onboarding → auto-connected as the inviter's partner (`partnerships` row, `source: "invited"`), title "Join your partner" | `partnership.md` |
-| Team (`creator_team_invites` code) | Email link → direct accept at `dashboard/team/accept?token=...` via a **dedicated lightweight screen** (email + password only — no Link Address) — does NOT touch onboarding | `team.md` |
+| Staff + Admin (`creator_staff_invites` / `admin_invites` token) | Inviter shares a link → shared public accept screen `/accept?token=…` (**email + password only — no Link Address**) → creates account + minimal `creators` row (`username = null`) — does NOT touch onboarding | `staff.md`, `admin.md` |
 
 ## Status
 **WIRED 2026-08-10 (Sheet 7)** — the core form is live: Link Address field (debounced availability check), display name, email, password, permanence confirm dialog, `?invite=` ride-in (stored in signup metadata; auto-connect wiring is Sheet 13), success → `/dashboard/my-app`. **Education copy + full design are deferred to the post-launch polish pass, like the landing page.**

@@ -10,9 +10,9 @@ Each screen is documented here as we walk through it. The specs from `src/wiredL
 | **Admin** | Platform owner + staff control room | Admin (separate from the creator dashboard) |
 | **Fan Shell** | What fans experience at `/[username]` | Guest page + 4-tab app (Home, Content, Connect, Settings) |
 | **Public** | Outside the app, no sidebar | Landing, Login, Onboarding, Offline |
-| **Features** | Cross-cutting — live AS tabs/sections inside the above | Search, Messaging, Relationships, Team, Partnership, Partner Page |
+| **Features** | Cross-cutting — live AS tabs/sections inside the above | Search, Messaging, Relationships, Staff, Partnership, Partner Page |
 
-> **A feature is NOT a sidebar screen.** Messaging, Relationships, Team, Partnership, Partner Page, and Search have no sidebar entries of their own — each lives inside one or more of the major screens (wiring home per feature is marked TBD where undecided).
+> **A feature is NOT a sidebar screen.** Messaging, Relationships, Staff, Partnership, Partner Page, and Search have no sidebar entries of their own — each lives inside one or more of the major screens (wiring home per feature is marked TBD where undecided).
 
 ---
 
@@ -37,13 +37,13 @@ Parts archive (old code) available:
 **WIRED 2026-09-26 → hub + dock + 3 dock pages** (built per `docs/archive/NETWORK_REDESIGN_PLAN.md`, overriding the earlier 3-section layout; spec `network.md` is the feature vision). **2026-09-27: the dock's pages moved to `/dashboard/circle/*`** (global chrome → global segment; Network keeps the hub only):
 
 - **Hub (`/dashboard/network`)** — 2 columns at `md+`: LEFT rail (Billboard preview + editor + Affiliates: `＋ New deal` form → Your deals card → EarningsSummary/AffiliateDiscover/AffiliateLinks) · CENTER = **Discover grid** (search box + result cards with Visit + Connect buttons). Mobile (<`md`) order: Discover → Billboard → Affiliates; at `md+` the rail is `order-1` (left track), Discover `order-2` (center), result cards go 2-up from `lg`.
-- **3 dock pages** (entered via the My Peeps dock) — `/dashboard/circle/partners` (collab Requests inbox with Accept/Decline + outgoing Pending + active Collabs list/detail + "Invite a partner" card), `/dashboard/circle/fans` (full-width `FanListTable` + `FanProfileDrawer`), `/dashboard/circle/staff` (pending team invites + members + `PermissionsToggles`).
+- **3 dock pages** (entered via the My Peeps dock) — `/dashboard/circle/partners` (collab Requests inbox with Accept/Decline + outgoing Pending + active Collabs list/detail + "Invite a partner" card), `/dashboard/circle/fans` (full-width `FanListTable` + `FanProfileDrawer`), `/dashboard/circle/staff` (pending staff invites + members + `PermissionsToggles`).
 - **My Peeps = unified dock stack** (ONE component, `src/components/layout/MyPeeps.tsx`) — the single floating stack at bottom-right on every `/dashboard/*` page: **Partners · Fans · Staff · 💬 Messages** (top→bottom) as uniform round icon buttons. Active page highlights; each chip carries ONE combined red badge (Partners = pending requests + unread, Fans = unread, Staff = pending invites + unread). Counts from `GET /api/creator/peeps` (30s poll). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement.
 - **💬 MessageIcon** on collab detail + fan drawer + staff rows (creator↔creator / creator↔fan threads).
 
 **Full spec: `screens/creator-dashboard/network/network.md`** (friend-request style, discovery directory, discoverability toggle, affiliates §7)
 
-Cross-cutting features that live here: **Partnership** → Partners sub-screen (`features/partnership.md`), **Relationships/My Peeps** → dock + sub-screens (`features/relationships.md`), **Team** → Staff sub-screen (`features/team.md`).
+Cross-cutting features that live here: **Partnership** → Partners sub-screen (`features/partnership.md`), **Relationships/My Peeps** → dock + sub-screens (`features/relationships.md`), **Staff** → the Staff sub-screen (`features/staff.md`).
 
 Parts archive (old code) available for the discovery directory:
 - [CreatorCard.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\CreatorCard.tsx)
@@ -92,7 +92,7 @@ Built during Phase E. Three tabs: Overview, Admins, API Keys.
 
 **Full spec: `screens/admin/admin.md`** (founder setup, audit log, staff invites, subdomain-ready)
 
-Staff access for creators (their own team members) is a separate cross-cutting feature: `features/team.md`.
+Staff access for creators (their own staff members) is a separate cross-cutting feature: `features/staff.md`.
 
 Parts archive (old code) available:
 - Backup: [dashboard-admin/page-old.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\allScreens\dashboard-admin\page-old.tsx)
@@ -203,7 +203,7 @@ No new screen route beyond `/dashboard/circle/messages` — the rest lives insid
 - **Dock** — ONE component (`MyPeeps.tsx`): 3 icon buttons + the 💬 bubble in one vertical stack, combined red badges (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread; 30s poll of `GET /api/creator/peeps`)
 - **Partners (`/dashboard/circle/partners`)** — collab Requests inbox (Accept/Decline + outgoing Pending) + active collabs list/detail + "Invite a partner" card
 - **Fans (`/dashboard/circle/fans`)** — full-width fan table (email, joined, referred-by, status chip, lifetime value, last purchase + filters + CSV export) + `FanProfileDrawer` (purchases, subscription, installs/activity, **message history via MessagesShell**, consent flags)
-- **Staff (`/dashboard/circle/staff`)** — pending team invites + members + permission toggles (see Team below)
+- **Staff (`/dashboard/circle/staff`)** — pending staff invites + members + permission toggles (see Staff below)
 - Collabs → `network.md`; community members → `messaging.md` Part 3
 
 **Wired 2026-09-26** — replaces the DECIDED (2026-08-05) "anchored right rail (Layout B)" placement.
@@ -212,14 +212,14 @@ Old code (reference): [FanStatsCard.tsx](vscode://file/C:\DEV\Projects\creatorpw
 
 ---
 
-## Team (feature — Network Staff sub-screen, WIRED 2026-09-26)
+## Staff (feature — Network Staff sub-screen, WIRED 2026-09-26)
 
-**Full spec: `features/team.md`** — creator staff access (Model A identity).
+**Full spec: `features/staff.md`** — creator staff access (Model A identity).
 
 - **Invite flow** — owner invites by email → 7-day expiry link → signup/login → permission toggles granted
 - **Permission toggles** — Content · Stats · Relationships · Messages · Community · Network · Settings · Money — all OFF by default, owner ticks per person
-- **Context switcher** — team members switch between their own dashboard and managed ones (members can be creators themselves)
-- **Audit log** — `creator_team_activity`, owner-only visibility
+- **Context switcher** — staff members switch between their own dashboard and managed ones (members can be creators themselves)
+- **Audit log** — `creator_staff_activity`, owner-only visibility
 - **Home** — `/dashboard/circle/staff` (from the My Peeps dock) — invites + members + toggles for the owner
 
 No parts-archive reference — this feature was never built, wires fresh from the spec.

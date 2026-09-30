@@ -1,13 +1,13 @@
 /**
- * Eight toggle switches for team permission areas. Settings and Money show
- * warnings when enabled (team.md Part 1).
- * Permission definitions live in src/lib/team-permissions.ts.
+ * Eight toggle switches for staff permission areas. Settings and Money show
+ * warnings when enabled (staff.md Part 1).
+ * Permission definitions live in src/lib/staff-permissions.ts.
  */
 "use client";
 
 import { Switch } from "@/components/ui/switch";
 import { AlertTriangle } from "lucide-react";
-import { TEAM_PERMISSIONS } from "@/lib/team-permissions";
+import { STAFF_PERMISSIONS } from "@/lib/staff-permissions";
 
 interface PermissionsTogglesProps {
   permissions: Record<string, boolean>;
@@ -15,7 +15,7 @@ interface PermissionsTogglesProps {
   disabled?: boolean;
 }
 
-/** Eight toggle switches for team permission areas. Settings and Money show a warning when enabled (team.md Part 1). */
+/** Eight toggle switches for staff permission areas. Settings and Money show a warning when enabled (staff.md Part 1). */
 export function PermissionsToggles({
   permissions,
   onChange,
@@ -27,7 +27,7 @@ export function PermissionsToggles({
 
   return (
     <div className="space-y-3">
-      {TEAM_PERMISSIONS.map((toggle) => (
+      {STAFF_PERMISSIONS.map((toggle) => (
         <div key={toggle.key} className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm">{toggle.label}</span>

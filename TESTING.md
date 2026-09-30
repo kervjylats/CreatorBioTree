@@ -24,9 +24,9 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 | 4 | **Member** | Fan buys a membership item |
 | 5 | **Buyer** | Fan buys any paid item (mock PayPal) |
 | 6 | **Creator** | Sign up via `/login` → `/onboarding` → choose Link Address |
-| 7 | **Admin** | Login as `admin@creatorpwa.app` |
-| 8 | **Staff Admin** | Admin invites via Admin Panel → staff accepts |
-| 9 | **Team Member** | Creator invites via Network → My Peeps → Staffs |
+| 7 | **Admin (owner)** | Login as `admin@creatorpwa.app` |
+| 8 | **Admin (invited)** | Admin invites via Admin Panel → invitee accepts |
+| 9 | **Staff Member** | Creator invites via Network → My Peeps → Staffs |
 | 10 | **Partner** | Creator shares `?invite=CODE` link → invitee signs up |
 | 11 | **Collab** | In-app friend request between two creators |
 | 12 | **Affiliate** | Deal created between two collabed creators |
@@ -51,20 +51,20 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 - [ ] Login as `admin@creatorpwa.app` → `/admin` shows in sidebar.
 - [ ] `/admin` Overview tab — stat cards (Total Creators, Fans, Content Items, Revenue).
 - [ ] `/admin` Creators tab — table of all creators with search, feature toggle (star icon).
-- [ ] `/admin` Staff Accounts tab — list admins, "Invite staff" button (email + role select).
-- [ ] Invite a staff member with `support_admin` role → appears in list.
-- [ ] Edit a staff member's role → change to `content_admin` → updated.
-- [ ] Revoke a staff member → removed from list.
+- [ ] `/admin` Admins tab — list admins, "Invite admin" button (email + role select).
+- [ ] Invite an admin with `support_admin` role → appears in list.
+- [ ] Edit an admin's role → change to `content_admin` → updated.
+- [ ] Revoke an admin → removed from list.
 - [ ] `/admin` Audit Log tab — shows placeholder message (mock).
 - [ ] `/admin` API Keys tab — "Generate Key" creates an `api_...` key → shown once → copy button.
 - [ ] Visit `/admin` without admin session → redirects to `/login`.
 
-## 3. Staff Admin (Persona 8)
+## 3. Admin, invited (Persona 8)
 
-- [ ] Staff member logs in with their email+password → sees `/admin` in sidebar.
-- [ ] Staff can view creators table and stats.
-- [ ] Staff cannot see "Invite staff" or "Revoke" buttons (role check).
-- [ ] Staff with `content_admin` role sees audit log but not API keys.
+- [ ] The invited admin logs in with their email+password → sees `/admin` in sidebar.
+- [ ] They can view creators table and stats.
+- [ ] They cannot see "Invite admin" or "Revoke" buttons (role check).
+- [ ] An admin with `content_admin` role sees audit log but not API keys.
 
 ## 4. Overview (Persona 6)
 
@@ -189,13 +189,13 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 - [ ] Creator B → `/dashboard/circle/partners` (dock → Partners) → Requests → "Accept" → collab formed.
 - [ ] Both see each other in CollabList.
 
-## 12. Team (Persona 9)
+## 12. Staff (Persona 9)
 
 - [ ] Creator → `/dashboard/circle/staff` (My Peeps dock → Staff) → "Invite" → enter email + role.
-- [ ] Staff member receives invite → accepts → becomes team member.
+- [ ] Staff member receives invite → accepts → becomes staff member.
 - [ ] Creator toggles permissions (Content ON, Settings OFF, etc.).
-- [ ] Team member can access toggled-on sections.
-- [ ] Note: TeamRow is wired into StaffPage but requires team members to be created first (test via API or create via invite flow above).
+- [ ] Staff member can access toggled-on sections.
+- [ ] Note: StaffRow is wired into StaffPage but requires staff members to be created first (test via API or create via invite flow above).
 
 ## 13. Affiliates (Persona 12)
 
@@ -226,10 +226,10 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 - [ ] Connect: sends collab request → button shows "Requested ✓" → 409 "Already connected" shows "Connected" → stays disabled.
 - [ ] Mobile (<`lg`): order = Discover → Billboard → Affiliates (no sidebar, bottom nav).
 - [ ] **Unified dock stack** (bottom-right, ONE vertical column, visible on every `/dashboard/*` page): `Partners · Fans · Staff · 💬 Messages` (top→bottom) — four uniform round icon buttons (icon-only on all screen sizes, hover tooltips). Active sub-screen's button fills dark. Each button shows ONE combined red badge (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread); hidden when 0. Stack is a single evenly-spaced group (no drift between the My Peeps buttons and the chat bubble).
-- [ ] Dock badges update when a collab request arrives, a team invite is pending, or a chat thread has unread (30s poll).
+- [ ] Dock badges update when a collab request arrives, a staff invite is pending, or a chat thread has unread (30s poll).
 - [ ] `/dashboard/circle/partners`: Requests inbox (incoming Accept/Decline + outgoing "Pending") → Active collabs list → in-page CollabDetail (back button, Visit their page link, 💬 ChatIcon) → "Invite a partner" card (7-day code).
 - [ ] `/dashboard/circle/fans`: full-width FanListTable (filters + status chips + CSV export) → FanProfileDrawer (identity, purchases, subscription, 💬 ChatIcon, do-not-contact toggle).
-- [ ] `/dashboard/circle/staff`: pending team invites section + members list (TeamRow) → PermissionsToggles edit panel → InviteEmail on top; 💬 ChatIcon per member row.
+- [ ] `/dashboard/circle/staff`: pending staff invites section + members list (StaffRow) → PermissionsToggles edit panel → InviteEmail on top; 💬 ChatIcon per member row.
 - [ ] Billboard editor: tagline/tags/collab-style + **bio, rate card (post/story/video), media-kit message** persist after save.
 
 ## 16. Offline

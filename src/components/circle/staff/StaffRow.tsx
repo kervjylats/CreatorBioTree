@@ -1,16 +1,16 @@
 /**
- * Team member row showing avatar, name, email, role, permissions count,
- * with edit and remove buttons (team.md Part 4).
- * Permission labels live in src/lib/team-permissions.ts.
+ * Staff member row showing avatar, name, email, role, permissions count,
+ * with edit and remove buttons (staff.md Part 4).
+ * Permission labels live in src/lib/staff-permissions.ts.
  */
 "use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
-import { TEAM_PERMISSION_LABELS } from "@/lib/team-permissions";
+import { STAFF_PERMISSION_LABELS } from "@/lib/staff-permissions";
 
-interface TeamRowProps {
+interface StaffRowProps {
   member: {
     id: string;
     user_id: string;
@@ -28,10 +28,10 @@ interface TeamRowProps {
   onRemove: (memberId: string) => void;
 }
 
-/** Row showing avatar/name/email/role/permissions count with edit and remove buttons (team.md Part 4). */
-export function TeamRow({ member, onEdit, onRemove }: TeamRowProps) {
+/** Row showing avatar/name/email/role/permissions count with edit and remove buttons (staff.md Part 4). */
+export function StaffRow({ member, onEdit, onRemove }: StaffRowProps) {
   const grantedCount = Object.values(member.permissions).filter(Boolean).length;
-  const totalPermissions = Object.keys(TEAM_PERMISSION_LABELS).length;
+  const totalPermissions = Object.keys(STAFF_PERMISSION_LABELS).length;
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
@@ -41,7 +41,7 @@ export function TeamRow({ member, onEdit, onRemove }: TeamRowProps) {
         </div>
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">
-            {member.user?.display_name ?? "Team member"}
+            {member.user?.display_name ?? "Staff member"}
           </div>
           <div className="truncate text-xs text-muted-foreground">
             {member.user?.email ?? "—"}

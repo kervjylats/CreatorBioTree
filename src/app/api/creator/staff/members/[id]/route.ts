@@ -1,6 +1,6 @@
 /**
  * PATCH/DELETE /api/creator/staff/members/[id] — update permission toggles or
- * remove a team member (team.md Part 4). Owner only, cannot remove self.
+ * remove a staff member (staff.md Part 4). Owner only, cannot remove self.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -23,7 +23,7 @@ export async function PATCH(
     }
 
     const { data: member } = await supabase
-      .from("creator_team_members")
+      .from("creator_staff_members")
       .select("*")
       .eq("id", id)
       .eq("creator_id", user.id)
@@ -33,7 +33,7 @@ export async function PATCH(
     }
 
     const { data: updated } = await supabase
-      .from("creator_team_members")
+      .from("creator_staff_members")
       .update({ permissions, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
@@ -41,7 +41,7 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true, member: updated });
   } catch (err) {
-    console.error("[team/members] PATCH:", err);
+    console.error("[staff/members] PATCH:", err);
     return NextResponse.json({ error: "Failed to update member" }, { status: 500 });
   }
 }
@@ -59,7 +59,7 @@ export async function DELETE(
 
     const { id } = await params;
     const { data: member } = await supabase
-      .from("creator_team_members")
+      .from("creator_staff_members")
       .select("user_id")
       .eq("id", id)
       .eq("creator_id", user.id)
@@ -71,10 +71,10 @@ export async function DELETE(
       return NextResponse.json({ error: "Cannot remove yourself" }, { status: 400 });
     }
 
-    await supabase.from("creator_team_members").delete().eq("id", id);
+    await supabase.from("creator_staff_members").delete().eq("id", id);
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[team/members] DELETE:", err);
+    console.error("[staff/members] DELETE:", err);
     return NextResponse.json({ error: "Failed to remove member" }, { status: 500 });
   }
 }

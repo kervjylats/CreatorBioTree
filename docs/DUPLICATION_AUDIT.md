@@ -58,7 +58,7 @@ Full project sweep (2026-09-29) for code written inline instead of importing a s
 
 ## ✅ Already shared — no action
 
-`nav-config.ts` (all nav lists) · `utils.ts` cn() · `branding.ts` resolveBranding/contrastText/FONT_MAP · `contentTypes.ts` CONTENT_TYPES/TYPE_ICONS · `team-permissions.ts` · `admin-permissions.ts` · `rate-limiter.ts` singleton (only surrounding boilerplate duped) · `api-error.ts` · `fanSession.ts` / `chat.ts` / `requireAuth.ts` / `email.ts` / `fanShellData.ts` · `themeStyles.ts` buttonClass/buttonShape/cardRadius · `PoweredByFooter` · `PartnerBody` · `SectionTitle` · `ui/*` (Badge ×12, Dialog ×5, Switch ×6) · `hooks/usePWAInstall` · `services/fanService` · `shared/InviteEmail`.
+`nav-config.ts` (all nav lists) · `utils.ts` cn() · `branding.ts` resolveBranding/contrastText/FONT_MAP · `contentTypes.ts` CONTENT_TYPES/TYPE_ICONS · `staff-permissions.ts` · `admin-permissions.ts` · `rate-limiter.ts` singleton (only surrounding boilerplate duped) · `api-error.ts` · `fanSession.ts` / `chat.ts` / `requireAuth.ts` / `email.ts` / `fanShellData.ts` · `themeStyles.ts` buttonClass/buttonShape/cardRadius · `PoweredByFooter` · `PartnerBody` · `SectionTitle` · `ui/*` (Badge ×12, Dialog ×5, Switch ×6) · `hooks/usePWAInstall` · `services/fanService` · `shared/InviteEmail`.
 
 ---
 

@@ -1,4 +1,4 @@
-/** Staff screen at /dashboard/circle/staff — team invites, members, permissions (team.md). */
+/** Staff screen at /dashboard/circle/staff — staff invites, members, permissions (staff.md). */
 import type { Metadata } from "next";
 import { StaffPage } from "@/components/circle/staff/StaffPage";
 

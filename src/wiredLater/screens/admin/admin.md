@@ -2,9 +2,11 @@
 
 ## Concept
 
-The Admin system is the platform owner's control room. One surface, one set of doors, role-based keycards. The owner (founder) claims the platform once, invites staff with roles and custom permissions, and can see everything happening across the entire platform — including what staff are doing.
+The Admin system is the platform owner's control room. One surface, one set of doors, role-based keycards. The owner (founder) claims the platform once, invites admins with roles and custom permissions, and can see everything happening across the entire platform — including what admins are doing.
 
-**Core principle — one door, different keycards:** There is NO separate admin login. The owner, staff, and creators all sign in at `/login`. The difference is what the account is allowed to see and do afterward. Same as Facebook/Zuck — the CEO's account is a normal account with elevated privileges.
+**Core principle — one door, different keycards:** There is NO separate admin login. The owner, admins, and creators all sign in at `/login`. The difference is what the account is allowed to see and do afterward. Same as Facebook/Zuck — the CEO's account is a normal account with elevated privileges.
+
+> **Naming law (founder decision 2026-09-29):** exactly three account types, one word each, everywhere (UI + code + spec): **Creator** (self-signup, gets a fan page), **Staff** (a creator's invited helpers — `staff.md`), **Admin** (the platform's staff — this spec: founder + invited admins). "Admin" NEVER means creator staff; "Staff" NEVER means platform staff.
 
 ---
 
@@ -21,7 +23,7 @@ The Admin system is the platform owner's control room. One surface, one set of d
 | Persona | Access |
 |---|---|
 | **Founder (owner)** | Created via the founder setup page → `super_admin` keycard |
-| **Staff (invited)** | Invited via Admins tab → assigned role → keycard per role |
+| **Admin (invited)** | Invited via Admins tab → assigned role → keycard per role |
 | **AI agents (future)** | Same invite flow with `agent` role + API key |
 | **Everyone else** | No admin access — never see the panel |
 
@@ -33,11 +35,11 @@ One door, different keycards — but the credential type differs by role:
 |---|---|---|---|
 | **Fan** | Email + password | Email + password | Frictionless — consumers. See `screens/fan-shell/fan-shell.md` Part 5 |
 | **Creator** | Email + password (onboarding) | Email + password at `/login` | Standard credential for daily power users |
-| **Staff (invited)** | Invite link → normal signup | Email + password at `/login` | Same door, admin keycard |
+| **Admin (invited)** | Invite link → `/accept?token=…` (email + password) | Email + password at `/login` | Same door, admin keycard |
 | **Founder** | One-time founder setup page | Email + password at `/login` | Claims platform once, then normal door |
 | **AI agents** | None | **API key** (machine-to-machine) | Robots don't type passwords |
 
-**2FA (future, optional):** For creators and staff handling money — optional TOTP toggle in settings, off by default, "recommended for accounts with sales." Never forced (industry standard: Patreon, Stan Store, Linktree all optional). Passkeys (face/fingerprint) are a future upgrade — Supabase supports them natively.
+**2FA (future, optional):** For creators and admins handling money — optional TOTP toggle in settings, off by default, "recommended for accounts with sales." Never forced (industry standard: Patreon, Stan Store, Linktree all optional). Passkeys (face/fingerprint) are a future upgrade — Supabase supports them natively.
 
 ### Subdomain-ready (migration note)
 
@@ -103,30 +105,33 @@ A live feed on the Admin Overview showing ALL recent platform events:
 | Admin action | who, what, target |
 | AI agent action *(future)* | agent, what it did |
 
-**Admin/Staff status section:** a strip showing every admin account — name, role badge, last active timestamp, active/inactive indicator. This is how the founder "gets updates on staff" — who's active, what they last did, in one glance.
+**Admin status section:** a strip showing every admin account — name, role badge, last active timestamp, active/inactive indicator. This is how the founder "gets updates on admins" — who's active, what they last did, in one glance.
 
 ---
 
 ## Part 4: Admins Tab (RBAC Management)
 
-### Invite flow (staff, real people, AI agents)
+### Invite flow (link-first — admins, real people, AI agents)
 
-1. Founder goes to Admin Panel → **Admins** tab → **Invite Admin**
-2. Enter email + pick role → optionally tick custom permission toggles
-3. System creates an `admin_invites` row with a UUID token
-4. Invitee clicks the invite link → **dedicated admin accept screen** (see below) → **auto-promoted** to the invited role on first login
-5. Invitee now logs in at `/login` every day with their keycard
+1. Founder goes to Admin Panel → **Admins** tab → **Create invite link**
+2. Pick a role (+ optionally tick custom permission toggles). **Email is optional** — it only pre-fills the invitee's signup form; skip it entirely when you don't know it or might typo it (founder decision 2026-09-29)
+3. System creates an `admin_invites` row with a UUID token (7-day expiry)
+4. Founder shares the **link** however they like — message, email, in person. **No email needed up front**
+5. Invitee opens the link → shared accept screen `/accept?token=…` (see below) → signs up with their own email + password (or signs in if they already have an account) → **auto-promoted** to the invited role
+6. From then on they log in at `/login` every day with their keycard
 
-### Dedicated admin signup (NOT creator onboarding — founder decision 2026-08-08)
+**Wired status (2026-09-29):** `admin_invites` + the link flow are **spec'd, not built** (phase gate). The live `POST /api/admin/accounts` is the pre-accept-screen state — email required, and it only attaches a keycard to an **existing** account (real mode 404s "No user found with that email" otherwise), so today's invited admin must already be a user. The `/accept` screen is the missing piece.
 
-Admin staff are **helpers, not creators** — they must NOT go through the creator onboarding (no Link Address, no My App, no fan page). The invite link opens a **minimal accept screen**:
+### Dedicated admin signup (NOT creator onboarding — founder decision 2026-08-08, reconfirmed 2026-09-29)
 
-- Fields: **email + password** only (password set here or on first login)
-- No Link Address / display name / onboarding steps — staff never pick a public fan URL
-- The account is created as a normal platform account, **silently marked with the invited admin role** in `admin_accounts` (`username` stays null on the `creators`-table row — staff only get a fan URL if they ever choose to become a creator separately)
-- After accept → redirect to `/login` → they sign in with their keycard → Admin Panel visible in the sidebar
+Admins are **helpers, not creators** — they must NOT go through the creator onboarding (no Link Address, no My App, no fan page). The invite link opens the shared **accept screen** `/accept?token=…` — a PUBLIC page (no session yet), living outside the auth-gated dashboard shell:
 
-**Who uses which door (summary):** admin staff + team members (`team.md`) = lightweight accept screens; creators + invited partners (`partnership.md`) = full onboarding.
+- Fields: **email + password** only — the email is THEIRS (they type whatever they actually use; the invite's optional email field was only a pre-fill)
+- No Link Address / display name / onboarding steps — admins never pick a public fan URL
+- The account is created as a normal platform account, **silently marked with the invited admin role** in `admin_accounts` (`username` stays null on the `creators`-table row — the shell layout must never bounce an admin to onboarding; admins only get a fan URL if they ever choose to become a creator separately)
+- After accept → they land in the dashboard with the Admin Panel visible in the sidebar; day 2+ they sign in at `/login` as usual with their keycard
+
+**Who uses which door (summary):** admins + creator staff (`staff.md`) share ONE lightweight accept screen (`/accept?token=…`); creators + invited partners (`partnership.md`) = full onboarding.
 
 ### Roles & permissions
 
@@ -171,7 +176,7 @@ An `admin_activity_log` table recording every admin action forever. The airplane
 
 ## Part 6: AI Agents (future)
 
-AI agents can be granted admin access through the **same invite flow** — they're just accounts with the `agent` role + API key. The founder can grant/revoke/track them exactly like staff.
+AI agents can be granted admin access through the **same invite flow** — they're just accounts with the `agent` role + API key. The founder can grant/revoke/track them exactly like admins.
 
 Full AI workforce vision (hierarchy, Telegram/WhatsApp, customer service, bug detection) → **`ai/ai-agents.md`** (placeholder spec).
 
@@ -184,6 +189,7 @@ Full AI workforce vision (hierarchy, Telegram/WhatsApp, customer service, bug de
 | Roles + permission map | `src/types/index.ts` — `AdminRole`, `ADMIN_PERMISSIONS` | Live |
 | Permission helpers | `src/lib/admin-permissions.ts` — `canPerform()`, `getAdminAccount()` | Live |
 | Admin API routes | `src/app/api/admin/*` (stats, accounts, creators, api-keys, fans) | Live |
+| Admin invite (current) | `POST /api/admin/accounts` | Live but pre-`/accept`: email required, keycard attached to an **existing** account only (404 otherwise) — link-first flow + `admin_invites` table spec'd, not built |
 | Admin page (3 tabs) | `src/old-code/allScreens/dashboard-admin/page-old.tsx` | Backed up — rebuild from this spec |
 | Auth guards | `src/old-code/requireAuth.ts` | Backed up |
 | Admin sidebar item | `src/old-code/SidebarContent.tsx` | Backed up |

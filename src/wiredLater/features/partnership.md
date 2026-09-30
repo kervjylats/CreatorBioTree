@@ -15,7 +15,7 @@ This is the "Invite a Collab" flow from old code (see Part 7), now properly spec
 
 Same relationship type under the hood (one `partnerships` table), different entry points. A `source` flag records how each partnership started (`invited` vs `collab`).
 
-**Why it matters (free advertising engine):** the invited person becomes a creator themselves — they see how the app works from the inside, and they're connected to you. Same win-win as team members who become creators (`team.md`).
+**Why it matters (free advertising engine):** the invited person becomes a creator themselves — they see how the app works from the inside, and they're connected to you. Same win-win as staff members who become creators (`staff.md`).
 
 ---
 

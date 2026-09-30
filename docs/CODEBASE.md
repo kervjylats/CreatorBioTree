@@ -145,7 +145,7 @@ src/
 │   │   ├── fan-shell/             #   What fans experience (/{username})
 │   │   └── public/                #   Outside the app, no sidebar (landing, login, onboarding, offline)
 │   ├── features/                 # FEATURES — cross-cutting: live AS tabs/sections inside the major screens
-│   │                             #   (messaging, relationships, team, partnership, partner-page, search +
+│   │                             #   (messaging, relationships, staff, partnership, partner-page, search +
 │   │                             #   merged My App editor-tab stubs: catalog-roadmap, funnel, integrations,
 │   │                             #   email-campaigns, media-kit, affiliates)
 │   ├── monetization/               # Money specs (split 2026-08-05): index + owner (platform) + creators (affiliates)
@@ -196,7 +196,7 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `/dashboard/network` | Discover hub (Billboard + Affiliates rail, creator search) — **wired**; My Peeps dock pages live at `/dashboard/circle/*` | Yes (creator/admin) |
 | `/dashboard/circle/partners` | Collab requests + active collabs + invite card — **wired** (My Peeps dock) | Yes (creator/admin) |
 | `/dashboard/circle/fans` | Full-width fan table + profile drawer — **wired** (My Peeps dock) | Yes (creator/admin) |
-| `/dashboard/circle/staff` | Team invites + members + permissions — **wired** (My Peeps dock) | Yes (creator/admin) |
+| `/dashboard/circle/staff` | Staff invites + members + permissions — **wired** (My Peeps dock) | Yes (creator/admin) |
 | `/dashboard/settings` | Payout setup — **wired** | Yes (creator/admin) |
 | `/admin` | Platform management (was `/dashboard/admin`) — **wired** (5-tab panel) | Yes (admin only) |
 | `/[username]` | REDIRECT → `/{username}/guest` | No/fan session |
@@ -369,7 +369,7 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 | `screens/creator-dashboard/network/network.md` | Network search, billboard, collabs, affiliates |
 | `screens/creator-dashboard/overview/overview.md` | Dashboard Overview — stats, activity, quick actions |
 | `screens/creator-dashboard/settings/settings.md` | Dashboard Settings — money, identity, permissions |
-| `screens/admin/admin.md` | Founder setup, RBAC, audit log, staff invites |
+| `screens/admin/admin.md` | Founder setup, RBAC, audit log, admin invites |
 | `screens/fan-shell/fan-shell.md` | Fan shell — account model (4 layers), three gates, guest vs fan views, 4 tabs, auth |
 | `screens/public/landing.md` | Landing page (deferred) |
 | `screens/public/login.md` | Login |
@@ -382,7 +382,7 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 |---|---|
 | `features/messaging.md` | FREE chat — floating inbox both sides, 1-on-1s, requests/block, groups + announcements, Community (Part 3) |
 | `features/relationships.md` | **"My Peeps"** — umbrella hub (Partners/Fans/Staffs rows). Wired 2026-09-26 as the **unified dock stack** (3 icon buttons + 💬, one vertical column, combined badges) + the 3 Network sub-screens; fan list + profile drawer + consent |
-| `features/team.md` | Creator staff access — permission toggles, audit log. Wiring home: My Peeps → Staffs row |
+| `features/staff.md` | Creator staff access — permission toggles, audit log. Wiring home: My Peeps → Staffs row |
 | `features/partnership.md` | Outside-app invite flow (`?invite=CODE`). Wiring home: My Peeps → Partners row |
 | `features/partner-page.md` | Fan-only partner modal (Connect tab) |
 | `features/search.md` | Search — Network hub Discover + landing placements (standalone `/search` page removed 2026-09-28; `GET /api/discover/creators` stays live) |
@@ -460,7 +460,7 @@ Services sit between API routes and Supabase. They contain reusable business log
 
 | File | What it contains |
 |---|---|
-| `index.ts` | All domain types: Creator, ContentItem, FanAccount, Partnership, PageView, API helpers + messaging/team/affiliate/relationships types (added 2026-08-07) |
+| `index.ts` | All domain types: Creator, ContentItem, FanAccount, Partnership, PageView, API helpers + messaging/staff/affiliate/relationships types (added 2026-08-07) |
 | `contentTypes.ts` | Content type definitions, Zod schemas, type registries |
 
 ---
@@ -573,8 +573,8 @@ Page reloads → FanAppShell renders (authenticated view)
 - Specs written for every screen (my-app → formerly Playground, network, admin, landing, screens index)
 - Social scrape route did not exist (re-added later as an UNWIRED 503 stub for rebuild)
 - **A1/A1.5/A2 restructure (2026-08-07):** `src/app/` became a thin address book — route groups `(public)/`, `(fan)/[username]/`, `(creator)/dashboard/`, `(admin)/admin/` — and a new `src/screens/` middleman was created (17 screen folders, one `index.ts` + `Screen.tsx` each). Every page.tsx is a 2-line re-export. Planning + audit docs at repo root: `WIRING_PLAN.md`, `CODEBASE_AUDIT.md`, `CODEBASE_INVENTORY.md`.
-- **Foundation prep (2026-08-07):** adopted `api-utils`/`api-error`/`requireAuth` into `src/lib/`; added messaging/team/affiliate types + 14 mock tables + 9 brand presets; killed 5 dead files; added 5 missing rate limits.
-- **Wiring (2026-08-10 → 2026-08-31):** Sheets 6-7 (login/onboarding/forgot-password), Sheet 19-V1 (My App — 16 item types + device uploads), Sheet 21-V1 (fan shell + mock PayPal checkout), Sheet 12 (messaging engine — 12 routes + MessagesShell), Sheets 8-11 + 13-16 + 18 + 20 + 22 (admin, settings, overview, search, partnerships, relationships, team, affiliates, network, partner page, offline — all wired 2026-08-30). 18 API routes rewritten from mock store to Supabase clients. Dead code removed (Stripe, Paddle, playground/ai, ai-summary, unused deps).
+- **Foundation prep (2026-08-07):** adopted `api-utils`/`api-error`/`requireAuth` into `src/lib/`; added messaging/staff/affiliate types + 14 mock tables + 9 brand presets; killed 5 dead files; added 5 missing rate limits.
+- **Wiring (2026-08-10 → 2026-08-31):** Sheets 6-7 (login/onboarding/forgot-password), Sheet 19-V1 (My App — 16 item types + device uploads), Sheet 21-V1 (fan shell + mock PayPal checkout), Sheet 12 (messaging engine — 12 routes + MessagesShell), Sheets 8-11 + 13-16 + 18 + 20 + 22 (admin, settings, overview, search, partnerships, relationships, staff, affiliates, network, partner page, offline — all wired 2026-08-30). 18 API routes rewritten from mock store to Supabase clients. Dead code removed (Stripe, Paddle, playground/ai, ai-summary, unused deps).
 
 ### What's LIVE vs EXTRACTED
 
