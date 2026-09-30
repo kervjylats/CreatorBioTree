@@ -1,5 +1,5 @@
 /**
- * Overview screen at /dashboard/overview — dashboard with stat cards,
+ * Overview screen at /dashboard (the dashboard root) — stat cards,
  * activity timeline, quick action, QR code, and fan export.
  * Auth guard via requireAuth() in the dashboard layout.
  */

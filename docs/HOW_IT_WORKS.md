@@ -53,7 +53,7 @@ The planned sidebar (when the dashboard shell is wired) is:
 | **Messages** | (persistent, badge) Fan/guest conversations |
 | **Visit CreatorBioTree** | Opens main platform in a new tab |
 
-### 4.2 Overview (`/dashboard/overview`)
+### 4.2 Overview (`/dashboard`)
 
 **WIRED (Sheet 10, 2026-08-30).** 4 stat cards (Page views, Content items, Fans, Revenue), activity timeline, setup checklist, quick actions (Edit My App, View my page, Install my fan app), share page button + QR code card + fan CSV export (includes total spent). Spec: `screens/creator-dashboard/overview/overview.md`.
 
@@ -203,7 +203,7 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 | Login (`/login`) | ✅ Wired (Sheet 6) — AuthCard + LoginForm, `?next=` redirect, mock-only social buttons | `screens/public/login.md` (full) |
 | Onboarding (`/onboarding`) | ✅ Wired (Sheet 7) — Link Address availability check + permanence dialog + register route | `screens/public/onboarding.md` (full) |
 | Forgot-password (`/forgot-password`) | ✅ Wired — anonymous, no enumeration, mock logs reset link | `screens/public/login.md` Part 4 |
-| Dashboard Overview (`/dashboard/overview`) | ✅ Wired (Sheet 10) | `screens/creator-dashboard/overview/overview.md` (full) |
+| Dashboard Overview (`/dashboard`) | ✅ Wired (Sheet 10) — moved here from `/dashboard/overview` 2026-09-30 | `screens/creator-dashboard/overview/overview.md` (full) |
 | My App (`/dashboard/my-app`, formerly Playground) | ✅ Wired (Sheet 19-V1) — full editor, 16 types, uploads, draft/deploy | `screens/creator-dashboard/my-app/my-app.md` (full) |
 | Dashboard Network | ✅ Wired (Sheet 18) | `screens/creator-dashboard/network/network.md` (full) |
 | Dashboard Messages (`/dashboard/circle/messages`) | ✅ Wired (Sheet 12) — full chat screen + floating inbox | `features/messaging.md` (full) |
@@ -369,8 +369,8 @@ Every mock file has `// PRODUCTION-NOTE:` comments marking what the real service
 | `/` (landing) | ✅ | ✅ | ✅ | ✅ |
 | `/login` | ✅ | ✅ | ✅ | ✅ |
 | `/onboarding` | ✅ (new) | ✅ (new) | ❌ | ❌ |
-| `/dashboard` | REDIRECT → `/dashboard/overview` | ✅ (new) | ✅ (new) | ❌ | ❌ |
-| `/dashboard/overview` | ✅ | ✅ | ❌ | ❌ |
+| `/dashboard` | ✅ Dashboard Overview (moved here 2026-09-30) | ✅ (new) | ✅ (new) | ❌ | ❌ |
+| `/dashboard/overview` | REDIRECT → `/dashboard` (signpost, keeps old links working) | ✅ | ✅ | ❌ | ❌ |
 | `/dashboard/my-app` | ✅ | ✅ | ❌ | ❌ |
 | `/dashboard/network` | ✅ | ✅ | ❌ | ❌ |
 | `/dashboard/settings` | ✅ | ✅ | ❌ | ❌ |

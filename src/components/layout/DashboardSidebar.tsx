@@ -35,9 +35,11 @@ export function DashboardSidebar({
   const pathname = usePathname();
   const navItems = getVisibleNavItems(isAdmin);
 
+  // Overview is the dashboard ROOT ("/dashboard"), so it needs an exact match —
+  // a plain startsWith("/dashboard") would light it up on every dashboard page.
   const isActive = (href: string) =>
-    href === "/dashboard/overview"
-      ? pathname === "/dashboard/overview" || pathname === "/dashboard"
+    href === "/dashboard"
+      ? pathname === "/dashboard"
       : pathname.startsWith(href);
 
   const handleNavClick = () => onNavigate?.();

@@ -9,7 +9,7 @@ Open items from manual testing. Not wired yet — design/product decisions pendi
 
 ---
 
-## Overview Screen (dashboard/overview)
+## Overview Screen (/dashboard)
 
 - [x] **Remove setup checklist** — **DONE:** the Overview no longer renders it (component unreferenced) and `components/overview/SetupChecklist.tsx` was deleted in the 2026-09-28 cleanup.
 - [ ] **Remove quick actions except "Edit My App"** — View my page is already in the sidebar, Install my fan app is already in the sidebar, Share your page is already in the QR section. Only "Edit My App" should remain. Move it to take the space where the setup checklist was.

@@ -68,7 +68,7 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 
 ## 4. Overview (Persona 6)
 
-- [ ] `/dashboard/overview` — 4 stat cards (Sales, Fans, Views, Subscribers).
+- [ ] `/dashboard` — 4 stat cards (Sales, Fans, Views, Subscribers). (`/dashboard/overview` redirects here.)
 - [ ] Activity timeline — shows recent events (follows, purchases, messages).
 - [ ] Setup checklist — "Set up profile" → link to settings, "Create first item" → link to my-app.
 - [ ] Quick actions — "Edit My App" → `/dashboard/my-app`, "View my page" → opens `/{username}`.

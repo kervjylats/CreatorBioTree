@@ -21,8 +21,8 @@
 | 01  | Landing                                          | `/`                          | ✅      |
 | 02  | Login                                            | `/login`                     | ✅      |
 | 03  | Onboarding (signup + Link Address)               | `/onboarding`                | ✅      |
-| 04  | The Frame — shell (sidebar / bottom bar / dock)  | `/dashboard`                 | ⬜      |
-| 05  | Overview                                         | `/dashboard/overview`        | ⬜      |
+| 04  | The Frame — shell (sidebar / bottom bar / dock)  | `/dashboard`                 | ✅      |
+| 05  | Overview                                         | `/dashboard`                 | ⬜      |
 | 06  | My App (phone preview + deploy)                  | `/dashboard/my-app`          | ⬜      |
 | 07  | Network hub (Discover + affiliate rail)          | `/dashboard/network`         | ⬜      |
 | 08  | Circle → Partners                                | `/dashboard/circle/partners` | ⬜      |
@@ -322,4 +322,93 @@ landing when someone arrives with an invite link.
 
 ---
 
-*(Stops 04–15 get appended here as we walk.)*
+## 🖼️ Stop 04 — The Frame (the shell) `/dashboard`
+
+**🎯 What it is:** NOT a screen — the wall every dashboard screen hangs on. One
+shared layout draws the sidebar (desktop) / bottom bar (phone), the floating dock,
+and the security gates — for **every** page under `/dashboard` *and* `/admin`.
+
+**🗂️ The chain:**
+
+| Layer      | File                                                        | Role                                                                                                                                              |
+| ---------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🚪 Door    | `src/app/(shell)/dashboard/page.tsx` (2 lines)              | The Overview screen itself — a 2-line address-book entry to `src/screens/creator/overview/`. `/dashboard/overview` is now a **signpost back here**            |
+| 🧠 Frame   | `src/app/(shell)/layout.tsx` (67 lines)                     | THE FRAME — auth gate → `/login`, onboarding gate → `/onboarding`, admin gate → `/dashboard`; renders sidebar + main + the dock stack              |
+| 🎨 Pixels  | `components/layout/DashboardSidebar.tsx` (127)              | Desktop left rail (`w-60`, `md:flex`) + phone bottom bar (`md:hidden`) — same nav items in both                                                     |
+|            | `components/layout/MyPeeps.tsx` (94)                        | The 3 dock buttons (Partners · Fans · Staff) + red count badges — position-less, no placement of their own                                         |
+|            | `MessageInboxPopover` (`components/messages/MessagesShell.tsx`) | The 💬 bubble at the bottom of the dock stack                                                                            |
+| 🔧 Kitchen | none of its own                                              | But the layout calls `supabase.auth.getUser()` + the creators lookup **server-side per request**; MyPeeps polls `GET /api/creator/peeps` every 30s |
+| 🧊 Fridge  | `mock_auth_uid` + `mock_auth_email` cookies                 | How the gate recognizes you in mock mode (set by login/onboarding, `src/lib/mockSession.ts`)                                                       |
+| 📐 Spec    | `features/responsive.md` (§ shell rules: `w-60`, `md:` switch, dock formula) + `screens.md` My Peeps dock section | No dedicated shell spec — the frame was built directly from those rules                                     |
+
+**🧠 Gotchas:** _the traps we already stepped on while building/fixing this screen — read them first, spare yourself the same sting._
+
+- **Two DIFFERENT things are called "layout" — don't mix them up:**
+  1. **`layout.tsx`** is a Next.js magic file: it automatically wraps every page in
+     its folder. `src/app/(shell)/layout.tsx` is **the frame** — it draws the
+     sidebar + dock + gates around all dashboard/admin pages.
+  2. **`src/components/layout/`** is just a folder **we** invented for "furniture
+     bolted to the dashboard walls" (DashboardSidebar, MyPeeps). It is *not* a
+     framework concept — those two components could live anywhere.
+- **The frame is a LAYOUT, not a page.** `layout.tsx` wraps every `/dashboard/*` +
+  `/admin` URL — change it once and all 9 pages change. The gates live here too
+  (one security desk for the whole wing): no login (line 34) → `/login` · logged
+  in but no creators row (line 42) → `/onboarding` · `/admin` without an admin
+  (line 49) → `/dashboard`. That last one is **defense-in-depth** — `proxy.ts`
+  is the primary bouncer; this is the second lock on the same door.
+- **One canonical link: Overview lives AT `/dashboard`** (founder decision
+  2026-09-30) — it used to be `/dashboard/overview`, and `/dashboard` was the
+  signpost pointing to it. Today the roles are **swapped**: `/dashboard` *is* the
+  Overview screen, and `/dashboard/overview` is the 6-line "we've moved"
+  signpost, so old bookmarks, open tabs, and `?next=` bounces still land
+  correctly. The sidebar's active-highlight needed a matching fix — a plain
+  `startsWith("/dashboard")` would light "Overview" on *every* dashboard page,
+  so the root compares **exactly** (`DashboardSidebar.tsx:38`).
+- **Nav items = ONE list feeding BOTH bars.** `lib/nav-config.ts` `DASHBOARD_NAV_ITEMS`
+  (Overview · Network · My App · Settings + **Admin Panel** only for admins) feeds
+  the desktop sidebar AND the phone bottom bar. Add or rename a link → edit
+  nav-config, both bars update. No sign-out here by design — it lives in Settings.
+- **Sidebar ↔ bottom bar flips at 768px (`md:`).** `hidden md:flex` aside vs
+  `md:hidden` fixed bar; `<main>` reserves `pb-20` on phones so content never
+  hides under the bar. Admins get a **5th cell** ("Admin Panel") on the phone
+  bar too — deliberate, not an oversight.
+- **The dock = ONE stack, mounted ONCE** (`layout.tsx:61`):
+  `fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-50 md:bottom-6 md:right-6`.
+  Children (MyPeeps + 💬) are **position-less** — neither may carry its own
+  `fixed`. Today's offsets come from **one spec'd formula** (responsive.md) — and
+  the `md:` variant must stay in sync with the 768px nav switch.
+- **MyPeeps hides completely on `/admin`** (`MyPeeps.tsx:69` — admin path renders
+  zero buttons), so the dock there shows the 💬 bubble alone.
+- **Badge math** (`badgeFor`, `MyPeeps.tsx:27`): **Partners** = pending collab
+  requests + partner unread · **Fans** = fan unread · **Staff** = pending invites
+  + staff unread. One combined pill per button (`CountPill`, "99+" cap, hidden
+  at 0), refreshed by a **30s poll** of `GET /api/creator/peeps` (line 57).
+- **Active highlight:** `pathname.startsWith(href)` — except Overview also
+  lights up on the bare `/dashboard` (`isActive`, sidebar line 38).
+- **The dashboard has its own PWA manifest:** layout exports
+  `manifest: "/dashboard-manifest.json"` — you can install the dashboard as a
+  second app (PWA #2 — full story in Stop 15). It is **one shared app for every
+  platform-side user**: creator, staff, and admin all install the *identical*
+  "CB Dashboard" (one static file, `public/dashboard-manifest.json`, scope
+  `/dashboard`). The account type only changes what you see *inside* (admin gets
+  the 5th nav cell; staff see only their granted sections) — **never the icon or
+  app name**. The **per-creator** unique PWAs are on the *fan* side (PWA #3):
+  that's where each creator gets their own name, icon, and link.
+
+**🛠️ Common edits:**
+
+| You want to change...                          | Touch                                                                  |
+| ---------------------------------------------- | ---------------------------------------------------------------------- |
+| Add / rename a sidebar or bottom-bar link      | `src/lib/nav-config.ts` (`DASHBOARD_NAV_ITEMS` — feeds both bars)      |
+| Who sees the Admin Panel entry                 | nav-config `adminOnly` + `getVisibleNavItems(isAdmin)`                 |
+| Where bare `/dashboard` lands                  | `dashboard/page.tsx` line 5                                            |
+| Login / onboarding / admin bounce rules        | `layout.tsx` lines 34 / 42 / 49                                        |
+| Dock position, order, or contents              | `layout.tsx` lines 61–64 (**the ONLY place placement is defined**)     |
+| Dock badge math                                | `MyPeeps.tsx` `badgeFor` (line 27) + `GET /api/creator/peeps`          |
+| Dock poll speed                                | `MyPeeps.tsx` line 57 (`30000` ms)                                     |
+| Sidebar width / colors                         | `DashboardSidebar.tsx` + `globals.css` tokens                          |
+| Active-highlight rules                         | `DashboardSidebar.tsx` `isActive` (line 38)                            |
+
+---
+
+*(Stops 05–15 get appended here as we walk.)*

@@ -81,14 +81,16 @@ src/
 │   │   ├── forgot-password/      # /forgot-password (wired)
 │   │   └── offline/              # /offline
 │   │
-│   ├── (creator)/dashboard/      # Creator Dashboard (PWA #2)
-│   │   ├── layout.tsx            # Auth guard (no user → /login, no creator → /onboarding) + floating MessageInboxPopover
-│   │   ├── page.tsx              # REDIRECT → /dashboard/overview
-│   │   ├── overview/             # /dashboard/overview (wired)
-│   │   ├── my-app/               # /dashboard/my-app (see + edit fan shell — WIRED)
-│   │   ├── circle/               # /dashboard/circle (My Peeps dock pages: partners/, fans/, staff/, messages/ — WIRED)
-│   │   ├── network/              # /dashboard/network (Discover hub — WIRED)
-│   │   └── settings/             # /dashboard/settings (wired)
+│   ├── (shell)/                   # Creator dashboard + admin (PWA #2) — ONE shared layout
+│   │   ├── layout.tsx             # THE FRAME: auth guard (no user → /login, no creator row → /onboarding) + admin gate + sidebar + dock stack (My Peeps + Messages)
+│   │   ├── dashboard/             # /dashboard
+│   │   │   ├── page.tsx           # Overview (address-book entry → src/screens/creator/overview/)
+│   │   │   ├── overview/          # REDIRECT → /dashboard (signpost — old links keep working)
+│   │   │   ├── my-app/            # /dashboard/my-app (see + edit fan shell — WIRED)
+│   │   │   ├── circle/            # /dashboard/circle (My Peeps dock pages: partners/, fans/, staff/, messages/ — WIRED)
+│   │   │   ├── network/           # /dashboard/network (Discover hub — WIRED)
+│   │   │   └── settings/          # /dashboard/settings (wired)
+│   │   └── admin/                 # /admin — platform control room (wired, 5-tab panel)
 │   │
 │   ├── (fan)/[username]/         # Per-creator fan app (PWA #3) — WIRED
 │   │   ├── page.tsx              # REDIRECT → ./guest
@@ -100,8 +102,6 @@ src/
 │   │   ├── partner/[partnerUsername]/  # partner content page (stub)
 │   │   ├── app/                  # */app → redirect (legacy — deletion pending founder decision)
 │   │   └── manifest.json/route.ts # Per-creator PWA manifest
-│   │
-│   ├── (admin)/admin/            # /admin — platform control room (wired, 5-tab panel)
 │   │
 │   └── api/                      # REST API routes (89 api routes + 2 manifest routes)
 │       ├── admin/                # Platform admin APIs (RBAC)
@@ -189,8 +189,8 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `/login` | Login page (wired) | No |
 | `/onboarding` | New creator signup (wired) | No |
 | `/forgot-password` | Creator forgot-password (wired) | No |
-| `/dashboard` | REDIRECT → `/dashboard/overview` | Yes (creator/admin) |
-| `/dashboard/overview` | Dashboard home (stats, activity, checklist) — **wired** | Yes (creator/admin) |
+| `/dashboard` | Dashboard Overview — stats, activity, quick actions (moved here 2026-09-30) — **wired** | Yes (creator/admin) |
+| `/dashboard/overview` | REDIRECT → `/dashboard` (signpost, keeps old links working) | Yes (creator/admin) |
 | `/dashboard/my-app` | See + edit your fan shell — full-screen, tap-to-edit (wired) | Yes (creator/admin) |
 | `/dashboard/circle/messages` | Full chat screen (wired) | Yes (creator/admin) |
 | `/dashboard/network` | Discover hub (Billboard + Affiliates rail, creator search) — **wired**; My Peeps dock pages live at `/dashboard/circle/*` | Yes (creator/admin) |

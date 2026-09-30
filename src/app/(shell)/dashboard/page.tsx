@@ -1,6 +1,7 @@
-/** Dashboard root — old URL; Overview now lives at /dashboard/overview. Keeps old links working. */
-import { redirect } from "next/navigation";
-
-export default function DashboardRootPage() {
-  redirect("/dashboard/overview");
-}
+/**
+ * Dashboard root — the Overview screen lives HERE (`/dashboard`).
+ * One canonical link: the sidebar/bottom-bar "Overview" tab points at this
+ * address, and `/dashboard/overview` is a signpost back to it.
+ * Address book entry; real code in src/screens/creator/overview/.
+ */
+export { default, metadata } from "@/screens/creator/overview";

@@ -61,7 +61,7 @@
 | **21-V1** | **Fan shell** — Guest · Home · Content · Connect · Settings — **FULLY WIRED** | screens — ✅ done 2026-08-11 (v1 core) · ✅ **Fan shell full spec pass 2026-08-31:** Home tab rebuilt as 7-section activity hub (Spotlight, New from creator, Updates from partners, Community section, Your activity, Upcoming, Announcements) · Community fan UI wired (Home section + guest "Join the community" card + Connect community card) · Connect tab completed (All Partners + Followed two-column layout, deal-weighted billboard rotation, Artist Links) · Partner bottom modal (PartnerModal) replacing full-page navigation, follow toggle persisted to `fan_follows` · Settings completed (Subscription card, 4 notification toggles, payment methods stub) · `fan_follows` table added to mock store |
 | **8** | **Admin** `/admin` | screen — ✅ done 2026-08-30 |
 | **9** | **Settings** `/dashboard/settings` | screen — ✅ done 2026-08-30 |
-| **10** | **Overview** `/dashboard/overview` | screen — ✅ done 2026-08-30 |
+| **10** | **Overview** `/dashboard` | screen — ✅ done 2026-08-30 · moved from `/dashboard/overview` 2026-09-30 (one canonical link; old URL is a signpost) |
 | **11** | **Search** `/search` | screen — ✅ done 2026-08-30 · ❌ **page removed 2026-09-28** (Network hub Discover is the search home; `GET /api/discover/creators` stays) |
 | **12** | **Messaging** — `MessagesShell` + 12 routes + 7 tables | feature — ✅ done 2026-08-17 (engine + inbox) · ✅ **Part 3 Community wired 2026-08-31** (fan Home section + guest CTA + Connect card + channels + join/leave) |
 | **13** | **Partnerships** — 2 routes + invite card + `source` column | feature — ✅ done 2026-08-30 |
@@ -272,9 +272,9 @@ NOTE        payout rail = creator's PayPal balance; Payoneer = rail-swap at Sett
 ## SHEET 10 — Overview
 
 ```
-SCREEN: Overview ·  /dashboard/overview  ·  spec: overview.md
+SCREEN: Overview ·  /dashboard  ·  spec: overview.md
 ────────────────────────────────────────────────────────────────
-ENTRY       app/(creator)/dashboard/overview/page.tsx
+ENTRY       app/(shell)/dashboard/page.tsx
             → src/screens/creator/overview/Screen.tsx
 COMPONENTS  StatCards (AnalyticsWidgets) · ActivityTimeline (DashboardTimeline) ·
             SetupChecklist · QuickActions (Edit My-App, Install app) ·

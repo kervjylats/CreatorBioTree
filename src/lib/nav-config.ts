@@ -60,7 +60,7 @@ export interface DashboardNavItem {
 }
 
 export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
-  { href: "/dashboard/overview", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/network", label: "Network", icon: Globe },
   { href: "/dashboard/my-app", label: "My App", icon: Smartphone },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },

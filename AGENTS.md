@@ -77,6 +77,17 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 
 ## Impromptu Fix Log
 
+### 2026-09-30 — Overview Route Consolidation (`/dashboard` IS the home) + Walkthrough Stop 04
+
+**Founder decision: "I want a single link — only /dashboard." The Overview screen moved from `/dashboard/overview` to `/dashboard` itself, so the signpost swapped direction. Gates green: typecheck 0 · lint 0 · check-docs PASS (398) · smoke (`/dashboard` 200 with stat cards · `/dashboard/overview` 307 · network/my-app/settings/circle-partners all 200).**
+
+- **Code (5 files):** `dashboard/page.tsx` = 2-line address-book entry → `@/screens/creator/overview` · `dashboard/overview/page.tsx` = 6-line signpost `redirect("/dashboard")` · `nav-config.ts` href → `/dashboard` · overview `Screen.tsx` docstring.
+- **🐛 The active-highlight trap (caught before it shipped):** `DashboardSidebar.isActive` used `pathname.startsWith(href)` for every item — with a `/dashboard` root href that lights "Overview" on **every** dashboard page (network, settings, circle…). The root now compares **exactly** (`DashboardSidebar.tsx:38`); everything else keeps `startsWith`. Same class of bug as the old `/dashboard/overview` special case it replaces.
+- **Why the signpost stays:** open tabs, bookmarks, and `?next=` bounces from `proxy.ts` still land correctly — the "we've moved" pattern (Stop 04 gotcha #1) applied in reverse. Founder can hard-delete it later if they want a true 404.
+- **Docs sweep (13 spots / 6 live files):** WALKTHROUGH (route row 05 + Stop 04 door row + gotcha) · HOW_IT_WORKS (§4.2 + 2 tables) · CODEBASE (2 route tables) · TESTING §4 · BACKLOG heading · WIRING_PLAN (Sheet 10 row + tree entry). **Museum untouched** (`docs/archive/*`, AGENTS history line 803).
+- **🐛 Stale docs found + fixed en route:** CODEBASE's app tree still showed `(creator)/dashboard/` with a `layout.tsx` *inside* it plus a separate top-level `(admin)/admin/` — both wrong since the shell restructure. Reality: ONE `(shell)/` group holding `layout.tsx` + `dashboard/` + `admin/`. Tree block rewritten.
+- **Walkthrough:** Stop 04 (The Frame) written + 3 founder-requested clarifiers — ① **two different things are called "layout"** (Next's magic `layout.tsx` vs our own `components/layout/` furniture folder — this genuinely confused the founder) ② the dock offsets are a **spec'd formula, not hardcoding** (the old `right-[4.5rem]` desync bomb was deleted 2026-09-26; rewording stops it reading as a live bug) ③ the dashboard PWA is **one shared app** for creator + staff + admin (identical icon/name; only the *inside* differs by account type) — the per-creator unique PWAs are fan-side (PWA #3).
+
 ### 2026-09-29 — Staff vs Admin Naming Law + Team→Staff Unify + Link-Based Invite Model (spec/docs pass, pre-migration)
 
 **Founder decisions: three account types, one word each, everywhere (UI + code + spec): Creator (self-signup `/onboarding` + Link Address) · Staff (a creator's invited helpers) · Admin (the platform's staff — founder + invited). Full sweep approved, Team→Staff unified, `creator_team_*`→`creator_staff_*` tables renamed (free pre-migration), invite forms become link-first with OPTIONAL email — this pass = spec + docs ONLY (phase gate, no wiring). Gates green: typecheck 0 · lint 0 · check-docs PASS (398 files) · smoke (login/staff/admin pages 200 with direct hits · invite 201 → invites list → accept 200 → members → `peeps.staff:1` on the renamed tables · admin accounts 200).**
