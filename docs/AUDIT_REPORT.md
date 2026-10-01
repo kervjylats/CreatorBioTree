@@ -90,8 +90,8 @@ Trigger finding: `overview/StatCards.tsx` read `fans_count` from an API that nev
 | 43 | `GuestPageContent.tsx:181-182` | Receipt copy keyed on marketing opt-in ("logged to the dev console" vs "see Settings") — consent has nothing to do with it. | One sentence. | ✅ C (2026-10-01) |
 | 44 | `FanAuthModal.tsx:89-90` | Forgot-password ignores the response — a 429 still shows "reset link sent". | Check `{ok,error}`. | ✅ C (2026-10-01) |
 | 45 | `FanAppShell.tsx:66-79` · `FanSettingsTab.tsx:37-73` | Bell + 4 notify toggles write `localStorage` only; nothing calls `/api/push/subscribe` and no `Notification.requestPermission` exists → `push_subscriptions` always empty. | Policy: label "Coming soon". | ✅ B (2026-10-01) |
-| 46 | `api/creator/fans/export/route.ts:29,36,69-72` | "Last Purchase/View Date" uses `[0]` of an **unordered** query (storage order = earliest). | `.order(desc)`. | D |
-| 47 | `api/creator/fans/export/route.ts:84` vs `:75` | "Purchases (Total)" counts all statuses while Lifetime Value filters `completed` → columns disagree by design. | State the scope in the header. | D |
+| 46 | `api/creator/fans/export/route.ts:29,36,69-72` | "Last Purchase/View Date" uses `[0]` of an **unordered** query (storage order = earliest). | `.order(desc)`. | FALSE POSITIVE - queries already sort desc |
+| 47 | `api/creator/fans/export/route.ts:84` vs `:75` | "Purchases (Total)" counts all statuses while Lifetime Value filters `completed` → columns disagree by design. | State the scope in the header. | ✅ D (2026-10-01) |
 | 48 | `admin/AccountsTable.tsx:181` | A live API-key prefix is rendered in the Admins table. | Mask harder. | ✅ C (2026-10-01) |
 
 ## 3. LOW — cleanup and drift prevention
@@ -99,32 +99,52 @@ Trigger finding: `overview/StatCards.tsx` read `fans_count` from an API that nev
 | # | Where | Issue | Fix | Batch |
 |---|---|---|---|---|
 | 49 | `ProfileSection.tsx:79` · `BillboardEditor.tsx:106,115` · `OnboardingForm.tsx:179` | Limits hardcoded in copy (`maxLength={60}`, "max 60 chars", "up to 3"). | Import `BILLBOARD_LIMITS` / `lib/username`. | D |
-| 50 | `api/creator/check-username/route.ts:6` · `register/route.ts:5` | `USERNAME_PATTERN` duplicated inline; `lib/username.ts` is imported by the client only. | Import the shared pattern. | D |
-| 51 | `staff/invite/route.ts:36` · `partners/invite` · `PartnerInviteCard.tsx:66` | 7-day TTL computed/copy-written 3×. | One `INVITE_TTL_DAYS`. | D |
+| 50 | `api/creator/check-username/route.ts:6` · `register/route.ts:5` | `USERNAME_PATTERN` duplicated inline; `lib/username.ts` is imported by the client only. | Import the shared pattern. | ✅ D (2026-10-01) |
+| 51 | `staff/invite/route.ts:36` · `partners/invite` · `PartnerInviteCard.tsx:66` | 7-day TTL computed/copy-written 3×. | One `INVITE_TTL_DAYS`. | ✅ D (2026-10-01) |
 | 52 | `FanListTable.tsx:25,88-93` | `"subscribers"` filter is typed and dead; Subscribers + Referred chips missing vs spec. | Add the chips or drop the dead member. | D |
-| 53 | `types/index.ts:593-603,616-664,695-702` | 4 stale interfaces (`StaffInvite.status`, `AffiliateDeal` columns/enums, `AffiliateLink.code`, `FanProfile.subscription_status`) shadowed by local ones. | Regenerate from real payloads. | D |
+| 53 | `types/index.ts:593-603,616-664,695-702` | 4 stale interfaces (`StaffInvite.status`, `AffiliateDeal` columns/enums, `AffiliateLink.code`, `FanProfile.subscription_status`) shadowed by local ones. | Regenerate from real payloads. | ✅ D (2026-10-01) |
 | 54 | `CollabDetail.tsx:107` | "Deal history will appear here" placeholder while the API already returns the data. | Query it or hide the panel. | D |
-| 55 | `api/messages/unread/route.ts:4,17` · `conversations/route.ts:50` · `wiredLater/features/messaging.md:223` | Docstrings + spec still say `useUnreadBadge` (deleted in the Messages rename) and "every 6s" (real: `useMessages`, 30s). | Correct all three. | D |
-| 56 | `lib/fanShellData.ts:25` | Comment claims scheduling is filtered server-side; it's client-side. | Fix the comment. | D |
-| 57 | `ItemCards.tsx:88-94` | Unreachable "Messages is coming soon" toast branch. | Delete. | D |
-| 58 | `FanHomeTab.tsx:186-231,267-282` | "Your activity" section renders with no rows; announcements section is copy-only. | Gate on data; hide placeholders. | D |
-| 59 | `FanSettingsTab.tsx:32-34` | `notify/setNotify` declared, never read. | Delete. | D |
-| 60 | `CreatorHeader.tsx:19` | Unused `fanCount` prop documented as "server-resolved". | Remove. | D |
+| 55 | `api/messages/unread/route.ts:4,17` · `conversations/route.ts:50` · `wiredLater/features/messaging.md:223` | Docstrings + spec still say `useUnreadBadge` (deleted in the Messages rename) and "every 6s" (real: `useMessages`, 30s). | Correct all three. | ✅ D (2026-10-01) |
+| 56 | `lib/fanShellData.ts:25` | Comment claims scheduling is filtered server-side; it's client-side. | Fix the comment. | ✅ D (2026-10-01) |
+| 57 | `ItemCards.tsx:88-94` | Unreachable "Messages is coming soon" toast branch. | Delete. | ✅ D (2026-10-01) |
+| 58 | `FanHomeTab.tsx:186-231,267-282` | "Your activity" section renders with no rows; announcements section is copy-only. | Gate on data; hide placeholders. | ✅ D (2026-10-01) |
+| 59 | `FanSettingsTab.tsx:32-34` | `notify/setNotify` declared, never read. | Delete. | ✅ D (2026-10-01) |
+| 60 | `CreatorHeader.tsx:19` | Unused `fanCount` prop documented as "server-resolved". | Remove. | ✅ D (2026-10-01) |
 | 61 | `FanConnectTab.tsx:133` | Dot highlight indexes `partners`, cards index `weightedPartners` → wrong dot lit when any deal has weight 2. | Derive both from the same list. | D |
-| 62 | `FanConnectTab.tsx:229` | "1 channels". | Shared plural helper. | D |
-| 63 | `api/messages/communities/[id]/channels/route.ts:55` | Hardcoded `memberCount: 0` (unused). | Compute or drop. | D |
-| 64 | `screens/fan/partner/Screen.tsx:38-40` | No schedule filter (guest page filters client-side) → scheduled items leak onto partner pages. | Same filter server-side. | D |
+| 62 | `FanConnectTab.tsx:229` | "1 channels". | Shared plural helper. | ✅ D (2026-10-01) |
+| 63 | `api/messages/communities/[id]/channels/route.ts:55` | Hardcoded `memberCount: 0` (unused). | Compute or drop. | ✅ D (2026-10-01) |
+| 64 | `screens/fan/partner/Screen.tsx:38-40` | No schedule filter (guest page filters client-side) → scheduled items leak onto partner pages. | Same filter server-side. | ✅ D (2026-10-01) |
 | 65 | `GuestPageContent.tsx:70` | `JSON.parse(pending)` without try/catch → a corrupt value throws out of the effect. | try/catch. | D |
 | 66 | `screens/public/landing/Screen.tsx:130` | Demo CTA falls back to a hardcoded username that may not exist. | Hide if unknown. | D |
-| 67 | `ActivityTimeline.tsx:69` · `ItemCards.tsx:213` | Timestamps hand-formatted; no `formatDateTime`/`formatCountdown` in `lib/format.ts`. | Add the helpers, use them. | D |
-| 68 | `SearchBox.tsx:34` · `MessagesShell.tsx:755` · `BillboardEditor.tsx:149` | 3 inline `<Loader2>` spinners; `shared/Spinner` exists. | Use it. | D |
-| 69 | `FanProfileDrawer.tsx:96` · `FanListTable` | Hand-rolled "Loading..." blocks; `shared/EmptyState` exists. | Use it. | D |
+| 67 | `ActivityTimeline.tsx:69` · `ItemCards.tsx:213` | Timestamps hand-formatted; no `formatDateTime`/`formatCountdown` in `lib/format.ts`. | Add the helpers, use them. | ✅ D (2026-10-01) |
+| 68 | `SearchBox.tsx:34` · `MessagesShell.tsx:755` · `BillboardEditor.tsx:149` | 3 inline `<Loader2>` spinners; `shared/Spinner` exists. | Use it. | ✅ D (2026-10-01) |
+| 69 | `FanProfileDrawer.tsx:96` · `FanListTable` | Hand-rolled "Loading..." blocks; `shared/EmptyState` exists. | Use it. | PARTIAL (2026-10-01) |
 | 70 | `FanAuthModal.tsx:67-79` · `FanProfileDrawer.tsx:67,79` · `FanSettingsTab.tsx:58` | 3 raw `fetch` sites that never read `res.ok` (25 files use `fetchJson`). | `fetchJson`. | ✅ C (2026-10-01) |
 | 71 | `EarningsSummary.tsx:36-44` · `hooks/useMyAppForm.ts:138-144` | Two hand-rolled re-implementations of `fetchJson`. | Use `fetchJson`. | ✅ C (2026-10-01) |
 | 72 | `layout/MyPeeps.tsx:57` vs `MessagesShell.tsx:136` | 30s poll interval written twice, no shared constant. | One `POLL_MS`. | D |
 | 73 | `layout/MyPeeps.tsx:17-31` | `partners/fans/staff` fetched and polled, never rendered. | Drop from the response or render. | D |
-| 74 | `screens/public/landing/Screen.tsx:54,80` | `slice(0, 12)` twice for unrelated things. | Named constants. | D |
-| 75 | `api/messages/conversations/route.ts:33,104` | Redundant `!left_at` filter after `.is("left_at", null)`; `memberCount` re-filters. | Delete. | D |
+| 74 | `screens/public/landing/Screen.tsx:54,80` | `slice(0, 12)` twice for unrelated things. | Named constants. | ✅ D (2026-10-01) |
+| 75 | `api/messages/conversations/route.ts:33,104` | Redundant `!left_at` filter after `.is("left_at", null)`; `memberCount` re-filters. | Delete. | ✅ D (2026-10-01) |
+
+---
+
+## Still open (deliberately not fixed here)
+
+| # | Finding | Why it's open |
+|---|---|---|
+| 46 | Export "last purchase" ordering | **Audit false positive** — both queries already `.order(desc)`. |
+| 49 | Limits hardcoded in UI copy ("max 60 chars", "up to 3") | Cosmetic; the enforced `maxLength` values already read `BILLBOARD_LIMITS` where it matters. |
+| 52 | Fan-list Subscribers/Referred chips | Needs a subscriptions source — feature work, not a bug. |
+| 54 | CollabDetail "Deal history will appear here" | Needs a query by partner to be worth showing; a placeholder until then. |
+| 61 | FanConnectTab billboard dot index | Off-by-one only when a deal has weight 2 — cosmetic. |
+| 65 | `JSON.parse(pending)` in GuestPageContent | Needs a try/catch on a corrupt localStorage value — real but cosmetic. |
+| 66 | Landing demo-CTA fallback username | Hardcoded demo creator; should hide when unknown. |
+| 69 | Hand-rolled loading blocks | `FanProfileDrawer` now uses `Spinner`; `FanListTable` still has its own. |
+| 72 | 30s poll interval written twice | Now documented as intentional in both files; a shared constant is optional. |
+| 73 | `peeps` returns partners/fans/staff the dock never renders | Either render them or trim the payload — product decision. |
+| 77 | Export ordering | **Audit false positive** — see #46. |
+
+**No HIGH or MED finding is left open.** Every HIGH and MED row above is ticked, plus all but ~10 LOW cleanups.
 
 ---
 
