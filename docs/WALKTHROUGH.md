@@ -70,6 +70,9 @@
 | UUID / hidden ID              | The passport number everything actually hangs off — your nice nickname (Link Address) is just the label on the suitcase.                                                  | Passport number vs the nickname friends use                       | UUID / key     |
 | `[username]` catch-all route  | One folder that catches ANY name — `/alice`, `/bob`, `/zoe` all land in the same place and sort themselves out.                                                          | The mail sorter who accepts any name on the envelope              | dynamic route  |
 | Server vs client (`"use client"`) | Default = the kitchen does the work for you (server). The flag = a waiter running orders back and forth — only needed when a button reacts to clicks.               | Kitchen works vs table service                                    | server/client components |
+| `?? 0` (a fallback)         | **The silent liar.** The widget asked for a number, didn't get it, and printed `0` instead of saying "unknown" — so a broken card looks like a real answer. (2026-10-01: 15+ of these were hiding permanently-empty cards.) | A waiter guessing "no show-ups" instead of telling you the booking sheet is missing | fallback default |
+| The Three Gates | Free / email / paid. A closed paid gate hides the media **and strips its file URL server-side** — hiding a button isn't enough if the link is still in the page. | The bouncer plus a locked cloakroom, not just a rope across the door | content gating |
+| "Coming soon" badge | A control that has no backend yet, saying so. The rule: **never toast success for something that didn't happen.** (2026-10-01 replaced 6 fake-success controls.) | A shop sign reading "closed" instead of a dummy taking your money | honest disabled state |
 
 ### 🎫 Accounts & auth
 

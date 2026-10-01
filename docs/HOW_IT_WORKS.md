@@ -55,7 +55,7 @@ The planned sidebar (when the dashboard shell is wired) is:
 
 ### 4.2 Overview (`/dashboard`)
 
-**WIRED (Sheet 10, 2026-08-30).** 4 stat cards (Page views, Content items, Fans, Revenue), activity timeline, setup checklist, quick actions (Edit My App, View my page, Install my fan app), share page button + QR code card + fan CSV export (includes total spent). Spec: `screens/creator-dashboard/overview/overview.md`.
+**WIRED (Sheet 10, 2026-08-30).** 4 stat cards (Total Sales, Total Fans, Page Views, Content items), activity timeline, quick actions (Edit My App, View my page, Install my fan app) and a share-link card + fan CSV export. Every number is computed by `GET /api/creator/my-app` (`fans_count`, `total_sales` from **completed** purchases, `total_sales_currency`, `page_views`, item count) — the cards display, they never sum or default a missing field to 0 (2026-10-01 audit). The share card shows the real page link and copies it: a scannable QR needs a real encoder, so the old random-pattern "QR code" and its download were removed rather than left faking success. Spec: `screens/creator-dashboard/overview/overview.md`.
 
 ### 4.3 My App (`/dashboard/my-app`)
 
@@ -87,7 +87,9 @@ Creator-to-creator discovery + collab + people hub (B2B — fans never see it). 
 
 ### 4.5 Settings (`/dashboard/settings`)
 
-**WIRED (Sheet 9, 2026-08-30).** Account/security, PayPal connect panel (PayPal-first since 2026-08-10 — `paypal_account_id`; Stripe Connect = deferred Atlas reference), notifications, messaging & privacy, danger zone. Spec: `screens/creator-dashboard/settings/settings.md`.
+**WIRED (Sheet 9, 2026-08-30).** Profile (display name), payments, notifications, messaging & privacy, danger zone. Spec: `screens/creator-dashboard/settings/settings.md`.
+
+**Honest-state panels (2026-10-01):** three controls have no backend yet and now SAY so instead of faking a success — **PayPal connect** (the OAuth route is Sheet 9 future work), **push notifications**, and **data export / account deletion**. The tagline field was removed from Profile because the Billboard (Network tab) is its single editor; a second editor could never save it. Stripe Connect remains deferred Atlas reference.
 
 ### 4.6 Admin Panel (`/admin`)
 
@@ -113,7 +115,7 @@ Platform owner's control room. One door, different keycards:
 
 ### Authenticated view (fan signed up) — `FanAppShell`
 
-Four bottom tabs (all wired):
+Four bottom tabs (all wired). The bar shows at **every** width — the desktop top-nav variant was removed (2026-10-01, founder: only two nav shapes exist product-wide, bottom bar + sidebar; the fan shell is always the bottom bar). The shell keeps its 512px phone-shaped column on large screens, so it reads as a phone app on a big monitor. The header bell is a disabled placeholder until real push subscriptions ship.
 
 | Tab | Component | Status |
 |---|---|---|

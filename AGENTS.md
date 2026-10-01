@@ -44,6 +44,7 @@ A platform where creators build and publish their own installable PWA apps for f
 | "How do I migrate mock → production?" | `docs/HOW_IT_WORKS.md` → "Migration Recipe" + `docs/EXTERNAL_SERVICES.md` (the external-service map) |
 | "What's the wiring order / what sheet am I on?" | `WIRING_PLAN.md` (repo root — 23 sheets, Phase F execution map) |
 | "Which files build screen X?" / "Walk me through the UI" | `docs/WALKTHROUGH.md` (screen-by-screen tour: URL → files → what it does) |
+| "Is a number on screen correct / does a widget match the API?" | `docs/AUDIT_REPORT.md` (the 2026-10-01 data-drift audit: every widget-vs-API finding, what was fixed, what's still open) |
 | "What's in the old-code archive?" / "What's dead, what to adopt?" | `docs/archive/` (archived docs) + `docs/BACKLOG.md` (open feedback items) |
 
 ---
@@ -76,6 +77,23 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 ---
 
 ## Impromptu Fix Log
+
+### 2026-10-01 — Full data-drift audit + 75 fixes: "the API computes, the widget displays"
+
+**Founder asked "do the widgets show what the data actually says?" → 4 read-only agents diffed every client component's response fields against its route's ACTUAL `NextResponse.json` keys. ~75 findings (18 HIGH / ~30 MED / ~22 LOW), all fixed in 4 batched commits. Gates green every batch: typecheck 0 · lint 0 · check-docs PASS (399) · smoke (10 pages + 16 APIs 200 · fan register/login → 4 tabs 200 · `/ref` click counting · paid-file gate proven). Full checklist: `docs/AUDIT_REPORT.md`.**
+
+- **The law (one line, applies everywhere):** the API computes, the widget displays. Widgets never sum, never invent, never `?? 0` a missing field. 15+ `?? 0` fallbacks were masking fields the routes never sent — that single pattern was the top cause (a whole `fans/list` + `fans/export` family returned `[]`, see the mock bug below).
+- **🚨 Revenue leak (worst find):** paid video/image/pdf/audio rendered their media actions to anyone, and `file_url` shipped in the server payload + `/api/fan/partner-data`. Now hidden behind `purchasedOrFree` **and** stripped in `lib/fanShellData` with the same `computeItemGate` the cards use — proven: owner sees the file, fans get `null`, free items unaffected.
+- **Fan signup/login reported FAILURE ON SUCCESS** — `post()` read `res.data`, the fan routes answer flat `{fan_id}`. Now reads the real shape + checks `res.ok`.
+- **Stats that were fiction:** Overview "Total Sales" summed **catalog price tags**; Fans + Subscribers were always 0 (Subscribers had no source at all → replaced with Content items); **all 4 admin cards** were 0 (widget read `total_creators`, RPC returns `totalCreators`); activity rows rendered blank (widget read `description`, source returns `{type,email}`).
+- **"Total earned" counted money you OWE** — the earnings route summed `promoter_cut` across owned *and* promoted deals. Split into `earned` vs `owed`.
+- **Staff invites stuck "Pending" forever** — filtered on a `status` field no writer ever set; the route now decides pending (unused AND unexpired, the predicate `peeps` already used) so page and dock badge agree.
+- **Deploy lockout:** billboard allowed a 600-char bio, deploy schema capped 500 → every Deploy failed forever. Schema now reads `BILLBOARD_LIMITS.bio`.
+- **Found while fixing (pre-existing, not in the audit):** the mock returned the auth singleton **by reference**; `createServiceClient()` blanks it for the no-cookie case, so any route that read the user then built a service client queried with an empty id. `getUser()`/`getSession()` now return snapshots.
+- **Found while fixing (audit false positive):** finding 46 claimed "last purchase uses `[0]` of an unordered query" — both queries already sorted desc. Corrected in the report rather than "fixed".
+- **Founder decisions this pass:** wings stay `screens/creator` (wings = WHO, leaves = the URL's word — the two naming laws now sit in WALKTHROUGH Stop 00 with **The Map**); fan shell = **bottom bar at every width** (desktop top-nav variant deleted, `responsive.md` updated); features that toast success without doing anything = **label honestly** (tip jar, PayPal connect, push bell, Notifications, DangerZone, AuditLog; QrCard's random-noise "QR code" and its download deleted); `partner-page` → `partner` (the one leaf that didn't match its URL).
+- **Also consolidated:** one unread rule (muted conversations counted in row pills but not the total — 3 vs 0 on one screen), verified optimistic writes (billboard switches / link toggle / do-not-contact roll back + toast; fan notes debounced 600ms instead of a PATCH per keystroke), one CSV exporter (server, filter-aware, + do_not_contact), `money()` everywhere + currency from the server, `show_in_search` NULL = visible everywhere, rate limits on the 2 bare anonymous routes, shared `USERNAME_PATTERN` / `INVITE_TTL_DAYS` / upload caps / `ROLE_LABELS`, `getAdminAccount` picks the strongest role (generating an API key used to be able to lock an admin out of their own panel), 4 stale type interfaces regenerated, `formatDateTime` + `formatCountdown` added, 3 more findings logged honestly rather than faked.
+- **Tooling gotcha:** `python` fell off PATH mid-session (`py` points at a missing 3.14) — the interpreter that works is `C:\pinokio\bin\miniconda\python.exe`; use it for `scripts/check-docs.py`. Also re-confirmed: PS 5.1 mangles inline JSON bodies (a 500 that was my harness, not the app) — write the body to a file and use `-InFile`.
 
 ### 2026-09-30 — Overview Route Consolidation (`/dashboard` IS the home) + Walkthrough Stop 04
 

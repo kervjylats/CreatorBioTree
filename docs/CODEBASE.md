@@ -103,7 +103,7 @@ src/
 │   │   ├── app/                  # */app → redirect (legacy — deletion pending founder decision)
 │   │   └── manifest.json/route.ts # Per-creator PWA manifest
 │   │
-│   └── api/                      # REST API routes (89 api routes + 2 manifest routes)
+│   └── api/                      # REST API routes (88 api routes; + 2 manifest routes + 1 /ref/[code] redirect outside api/)
 │       ├── admin/                # Platform admin APIs (RBAC)
 │       ├── messages/                 # Messaging engine (19 routes — WIRED)
 │       ├── creator/              # Creator CRUD, upload, catalog, my-app, fans, partners, staff, affiliates, AI
