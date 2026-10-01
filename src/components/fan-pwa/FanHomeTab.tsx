@@ -56,14 +56,20 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
     .slice(0, 6);
 
   // Section 6: Upcoming — live items with a future scheduled_publish_at.
+  // These are filtered from the RAW list, not from `items`: `isScheduledVisible`
+  // drops anything whose publish time hasn't arrived, so filtering the already-
+  // filtered list guaranteed this section could never render (2026-10-01 audit).
   // Date.now() is impure — capture in state on mount to satisfy the linter.
   const [now] = useState(() => Date.now());
-  const upcoming = items.filter(
-    (item) =>
-      item.type === "live" &&
-      item.scheduled_publish_at &&
-      new Date(item.scheduled_publish_at).getTime() > now,
-  );
+  const upcoming = (data.items ?? [])
+    .filter(
+      (item) =>
+        item.is_published !== false &&
+        item.type === "live" &&
+        item.scheduled_publish_at &&
+        new Date(item.scheduled_publish_at).getTime() > now,
+    )
+    .sort((a, b) => new Date(a.scheduled_publish_at ?? 0).getTime() - new Date(b.scheduled_publish_at ?? 0).getTime());
 
   // Section 7: Announcements — from the community's Announcements channel.
   const announcementsChannel = data.community?.channels.find(

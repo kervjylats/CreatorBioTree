@@ -11,26 +11,30 @@ import { fetchJson } from "@/lib/fetchJson";
 import { money } from "@/lib/format";
 
 interface Stats {
-  total_creators?: number;
-  total_fans?: number;
-  total_content?: number;
-  total_revenue?: number;
+  totalCreators?: number;
+  totalFans?: number;
+  totalContent?: number;
+  totalRevenue?: number;
 }
 
 export function StatsCards() {
   const [stats, setStats] = useState<Stats>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // The stats RPC answers in camelCase — this widget read snake_case keys that
+    // never existed, so every card rendered 0 behind a `?? 0` (2026-10-01 audit).
     fetchJson<Stats>("/api/admin/stats")
       .then(setStats)
-      .catch(() => { toast.error("Failed to load stats"); });
+      .catch(() => { toast.error("Failed to load stats"); })
+      .finally(() => setLoading(false));
   }, []);
 
   const cards = [
-    { label: "Total Creators", value: stats.total_creators ?? 0, icon: Users },
-    { label: "Total Fans", value: stats.total_fans ?? 0, icon: UserCheck },
-    { label: "Content Items", value: stats.total_content ?? 0, icon: FileText },
-    { label: "Total Revenue", value: money(stats.total_revenue ?? 0), icon: DollarSign },
+    { label: "Total Creators", value: stats.totalCreators ?? 0, icon: Users },
+    { label: "Total Fans", value: stats.totalFans ?? 0, icon: UserCheck },
+    { label: "Content Items", value: stats.totalContent ?? 0, icon: FileText },
+    { label: "Total Revenue", value: money(stats.totalRevenue ?? 0), icon: DollarSign },
   ];
 
   return (
@@ -41,7 +45,11 @@ export function StatsCards() {
             <c.icon size={16} />
             <span className="text-xs font-medium">{c.label}</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-foreground">{c.value}</p>
+          {loading ? (
+            <div className="mt-2 h-8 w-20 animate-pulse rounded bg-muted" />
+          ) : (
+            <p className="mt-2 text-2xl font-bold text-foreground">{c.value}</p>
+          )}
         </div>
       ))}
     </div>

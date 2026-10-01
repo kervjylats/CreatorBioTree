@@ -135,24 +135,26 @@ export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuth
               Visit <ArrowUpRight size={14} />
             </button>
           )}
-          {item.type === "video" && (
+          {item.type === "video" && purchasedOrFree && (
             <button type="button" {...buttonClass(branding)} onClick={() => openUrl(item.file_url)}>
               <Play size={14} /> Play preview
             </button>
           )}
-          {item.type === "image" && (
+          {item.type === "image" && purchasedOrFree && (
             <button type="button" {...buttonClass(branding)} onClick={() => openUrl(item.file_url)}>
               View full image
             </button>
           )}
-          {item.type === "audio" && item.file_url && (
+          {item.type === "audio" && item.file_url && purchasedOrFree && (
             <audio controls src={item.file_url} className="h-9 w-full max-w-[220px] rounded-lg" />
           )}
-          {item.type === "pdf" && item.file_url && (
+          {item.type === "pdf" && item.file_url && purchasedOrFree && (
             <button type="button" {...buttonClass(branding)} onClick={() => openUrl(item.file_url)}>
               <Download size={14} /> Download
             </button>
           )}
+          {/* Media types above stay hidden until the Three Gates open (fan-shell.md
+              Part 2): a paid video/pdf must never expose file_url in the DOM. */}
           {item.type === "newsletter" && <NewsletterInline item={item} branding={branding} onUnlock={onUnlock} />}
           {item.type === "messaging" &&
             (identity ? (
@@ -162,9 +164,7 @@ export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuth
                 <MessageCircle size={14} /> Message
               </button>
             ))}
-          {item.type === "tip_jar" && (
-            <TipJarInline item={item} branding={branding} onTip={(email) => onUnlock(item, email)} />
-          )}
+          {item.type === "tip_jar" && <TipJarInline item={item} branding={branding} />}
           {item.type === "live" && (
             <button type="button" {...buttonClass(branding)} onClick={() => openUrl(item.external_url)}>
               <Radio size={14} /> Join live
@@ -361,20 +361,30 @@ function NewsletterInline({
 
 // ─── Tip jar inline ───────────────────────────────────────────────────────────
 
+/**
+ * Tip jar inline — HONEST DISABLED STATE (2026-10-01 audit).
+ *
+ * This used to collect the email, write a Follower row and toast "Unlocked —
+ * thanks for joining!" for a chosen amount: no money moved, no `fan_purchases`
+ * row was written, and the $5/$10/$25 chips were pure decoration. A tip button
+ * that pretends to take money is the worst kind of lie, so the control now says
+ * plainly that tipping isn't switched on yet (founder policy: label honestly,
+ * never fake a success).
+ *
+ * To wire it for real: send the chosen amount through POST /api/paypal/checkout
+ * (the same rail the paid items use) and record the tip as a purchase.
+ */
 function TipJarInline({
   item,
   branding,
-  onTip,
 }: {
   item: ContentItem;
   branding: CreatorBranding;
-  onTip: (email: string) => void;
 }) {
-  const amounts: number[] = Array.isArray(item.metadata?.suggested_amounts) && (item.metadata?.suggested_amounts as number[]).length
-    ? (item.metadata?.suggested_amounts as number[])
-    : [5, 10, 25];
-  const [email, setEmail] = useState("");
-  const [selected, setSelected] = useState(amounts[1] ?? 10);
+  const amounts: number[] =
+    Array.isArray(item.metadata?.suggested_amounts) && (item.metadata?.suggested_amounts as number[]).length
+      ? (item.metadata?.suggested_amounts as number[])
+      : [5, 10, 25];
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -383,42 +393,23 @@ function TipJarInline({
           {item.metadata.support_message as string}
         </p>
       ) : null}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {amounts.map((a) => (
-          <button
+          <span
             key={a}
-            type="button"
-            className={`${buttonShape(branding)} min-h-11 px-4 text-xs font-semibold`}
+            className={`${buttonShape(branding)} min-h-11 px-4 text-xs font-semibold opacity-50`}
             style={{
-              backgroundColor: a === selected ? branding.accentColor : branding.accentColor + "22",
-              color: a === selected ? contrastText(branding.accentColor) : branding.accentColor,
+              backgroundColor: branding.accentColor + "22",
+              color: branding.accentColor,
             }}
-            onClick={() => setSelected(a)}
           >
-            ${a}
-          </button>
+            {money(a, item.currency)}
+          </span>
         ))}
+        <span className="text-xs" style={{ color: branding.textColor + "99" }}>
+          Tipping isn&apos;t switched on yet
+        </span>
       </div>
-      <form
-        className="flex items-center gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (email.trim()) onTip(email.trim().toLowerCase());
-        }}
-      >
-        <input
-          type="email"
-          required
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className={cardRadius(branding, "min-w-0 flex-1 border px-2.5 py-1.5 text-sm outline-none")}
-          style={{ borderColor: branding.textColor + "33", color: branding.textColor }}
-        />
-        <button type="submit" {...buttonClass(branding, "shrink-0")}>
-          Tip ${selected}
-        </button>
-      </form>
     </div>
   );
 }

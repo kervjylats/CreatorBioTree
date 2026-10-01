@@ -9,10 +9,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, handleAuthError } from "@/lib/requireAuth";
 import { zodErrorResponse } from "@/lib/zod-helpers";
+import { BILLBOARD_LIMITS } from "@/lib/limits";
 
 const deploySchema = z.object({
   display_name: z.string().min(1).max(80).nullable().optional(),
-  bio: z.string().max(500).nullable().optional(),
+  // Shared cap, not a second number: the Billboard writes up to
+  // BILLBOARD_LIMITS.bio (600) and a 501–600 char bio used to be accepted here
+  // only to be rejected — locking the creator out of Deploy forever (2026-10-01 audit).
+  bio: z.string().max(BILLBOARD_LIMITS.bio).nullable().optional(),
   avatar_url: z.string().max(500).nullable().optional(),
   banner_url: z.string().max(500).nullable().optional(),
   custom_theme: z.record(z.unknown()).nullable().optional(),
@@ -38,14 +42,35 @@ export async function GET() {
       .eq("creator_id", user.id)
       .order("sort_order", { ascending: true });
 
-    // Overview StatCards consumes page_views — count completed views so the
-    // "Page Views" card shows a real number (2026-09-23 fix).
+    // Overview StatCards consumers — every count is computed HERE so the widget
+    // never invents one (2026-10-01 audit: a `?? 0` fallback silently rendered 0
+    // because the field was never sent). "Sales" = completed purchases only,
+    // matching fans/list, fans/[id] and fans/export.
     const { count: pageViews } = await supabase
       .from("page_views")
       .select("id", { count: "exact", head: true })
       .eq("creator_id", user.id);
+    const { count: fansCount } = await supabase
+      .from("fan_accounts")
+      .select("id", { count: "exact", head: true })
+      .eq("creator_id", user.id);
+    const { data: completedPurchases } = await supabase
+      .from("fan_purchases")
+      .select("amount_paid")
+      .eq("creator_id", user.id)
+      .eq("status", "completed");
+    const totalSales = (completedPurchases ?? []).reduce(
+      (sum, row) => sum + (Number(row.amount_paid) || 0),
+      0,
+    );
 
-    return NextResponse.json({ creator, items: items ?? [], page_views: pageViews ?? 0 });
+    return NextResponse.json({
+      creator,
+      items: items ?? [],
+      page_views: pageViews ?? 0,
+      fans_count: fansCount ?? 0,
+      total_sales: totalSales,
+    });
   } catch (err) {
     const handled = handleAuthError(err);
     if (handled) return handled;

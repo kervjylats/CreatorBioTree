@@ -12,6 +12,7 @@ import { getFanSession } from "@/lib/fanSession";
 import { contentService } from "@/services/contentService";
 import type { Creator, FanPurchase } from "@/types";
 import type { FanIdentity, FanShellData } from "@/components/fan-pwa/fanData";
+import { computeItemGate } from "@/components/fan-pwa/fanData";
 
 /** Resolve the full fan-shell data for a Link Address. Returns null when the creator doesn't exist. */
 export async function resolveFanShellData(username: string): Promise<FanShellData | null> {
@@ -82,6 +83,17 @@ export async function resolveFanShellData(username: string): Promise<FanShellDat
   } catch {
     items = [];
   }
+
+  // Three Gates, enforced server-side (fan-shell.md Part 2). A closed gate means the
+  // item's `file_url` never leaves the server — hiding the button in the UI is not
+  // enough, the URL would still sit in the page payload. Same computeItemGate the
+  // cards use, so the two can never disagree about what is unlocked.
+  const purchasedItemIds = new Set(purchases.map((p) => p.content_item_id));
+  items = (items ?? []).map((item) => {
+    const gate = computeItemGate(item, identity, purchasedItemIds);
+    if (gate.state === "free" || gate.state === "purchased") return item;
+    return { ...item, file_url: null };
+  });
 
   const artistLinks = socialLinksToArtistLinks(typedCreator.social_links);
 

@@ -1,53 +1,30 @@
 /**
- * QrCard — QR code display for the creator's fan page URL.
- * Generates a simple visual QR representation via SVG and provides
- * "Copy link" and "Download" buttons.
+ * QrCard — share the creator's fan page URL (Overview): show the link, copy it.
  */
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+// The card used to draw a "QR code" from `Math.random() > 0.55` and offer a
+// Download button that saved that noise as `qr-code.svg` while toasting "QR code
+// downloaded" — a file that scans to nothing (2026-10-01 audit, founder policy:
+// never fake a success). The fake grid and the download are gone; the card now
+// does what it can actually do: show the page link and copy it.
+//
+// To bring a real QR back: add a real encoder (e.g. the `qrcode` package) and
+// render its matrix here — the URL below is already the exact value to encode.
+
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Download } from "lucide-react";
+import { Copy, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchJson } from "@/lib/fetchJson";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
-function generateQrPattern(size: number): boolean[][] {
-  const grid: boolean[][] = [];
-  for (let y = 0; y < size; y++) {
-    grid[y] = [];
-    for (let x = 0; x < size; x++) {
-      const inCorner =
-        (x < 7 && y < 7) ||
-        (x >= size - 7 && y < 7) ||
-        (x < 7 && y >= size - 7);
-      if (inCorner) {
-        const localX = x < 7 ? x : x - (size - 7);
-        const localY = y < 7 ? y : y - (size - 7);
-        const isBorder =
-          localX === 0 ||
-          localX === 6 ||
-          localY === 0 ||
-          localY === 6 ||
-          (localX >= 2 && localX <= 4 && localY >= 2 && localY <= 4);
-        grid[y][x] = isBorder;
-      } else {
-        grid[y][x] = Math.random() > 0.55;
-      }
-    }
-  }
-  return grid;
-}
-
 export function QrCard() {
   const [url, setUrl] = useState("");
-  const [grid, setGrid] = useState<boolean[][]>(() => Array.from({ length: 21 }, () => Array(21).fill(false)));
-  const svgRef = useRef<SVGSVGElement>(null);
   const { copy } = useCopyToClipboard();
 
   useEffect(() => {
-    setGrid(generateQrPattern(21));
     fetchJson<{ creator?: { username?: string } }>("/api/creator/my-app")
       .then((data) => {
         const username = data?.creator?.username;
@@ -56,25 +33,11 @@ export function QrCard() {
       .catch(() => { toast.error("Failed to load page link"); });
   }, []);
 
-  const cellSize = 8;
-  const qrSize = 21 * cellSize;
-
   const copyLink = () => {
+    if (!url) return;
     void copy(url).then((ok) => {
       if (ok) toast.success("Link copied");
     });
-  };
-
-  const download = () => {
-    if (!svgRef.current) return;
-    const svg = new XMLSerializer().serializeToString(svgRef.current);
-    const blob = new Blob([svg], { type: "image/svg+xml" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "qr-code.svg";
-    a.click();
-    URL.revokeObjectURL(a.href);
-    toast.success("QR code downloaded");
   };
 
   return (
@@ -83,45 +46,19 @@ export function QrCard() {
         <CardTitle>Share Your Page</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center space-y-4">
-        <svg
-          ref={svgRef}
-          className="h-auto w-full max-w-[168px]"
-          width={qrSize}
-          height={qrSize}
-          viewBox={`0 0 ${qrSize} ${qrSize}`}
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect width={qrSize} height={qrSize} fill="white" />
-          {grid.map((row, y) =>
-            row.map((cell, x) =>
-              cell ? (
-                <rect
-                  key={`${x}-${y}`}
-                  x={x * cellSize}
-                  y={y * cellSize}
-                  width={cellSize}
-                  height={cellSize}
-                  fill="black"
-                />
-              ) : null,
-            ),
-          )}
-        </svg>
-        {url && (
-          <p className="max-w-[200px] truncate text-center text-xs text-muted-foreground">
-            {url}
+        <div className="flex w-full max-w-[220px] items-center gap-2 rounded-xl border border-border px-3 py-2">
+          <Link2 size={14} className="shrink-0 text-muted-foreground" />
+          <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+            {url || "Loading your link…"}
           </p>
-        )}
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={copyLink}>
-            <Copy size={14} />
-            Copy link
-          </Button>
-          <Button size="sm" variant="outline" onClick={download}>
-            <Download size={14} />
-            Download
-          </Button>
         </div>
+        <Button size="sm" variant="outline" onClick={copyLink} disabled={!url}>
+          <Copy size={14} />
+          Copy link
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          A scannable QR code isn&apos;t available yet — the link above is the real one.
+        </p>
       </CardContent>
     </Card>
   );

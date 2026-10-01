@@ -38,7 +38,6 @@ interface StaffInvite {
   id: string;
   email: string;
   role: string;
-  status: string;
   created_at: string;
 }
 
@@ -95,7 +94,11 @@ export function StaffPage() {
     }
   };
 
-  const pendingInvites = invites.filter((i) => i.status !== "accepted");
+  // The route already returns only pending invites (unused AND unexpired — the
+  // predicate api/creator/peeps counts with, so this list and the dock badge
+  // always agree). It used to filter on a `status` field that no writer ever set,
+  // which let accepted invites stay badged "Pending" forever (2026-10-01 audit).
+  const pendingInvites = invites;
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-6 lg:px-8">

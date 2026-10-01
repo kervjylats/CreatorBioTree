@@ -151,6 +151,10 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
             <h2 className="text-sm font-bold" style={{ color: branding.textColor }}>Notifications</h2>
           </div>
           <div className="flex flex-col gap-3">
+            <p className="text-sm" style={{ color: branding.textColor + "77" }}>
+              Notifications aren&apos;t switched on yet — these preferences are
+              remembered on this device only.
+            </p>
             {NOTIFICATION_KEYS.map((t) => (
               <div key={t.key} className="flex min-h-11 items-center justify-between">
                 <div>

@@ -1,7 +1,11 @@
 /**
- * ProfileSection — display name and tagline edit for the creator profile.
+ * ProfileSection — display name edit for the creator profile.
  * Reads from GET /api/creator/my-app, saves via PUT /api/creator/my-app.
- * Shows save confirmation on success.
+ * The tagline input that used to live here was removed (2026-10-01 audit): the
+ * deploy route never selected or accepted `tagline`, so the field rendered blank
+ * and its edits were silently discarded while a "Profile saved" toast fired. The
+ * tagline has exactly one editor — the Billboard on the Network tab (which
+ * writes it through /api/creator/billboard and shares BILLBOARD_LIMITS.tagline).
  */
 "use client";
 
@@ -14,18 +18,14 @@ import { fetchJson } from "@/lib/fetchJson";
 
 export function ProfileSection() {
   const [displayName, setDisplayName] = useState("");
-  const [tagline, setTagline] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchJson<{ creator?: { display_name?: string | null; tagline?: string | null } }>("/api/creator/my-app")
+    fetchJson<{ creator?: { display_name?: string | null } }>("/api/creator/my-app")
       .then((data) => {
         const c = data?.creator;
-        if (c) {
-          setDisplayName(c.display_name ?? "");
-          setTagline(c.tagline ?? "");
-        }
+        if (c) setDisplayName(c.display_name ?? "");
       })
       .catch(() => { toast.error("Failed to load profile"); })
       .finally(() => setLoading(false));
@@ -71,13 +71,9 @@ export function ProfileSection() {
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder="Your display name"
         />
-        <Input
-          label="Tagline"
-          value={tagline}
-          onChange={(e) => setTagline(e.target.value)}
-          placeholder="A short tagline (shown on your page)"
-          maxLength={60}
-        />
+        <p className="text-xs text-muted-foreground">
+          Your tagline, bio and rates live in the Billboard — Network tab.
+        </p>
         <div className="flex justify-end">
           <Button onClick={() => void handleSave()} disabled={saving}>
             {saving ? "Saving..." : "Save changes"}

@@ -25,13 +25,32 @@ const SOCIAL_LOGIN_ORDER = [
   { label: "Facebook", color: "text-[#1877F2]" },
 ];
 
-async function post(url: string, body: Record<string, unknown>): Promise<{ data?: unknown; error?: unknown }> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  return res.json();
+/**
+ * Fan-auth POST helper. The fan routes answer with a FLAT body — `{ fan_id }` on
+ * success, `{ error }` on failure — so the parsed body IS the payload (there is no
+ * `data` wrapper). Returns `{ ok, fan_id?, error? }`; `ok` is false for any non-2xx
+ * or unparseable response, and the server's own message is preserved either way.
+ */
+async function post(
+  url: string,
+  body: Record<string, unknown>,
+): Promise<{ ok: boolean; fan_id?: string; error?: string }> {
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const json: unknown = await res.json().catch(() => null);
+    const record = (json ?? {}) as { fan_id?: unknown; error?: unknown };
+    return {
+      ok: res.ok,
+      fan_id: typeof record.fan_id === "string" ? record.fan_id : undefined,
+      error: typeof record.error === "string" ? record.error : undefined,
+    };
+  } catch {
+    return { ok: false, error: "Something went wrong. Try again." };
+  }
 }
 
 /**
@@ -62,18 +81,18 @@ export function FanAuthModal({ creatorId, creatorUsername, branding, onSuccess, 
     try {
       const route = mode === "signup" ? "/api/fan/register" : "/api/fan/login";
       const res = await post(route, { email: email.trim().toLowerCase(), password, creator_id: creatorId });
-      if (res.error) {
+      if (!res.ok || !res.fan_id) {
         // Follower → Fan upgrade: a no-password account (email-only follow) sets its
         // password through the forgot-password flow (same row, per spec Part 1 Layer 1b).
-        if (typeof res.error === "string" && res.error.includes("No password is set")) {
+        if (res.error?.includes("No password is set")) {
           setError("This email already follows — set your password to unlock the full app.");
           setForgotMode(true);
           return;
         }
-        setError(typeof res.error === "string" ? res.error : "Something went wrong. Try again.");
+        setError(res.error ?? "Something went wrong. Try again.");
         return;
       }
-      onSuccess((res.data as { fan_id: string }).fan_id);
+      onSuccess(res.fan_id);
     } catch {
       setError("Something went wrong. Try again.");
     } finally {
@@ -86,7 +105,11 @@ export function FanAuthModal({ creatorId, creatorUsername, branding, onSuccess, 
     setError(null);
     setLoading(true);
     try {
-      await post("/api/fan/forgot-password", { email: email.trim().toLowerCase(), creator_id: creatorId });
+      const res = await post("/api/fan/forgot-password", { email: email.trim().toLowerCase(), creator_id: creatorId });
+      if (!res.ok) {
+        setError(res.error ?? "Something went wrong. Try again.");
+        return;
+      }
       setForgotSent(true);
     } catch {
       setError("Something went wrong. Try again.");
@@ -107,21 +130,25 @@ export function FanAuthModal({ creatorId, creatorUsername, branding, onSuccess, 
         creator_id: creatorId,
         social: provider,
       });
-      if (res.error) {
+      if (!res.ok) {
         // Already exists → log in instead.
         const login = await post("/api/fan/login", {
           email: mockEmail,
           password: "mock-social-pw",
           creator_id: creatorId,
         });
-        if (login.error) {
-          setError(typeof login.error === "string" ? login.error : "Could not sign in.");
+        if (!login.ok || !login.fan_id) {
+          setError(login.error ?? "Could not sign in.");
           return;
         }
-        onSuccess((login.data as { fan_id: string }).fan_id);
+        onSuccess(login.fan_id);
         return;
       }
-      onSuccess((res.data as { fan_id: string }).fan_id);
+      if (!res.fan_id) {
+        setError("Could not sign in.");
+        return;
+      }
+      onSuccess(res.fan_id);
     } catch {
       setError("Something went wrong. Try again.");
     } finally {

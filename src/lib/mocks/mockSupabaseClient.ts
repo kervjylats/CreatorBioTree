@@ -881,10 +881,14 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
       );
       const nonAdminCreators = allCreators.filter((c) => !adminUserIds.has(c.id));
       const fans = getTable("fan_accounts");
+      // Completed purchases only — the same filter fans/list, fans/[id] and
+      // fans/export use, so platform revenue can never disagree with a creator's
+      // own revenue number (2026-10-01 audit).
       const revenue = getTable("fan_purchases").reduce<number>(
         (sum, p) =>
-          sum +
-          Number((p as Record<string, unknown>).amount_paid ?? 0),
+          (p as Record<string, unknown>).status === "completed"
+            ? sum + Number((p as Record<string, unknown>).amount_paid ?? 0)
+            : sum,
         0,
       );
       return {
@@ -892,6 +896,7 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
           totalCreators: nonAdminCreators.length,
           totalFans: fans.length,
           totalRevenue: revenue,
+          totalContent: getTable("content_items").length,
           proCreators: nonAdminCreators.filter((c) => c.plan === "pro").length,
           freeCreators: nonAdminCreators.filter((c) => c.plan === "free").length,
         },
@@ -906,10 +911,18 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
       const adminUserIds = new Set(
         getTable<Record<string, unknown>>("admin_accounts").map((a) => a.user_id as string)
       );
-      return {
-        data: getTable<Creator>("creators").filter((c) => !adminUserIds.has(c.id)),
-        error: null,
-      };
+      const fans = getTable<Record<string, unknown>>("fan_accounts");
+      const items = getTable<Record<string, unknown>>("content_items");
+      // Per-creator counts the Admins table renders — a bare creators row has
+      // neither, so the Fans/Items columns read 0 for everyone (2026-10-01 audit).
+      const data = getTable<Creator>("creators")
+        .filter((c) => !adminUserIds.has(c.id))
+        .map((c) => ({
+          ...c,
+          fan_count: fans.filter((f) => f.creator_id === c.id).length,
+          content_count: items.filter((i) => i.creator_id === c.id).length,
+        }));
+      return { data, error: null };
     }
 
     default:

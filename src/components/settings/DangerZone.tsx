@@ -1,27 +1,20 @@
 /**
- * DangerZone — account actions: sign out, data export, and account deletion.
- * Export logs to console; delete shows a confirmation dialog then logs to console.
- * Sign out clears mock cookies and redirects to /login.
+ * DangerZone — account actions (settings.md Part 8).
+ * Sign out clears the mock cookies and redirects to /login — that one is real.
+ * Export and delete are NOT wired: no endpoints exist, so they now say so
+ * instead of toasting a success that only printed to the console (2026-10-01
+ * audit, founder policy: label honestly, never fake a success).
  */
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AlertTriangle, Download, LogOut, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function DangerZone() {
   const router = useRouter();
-  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const handleSignOut = () => {
     document.cookie = "mock_auth_uid=; path=/; max-age=0";
@@ -30,16 +23,11 @@ export function DangerZone() {
     router.refresh();
   };
 
-  const handleExport = () => {
-    toast.success("Data export started — check console");
-    console.log("[DangerZone] Export data requested");
-  };
-
-  const handleDelete = () => {
-    toast.success("Account deletion requested — check console");
-    console.log("[DangerZone] Delete account requested");
-    setDeleteOpen(false);
-  };
+  // Export and delete are NOT wired (no endpoints exist yet). They used to toast
+  // "Data export started — check console" / "Account deletion requested" after a
+  // console.log, so the dialog promised a permanent deletion that never happened
+  // (2026-10-01 audit). Honest labels until the real endpoints ship.
+  const NOT_WIRED = "This isn’t available yet — nothing was changed.";
 
   return (
     <>
@@ -70,7 +58,7 @@ export function DangerZone() {
                 Download a copy of all your data
               </p>
             </div>
-            <Button size="sm" variant="outline" onClick={handleExport}>
+            <Button size="sm" variant="outline" onClick={() => { toast.info(NOT_WIRED); }}>
               <Download size={14} />
               Export
             </Button>
@@ -84,8 +72,8 @@ export function DangerZone() {
             </div>
             <Button
               size="sm"
-              variant="destructive"
-              onClick={() => setDeleteOpen(true)}
+              variant="outline"
+              onClick={() => { toast.info(NOT_WIRED); }}
             >
               <Trash2 size={14} />
               Delete
@@ -93,26 +81,6 @@ export function DangerZone() {
           </div>
         </CardContent>
       </Card>
-
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            This action cannot be undone. Your account and all associated data
-            will be permanently deleted.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Yes, delete my account
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

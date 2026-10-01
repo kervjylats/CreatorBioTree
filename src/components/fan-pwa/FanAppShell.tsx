@@ -1,17 +1,17 @@
 /**
  * FanAppShell.tsx — the 4-tab fan app frame (fan-shell.md Part 4b): branded
- * background, sticky bottom nav (FanBottomNav), a bell with a local notify
- * toggle, the PWA install trio (each piece self-hides when not applicable)
- * and the SW UpdateToast. Only fans (password-bearing sessions) ever render
- * this shell — followers stay on the guest page per the no-password render
- * rule (WIRING_PLAN Sheet 21).
+ * background, sticky bottom nav (FanBottomNav — shown at every width), the PWA
+ * install trio (each piece self-hides when not applicable) and the SW
+ * UpdateToast. Only fans (password-bearing sessions) ever render this shell —
+ * followers stay on the guest page per the no-password render rule
+ * (WIRING_PLAN Sheet 21). The header bell is a disabled placeholder until real
+ * push subscriptions ship (2026-10-01 audit — it used to fake a toggle).
  */
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, BellOff } from "lucide-react";
-import { toast } from "sonner";
+import { BellOff } from "lucide-react";
 import type { CreatorBranding } from "@/lib/branding";
 import type { FanViewId } from "@/types";
 import { FAN_TAB_BY_PATH } from "@/lib/nav-config";
@@ -36,10 +36,6 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
   const router = useRouter();
   const activeTab: FanViewId = FAN_TAB_BY_PATH[pathname ?? ""] ?? "home";
 
-  const [notify, setNotify] = useState(
-    () => typeof window !== "undefined" && window.localStorage.getItem(`fan_notify_${creatorId}`) === "1",
-  );
-
   return (
     <MessageHostProvider creatorId={creatorId}>
       <div
@@ -63,20 +59,18 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
                 name={branding.displayName}
                 accentColor={branding.accentColor}
               />
-              <button
-                type="button"
-                aria-label={notify ? "Mute notifications" : "Turn on notifications"}
-                onClick={() => {
-                  const next = !notify;
-                  setNotify(next);
-                  window.localStorage.setItem(`fan_notify_${creatorId}`, next ? "1" : "0");
-                  toast(next ? "Notifications on" : "Notifications muted");
-                }}
+              {/* HONEST DISABLED STATE (2026-10-01 audit): this bell used to write
+                  `fan_notify_<id>` to localStorage and toast "Notifications on",
+                  but nothing ever called POST /api/push/subscribe and the browser
+                  was never asked for permission — so no push could arrive. It now
+                  says what it actually does until push is wired. */}
+              <span
                 className={`${buttonShape(branding)} flex h-11 w-11 items-center justify-center`}
-                style={{ color: notify ? branding.accentColor : branding.textColor + "88" }}
+                style={{ color: branding.textColor + "55" }}
+                title="Push notifications aren't switched on yet"
               >
-                {notify ? <Bell size={18} /> : <BellOff size={18} />}
-              </button>
+                <BellOff size={18} />
+              </span>
             </div>
           </div>
 

@@ -1,29 +1,18 @@
 /**
- * NotificationsSection — push notification preferences.
- * Shows a toggle for enabling push notifications. Local state only in mock mode.
+ * NotificationsSection — push notification preferences (settings.md Part 4).
+ * HONEST DISABLED STATE (2026-10-01 audit): the toggle used to flip local state
+ * and toast "Push notifications enabled" without persisting anything or asking
+ * the browser for permission, so it reset on every reload and no push could ever
+ * arrive. Until POST /api/push/subscribe is wired to a real subscription, the
+ * control says so instead of pretending (founder policy: label honestly).
  */
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
 import { Bell } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function NotificationsSection() {
-  const [enabled, setEnabled] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const handleToggle = async (checked: boolean) => {
-    setSaving(true);
-    try {
-      setEnabled(checked);
-      toast.success(checked ? "Push notifications enabled" : "Push notifications disabled");
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -36,15 +25,11 @@ export function NotificationsSection() {
             <div>
               <p className="text-sm font-medium text-foreground">Push notifications</p>
               <p className="text-xs text-muted-foreground">
-                Receive push notifications on your device
+                Send a push to your device when something happens
               </p>
             </div>
           </div>
-          <Switch
-            checked={enabled}
-            onChange={(checked) => void handleToggle(checked)}
-            disabled={saving}
-          />
+          <Badge variant="secondary">Coming soon</Badge>
         </div>
       </CardContent>
     </Card>

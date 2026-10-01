@@ -1,19 +1,27 @@
 "use client";
 
 /**
- * Affiliate earnings summary — displays settled vs pending amounts and
- * conversion count fetched from GET /api/creator/affiliates/earnings
- * (network.md §7, monetization/creators.md Part 2e2).
+ * Affiliate earnings summary — settled vs pending for what this creator EARNS
+ * from deals they promote, plus what they OWE on deals they own
+ * (network.md §7, monetization/creators.md Part 2e2). The two are different
+ * numbers with opposite meanings; the route used to blend them into one "Total
+ * earned" (2026-10-01 audit).
  */
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { money } from "@/lib/format";
+import { fetchJson } from "@/lib/fetchJson";
 
-interface EarningsData {
+interface Totals {
   settled: number;
   pending: number;
   disputed: number;
+}
+
+interface EarningsData extends Totals {
+  earned: Totals;
+  owed: Totals;
   conversions: Array<{
     id: string;
     deal_id: string;
@@ -31,19 +39,10 @@ export function EarningsSummary() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchEarnings() {
-      try {
-        const res = await fetch("/api/creator/affiliates/earnings");
-        if (!res.ok) throw new Error("Failed to load");
-        const json = await res.json();
-        setData(json);
-      } catch {
-        setError("Could not load earnings");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchEarnings();
+    fetchJson<EarningsData>("/api/creator/affiliates/earnings")
+      .then(setData)
+      .catch(() => { setError("Could not load earnings"); })
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -66,10 +65,12 @@ export function EarningsSummary() {
     );
   }
 
-  const settled = data?.settled ?? 0;
-  const pending = data?.pending ?? 0;
-  const disputed = data?.disputed ?? 0;
-  const total = settled + pending + disputed;
+  // `earned` = promoter cut on deals this creator promotes. `owed` = the same
+  // cut on deals this creator owns (money leaving the account).
+  const earned = data?.earned ?? { settled: 0, pending: 0, disputed: 0 };
+  const owed = data?.owed ?? { settled: 0, pending: 0, disputed: 0 };
+  const earnedTotal = earned.settled + earned.pending + earned.disputed;
+  const owedTotal = owed.settled + owed.pending + owed.disputed;
   const conversionCount = data?.conversions?.length ?? 0;
 
   return (
@@ -80,15 +81,15 @@ export function EarningsSummary() {
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-center">
           <div className="min-w-[100px] flex-1">
-            <p className="text-2xl font-bold text-green-600 truncate">{money(settled)}</p>
+            <p className="text-2xl font-bold text-green-600 truncate">{money(earned.settled)}</p>
             <p className="text-xs text-muted-foreground">Settled</p>
           </div>
           <div className="min-w-[100px] flex-1">
-            <p className="text-2xl font-bold text-amber-600 truncate">{money(pending)}</p>
+            <p className="text-2xl font-bold text-amber-600 truncate">{money(earned.pending)}</p>
             <p className="text-xs text-muted-foreground">Pending</p>
           </div>
           <div className="min-w-[100px] flex-1">
-            <p className="text-2xl font-bold text-red-600 truncate">{money(disputed)}</p>
+            <p className="text-2xl font-bold text-red-600 truncate">{money(earned.disputed)}</p>
             <p className="text-xs text-muted-foreground">Disputed</p>
           </div>
         </div>
@@ -100,7 +101,12 @@ export function EarningsSummary() {
 
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Total earned</span>
-          <span className="font-semibold">{money(total)}</span>
+          <span className="font-semibold">{money(earnedTotal)}</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Owed on your deals</span>
+          <span className="font-semibold">{money(owedTotal)}</span>
         </div>
       </CardContent>
     </Card>
