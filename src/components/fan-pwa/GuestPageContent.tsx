@@ -179,7 +179,7 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
                 </p>
                 <p className="mt-1 opacity-90">
                   A receipt is on its way to <span className="font-semibold">{confirmed.email}</span>
-                  {confirmed.optedIn ? ". Receipts also live in Settings." : " — in mock mode it's logged to the dev console."}
+                  . It stays on this device, and stays listed here whenever you return.
                 </p>
               </div>
             </div>
@@ -217,7 +217,12 @@ export function GuestPageContent({ data, editMode, onEdit, showFollowGate = true
                   ))}
                 </div>
                 <p className="mt-3 text-right text-xs font-semibold" style={{ color: branding.textColor + "88" }}>
-                  Total spent: {money(data.purchases.reduce((sum, p) => sum + (p.amount_paid ?? 0), 0), data.purchases[0]?.currency)}
+                  {/* Server-computed, per currency (never a mixed-currency sum). */}
+                  {Object.entries(data.spendByCurrency).map(([code, amount]) => (
+                    <span key={code} className="ml-2">
+                      Total spent: {money(amount, code)}
+                    </span>
+                  ))}
                 </p>
               </div>
             </div>

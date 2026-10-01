@@ -42,7 +42,11 @@ async function getShowcaseCreators(): Promise<ShowcaseCreator[]> {
     const { data, error } = await supabase
       .from("creators")
       .select("id, username, display_name, avatar_url, is_featured, created_at")
-      .eq("show_in_search", true);
+      // Same rule as /api/discover/creators and the settings toggle: an unset
+      // (NULL) flag means "visible" everywhere else, so it must be visible here
+      // too — otherwise a creator's toggle reads ON while the marquee skips them
+      // (2026-10-01 audit).
+      .or("show_in_search.eq.true,show_in_search.is.null");
     if (error || !data) return [];
     return (data as CreatorRow[])
       .filter((c) => c.username)

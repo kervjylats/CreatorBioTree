@@ -10,10 +10,14 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getMessageIdentity } from "@/lib/messages";
 import { enforceRateLimit } from "@/lib/rate-limiter";
-import { MAX_MESSAGE_UPLOAD_BYTES } from "@/lib/limits";
+import { MAX_MESSAGE_UPLOAD_B64_BYTES, MAX_MESSAGE_UPLOAD_BYTES, formatByteLimit } from "@/lib/limits";
 
 const uploadSchema = z.object({
-  dataUrl: z.string().regex(/^data:([a-zA-Z0-9/+-]+);base64,/, "Must be a base64 data URL").max(12_000_000),
+  // Body cap is DERIVED from the file cap (base64 inflates ~4/3), not a second
+  // hand-typed number that can drift away from it.
+  dataUrl: z.string()
+    .regex(/^data:([a-zA-Z0-9/+-]+);base64,/, "Must be a base64 data URL")
+    .max(MAX_MESSAGE_UPLOAD_B64_BYTES),
   name: z.string().min(1).max(255),
 });
 
@@ -34,7 +38,12 @@ export async function POST(request: NextRequest) {
     const mime = /^data:([^;]+)/.exec(header ?? "")?.[1] ?? "application/octet-stream";
     const buffer = Buffer.from(base64 ?? "", "base64");
     if (buffer.byteLength === 0) return NextResponse.json({ error: "Empty file" }, { status: 400 });
-    if (buffer.byteLength > MAX_MESSAGE_UPLOAD_BYTES) return NextResponse.json({ error: "File is too large (max 8MB)" }, { status: 400 });
+    if (buffer.byteLength > MAX_MESSAGE_UPLOAD_BYTES) {
+      return NextResponse.json(
+        { error: `File is too large (max ${formatByteLimit(MAX_MESSAGE_UPLOAD_BYTES)})` },
+        { status: 400 },
+      );
+    }
 
     const safeName = validation.data.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
     const path = `message/${me.key}-${Date.now()}-${safeName}`;

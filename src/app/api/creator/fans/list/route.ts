@@ -16,7 +16,7 @@ export async function GET() {
     const serviceSupabase = createServiceClient();
     const { data: fans, error } = await serviceSupabase
       .from("fan_accounts")
-      .select("id, email, created_at, referred_by, do_not_contact")
+      .select("id, email, created_at, referred_by, do_not_contact, password_hash")
       .eq("creator_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -39,9 +39,12 @@ export async function GET() {
       }
     }
 
-    const enriched = (fans ?? []).map((f) => ({
+    const enriched = (fans ?? []).map(({ password_hash, ...f }) => ({
       ...f,
       do_not_contact: Boolean(f.do_not_contact),
+      // A boolean, never the hash: the chip needs to know Follower vs Fan
+      // (relationships.md Part 2) and the secret itself must not leave the server.
+      has_password: Boolean(password_hash),
       total_spent: spentByFan.get(f.id as string) ?? 0,
     }));
 

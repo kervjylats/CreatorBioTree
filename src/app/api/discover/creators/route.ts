@@ -6,6 +6,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 
 interface CreatorRow {
   id: string;
@@ -20,6 +21,11 @@ interface CreatorRow {
 
 export async function GET(req: NextRequest) {
   try {
+    // Anonymous and hit on every keystroke of the search box while it scans the
+    // creators table — it needs a speed bump (2026-10-01 audit).
+    const tooMany = await enforceRateLimit(req, "discover-creators", 60, 60_000);
+    if (tooMany) return tooMany;
+
     const supabase = await createClient();
     const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
 
@@ -36,10 +42,14 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // A NULL show_in_search means "never set", which the settings UI treats as ON
+    // (`?? true`), so a strict `eq(true)` filter hid creators whose own toggle
+    // reads as enabled — the creator vanished from Discover and from the landing
+    // marquee (2026-10-01 audit). Match both states.
     const { data: creators, error } = await supabase
       .from("creators")
       .select("id, username, display_name, tagline, avatar_url, show_in_search, is_featured, created_at")
-      .eq("show_in_search", true);
+      .or("show_in_search.eq.true,show_in_search.is.null");
 
     if (error) {
       console.error("[discover/creators] query error:", error);

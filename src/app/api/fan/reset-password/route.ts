@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { z } from "zod";
 import { hashPassword } from "@/lib/fanSession";
+import { enforceRateLimit } from "@/lib/rate-limiter";
 
 const resetSchema = z.object({
   token: z.string().min(1),
@@ -11,6 +12,11 @@ const resetSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Anonymous password-reset endpoint: without a cap it can be used to grind
+    // tokens or flood scrypt hashes (2026-10-01 audit).
+    const tooMany = await enforceRateLimit(request, "fan-reset-password", 5, 60_000);
+    if (tooMany) return tooMany;
+
     const body = await request.json();
     const validation = resetSchema.safeParse(body);
     if (!validation.success) {

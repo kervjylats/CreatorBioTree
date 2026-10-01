@@ -30,7 +30,7 @@ async function listConversations(supabase: Awaited<ReturnType<typeof createClien
     .eq("participant_key", meKey)
     .is("left_at", null);
 
-  const active = (memberships ?? []).filter((m) => !m.left_at);
+  const active = memberships ?? [];
   if (active.length === 0) return [];
 
   const convoIds = active.map((m) => m.conversation_id as string);
@@ -47,7 +47,7 @@ async function listConversations(supabase: Awaited<ReturnType<typeof createClien
 
   // Per-conversation last message + unread count use server-side filtered
   // queries (order+limit 1, and a COUNT) — never load full history. This list
-  // is polled every 6s by the messages shell.
+  // is polled every 30s by useMessages (MessagesShell).
   const summaries = await Promise.all(
     ((convos ?? []) as ConvoRow[]).map(async (convo) => {
       const memberRow = active.find((m) => m.conversation_id === convo.id)!;
@@ -96,7 +96,11 @@ async function listConversations(supabase: Awaited<ReturnType<typeof createClien
               sender_key: last.sender_key,
             }
           : null,
-        unread: unreadCount ?? 0,
+        // One unread rule everywhere: a MUTED conversation contributes nothing.
+        // The row count used to include muted while GET /api/messages/unread
+        // excluded them, so a muted thread with 3 unread showed "3" on the row
+        // next to a total of "0" (2026-10-01 audit).
+        unread: memberRow.muted_at ? 0 : unreadCount ?? 0,
         muted: Boolean(memberRow.muted_at),
         pinned: Boolean(convo.pinned),
         announcementsOnly: Boolean(convo.announcements_only),

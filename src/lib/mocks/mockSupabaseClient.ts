@@ -1045,8 +1045,15 @@ interface MockAuthResult {
 
 const mockAuth = {
   getUser(): Promise<MockAuthResult> {
+    // Return a SNAPSHOT, never the shared singleton. A route that reads the user
+    // and then builds a second client (createServiceClient() with no cookie
+    // hydration blanks currentAuthUser for the "no cookie" case) used to have its
+    // already-captured `user` object mutated underneath it — so
+    // `.eq("creator_id", user.id)` silently matched nothing and the route answered
+    // "[]" for a creator who does have rows (2026-10-01). Real Supabase returns a
+    // fresh object per call; the mock now does too.
     return Promise.resolve({
-      data: { user: currentAuthUser.id ? currentAuthUser : null },
+      data: { user: currentAuthUser.id ? { ...currentAuthUser } : null },
       error: null,
     });
   },
@@ -1056,7 +1063,8 @@ const mockAuth = {
     error: null;
   }> {
     return Promise.resolve({
-      data: { session: currentAuthUser.id ? currentAuthUser : null },
+      // Snapshot, same reason as getUser() above.
+      data: { session: currentAuthUser.id ? { ...currentAuthUser } : null },
       error: null,
     });
   },

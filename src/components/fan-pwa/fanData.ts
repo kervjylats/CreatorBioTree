@@ -28,6 +28,11 @@ export interface FanShellData {
   identity: FanIdentity | null;
   /** Completed purchases for the session email (fan + follower + guest-buyer rows). */
   purchases: FanPurchase[];
+  /**
+   * Lifetime spend grouped by currency, computed server-side. Never sum mixed
+   * currencies into one number — render one total per entry (fanData audit 2026-10-01).
+   */
+  spendByCurrency: Record<string, number>;
   /** Creator's custom Connect-tab empty text (falls back to platform default). */
   connectEmptyText: string;
   /** Artist links for the Connect tab (derived from social_links; Connect-only, fan-shell.md Part 4c). */

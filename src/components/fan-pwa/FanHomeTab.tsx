@@ -212,7 +212,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
                 style={{ backgroundColor: branding.cardColor, color: branding.textColor }}
               >
                 <Tag size={16} style={{ color: branding.accentColor }} />
-                <span className="text-sm font-semibold">Active member</span>
+                <span className="text-sm font-semibold">Membership purchased</span>
                 <span className="ml-auto rounded-full px-2 py-0.5 text-micro font-bold uppercase"
                   style={{ backgroundColor: branding.accentColor + "22", color: branding.accentColor }}>
                   Member

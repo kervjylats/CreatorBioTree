@@ -25,7 +25,7 @@ interface Deal {
   created_at: string;
 }
 
-export function AffiliateDiscover() {
+export function AffiliateDiscover({ refreshKey = 0 }: { refreshKey?: number }) {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [creatingLink, setCreatingLink] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export function AffiliateDiscover() {
       }
     }
     fetchDeals();
-  }, []);
+  }, [refreshKey]);
 
   async function handleCreateLink(dealId: string) {
     setCreatingLink(dealId);

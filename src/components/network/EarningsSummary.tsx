@@ -33,7 +33,7 @@ interface EarningsData extends Totals {
   }>;
 }
 
-export function EarningsSummary() {
+export function EarningsSummary({ refreshKey = 0 }: { refreshKey?: number }) {
   const [data, setData] = useState<EarningsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export function EarningsSummary() {
       .then(setData)
       .catch(() => { setError("Could not load earnings"); })
       .finally(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   if (loading) {
     return (

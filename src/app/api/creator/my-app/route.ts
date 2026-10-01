@@ -56,13 +56,18 @@ export async function GET() {
       .eq("creator_id", user.id);
     const { data: completedPurchases } = await supabase
       .from("fan_purchases")
-      .select("amount_paid")
+      .select("amount_paid, currency")
       .eq("creator_id", user.id)
       .eq("status", "completed");
     const totalSales = (completedPurchases ?? []).reduce(
       (sum, row) => sum + (Number(row.amount_paid) || 0),
       0,
     );
+    // The card must not assume a currency: report the one the creator's sales are
+    // actually in (newest purchase wins), so a non-USD store shows the right
+    // symbol instead of a silent "$".
+    const totalSalesCurrency =
+      completedPurchases?.find((row) => typeof row.currency === "string" && row.currency)?.currency ?? "usd";
 
     return NextResponse.json({
       creator,
@@ -70,6 +75,7 @@ export async function GET() {
       page_views: pageViews ?? 0,
       fans_count: fansCount ?? 0,
       total_sales: totalSales,
+      total_sales_currency: totalSalesCurrency,
     });
   } catch (err) {
     const handled = handleAuthError(err);

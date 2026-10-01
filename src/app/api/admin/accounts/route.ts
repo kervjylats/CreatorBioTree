@@ -1,7 +1,7 @@
 /** Admin accounts API — list all admins (GET) and create new admins (POST). Super_admin only. */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { canPerform, getAdminAccount } from "@/lib/admin-permissions";
+import { canPerform, getAdminAccount, isAdminRole } from "@/lib/admin-permissions";
 import { createServiceClient } from "@/lib/supabase/admin";
 import type { AdminAccount } from "@/types";
 
@@ -45,8 +45,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "email and role are required" }, { status: 400 });
     }
 
-    const validRoles = ["super_admin", "support_admin", "content_admin", "agent"];
-    if (!validRoles.includes(role)) {
+    // One role vocabulary (ROLE_LABELS) instead of a private literal copy that
+    // silently went stale the moment a role was added.
+    if (!isAdminRole(role)) {
       return NextResponse.json({ error: "Invalid role" }, { status: 400 });
     }
 

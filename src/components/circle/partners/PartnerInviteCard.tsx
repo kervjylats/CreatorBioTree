@@ -1,3 +1,4 @@
+/** Shareable partner invite card showing invite link URL, copy button, and expiration info (partnership.md Part 1). */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fetchJson } from "@/lib/fetchJson";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
+import { INVITE_TTL_DAYS } from "@/lib/limits";
 
-/** Shareable partner invite card showing invite link URL, copy button, and expiration info (partnership.md Part 1). */
 export function PartnerInviteCard() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,7 +64,7 @@ export function PartnerInviteCard() {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Link expires in 7 days. One use per link.
+          Link expires in {INVITE_TTL_DAYS} days. One use per link.
         </p>
       </CardContent>
     </Card>

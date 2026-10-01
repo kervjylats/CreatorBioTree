@@ -107,6 +107,11 @@ export function NetworkPage() {
           rate_card: d.rate_card ?? prev.rate_card,
           media_kit_message: d.media_kit_message ?? "",
         }));
+        toast.success("Billboard saved");
+      } else {
+        // Silently returning the button to "Save" used to read as success
+        // (2026-10-01 audit).
+        toast.error("Couldn't save your billboard — try again");
       }
     } finally {
       setBillboardSaving(false);
@@ -116,12 +121,20 @@ export function NetworkPage() {
   // Visibility switches save instantly (independent of the Save Billboard button).
   const handleInstantToggle = useCallback(
     async (field: "show_in_search" | "open_to_collab") => {
-      setBillboard((prev) => ({ ...prev, [field]: !prev[field] }));
-      await fetch("/api/creator/partners/billboard", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [field]: !billboard[field] }),
-      });
+      const next = !billboard[field];
+      setBillboard((prev) => ({ ...prev, [field]: next }));
+      try {
+        await fetchJson("/api/creator/partners/billboard", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ [field]: next }),
+        });
+      } catch {
+        // Put the switch back where the server still has it — otherwise Discover
+        // and the toggle disagree with no explanation (2026-10-01 audit).
+        setBillboard((prev) => ({ ...prev, [field]: !next }));
+        toast.error("Couldn't update that setting");
+      }
     },
     [billboard],
   );
@@ -218,10 +231,13 @@ export function NetworkPage() {
           {showDealForm && (
             <AffiliateDealForm onSubmit={handleDealSubmit} onCancel={() => setShowDealForm(false)} />
           )}
+          {/* One refreshKey for the whole affiliate rail: a new deal used to appear
+              in Your Deals while the earnings, discover list and links kept showing
+              the old data until a full page reload (2026-10-01 audit). */}
           <YourDealsCard refreshKey={dealsKey} />
-          <EarningsSummary />
-          <AffiliateDiscover />
-          <AffiliateLinks />
+          <EarningsSummary refreshKey={dealsKey} />
+          <AffiliateDiscover refreshKey={dealsKey} />
+          <AffiliateLinks refreshKey={dealsKey} />
         </aside>
 
         {/* CENTER — Discover grid */}

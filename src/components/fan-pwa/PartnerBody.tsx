@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
 import { ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import type { CreatorBranding } from "@/lib/branding";
 import type { ContentItem } from "@/types";
 import { contrastText } from "./themeStyles";
@@ -46,7 +47,12 @@ export function usePartnerFollow(partnerUsername: string, hostUsername: string) 
     if (res.ok) {
       const d = (await res.json()) as { followed: boolean };
       setFollowing(d.followed);
+      return;
     }
+    // Following needs a session on THIS creator's app (401). The tap used to do
+    // nothing at all — no state change, no message (2026-10-01 audit).
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    toast.error(body?.error ?? (res.status === 401 ? "Sign in to follow" : "Couldn't update follow"));
   }, [following, partnerUsername, hostUsername]);
 
   return { following, toggleFollow };
@@ -125,7 +131,7 @@ export function PartnerBody({ branding, items, socialLinks }: PartnerBodyProps) 
                     className="mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold"
                     style={{ backgroundColor: branding.accentColor, color: contrastText(branding.accentColor) }}
                   >
-                    Buy — {money(item.price)}
+                    Buy — {money(item.price, item.currency)}
                   </span>
                 )}
                 {item.access_type === "free" && (

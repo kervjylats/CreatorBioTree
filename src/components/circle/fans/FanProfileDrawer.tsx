@@ -4,7 +4,7 @@
  */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { MessageIcon } from "@/components/messages/MessagesShell";
 import { toast } from "sonner";
 import { fetchJson } from "@/lib/fetchJson";
-import { formatDate } from "@/lib/format";
+import { formatDate, money } from "@/lib/format";
 
 interface FanProfile {
   fan: {
@@ -64,27 +64,65 @@ export function FanProfileDrawer({
 
   const handleToggleDNC = async (checked: boolean) => {
     if (!fanId) return;
-    await fetch(`/api/creator/fans/${fanId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ do_not_contact: checked }),
-    });
+    const previous = profile?.fan.do_not_contact ?? false;
     setProfile((prev) =>
       prev ? { ...prev, fan: { ...prev.fan, do_not_contact: checked } } : prev,
     );
+    try {
+      // Verified optimistic write — a failed PATCH used to look like success
+      // (2026-10-01 audit).
+      await fetchJson(`/api/creator/fans/${fanId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ do_not_contact: checked }),
+      });
+    } catch {
+      setProfile((prev) =>
+        prev ? { ...prev, fan: { ...prev.fan, do_not_contact: previous } } : prev,
+      );
+      toast.error("Couldn't update that flag");
+    }
   };
 
-  const handleNotesChange = async (notes: string) => {
+  // Notes save on a debounce, not per keystroke: one PATCH per word instead of one
+  // per character, and only the newest value can land last (a slow early request
+  // used to be able to overwrite newer text — 2026-10-01 audit).
+  const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notesBeforeEdit = useRef<string | null>(null);
+
+  const handleNotesChange = (notes: string) => {
     if (!fanId) return;
-    await fetch(`/api/creator/fans/${fanId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notes: notes || null }),
-    });
+    // Remember the server-confirmed value once per burst, so a failed save can
+    // restore it instead of blanking the field.
+    if (!notesTimer.current) notesBeforeEdit.current = profile?.fan.notes ?? null;
     setProfile((prev) =>
       prev ? { ...prev, fan: { ...prev.fan, notes: notes || null } } : prev,
     );
+    if (notesTimer.current) clearTimeout(notesTimer.current);
+    notesTimer.current = setTimeout(() => {
+      notesTimer.current = null;
+      void (async () => {
+        try {
+          await fetchJson(`/api/creator/fans/${fanId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ notes: notes || null }),
+          });
+        } catch {
+          setProfile((prev) =>
+            prev ? { ...prev, fan: { ...prev.fan, notes: notesBeforeEdit.current } } : prev,
+          );
+          toast.error("Couldn't save those notes");
+        }
+      })();
+    }, 600);
   };
+
+  useEffect(() => {
+    return () => {
+      if (notesTimer.current) clearTimeout(notesTimer.current);
+    };
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -118,7 +156,7 @@ export function FanProfileDrawer({
               <h4 className="text-sm font-semibold">Purchases</h4>
               <div className="flex gap-4 text-sm">
                 <span>{profile.purchase_count} purchases</span>
-                <span>${profile.total_spent.toFixed(2)} total</span>
+                <span>{money(profile.total_spent)} total</span>
               </div>
               {profile.last_purchase_at && (
                 <p className="text-xs text-muted-foreground">

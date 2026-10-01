@@ -12,6 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { fetchJson } from "@/lib/fetchJson";
+import { formatDealRate } from "@/lib/affiliate-format";
+import { toast } from "sonner";
 
 interface AffiliateLink {
   id: string;
@@ -30,7 +33,7 @@ interface AffiliateLink {
   } | null;
 }
 
-export function AffiliateLinks() {
+export function AffiliateLinks({ refreshKey = 0 }: { refreshKey?: number }) {
   const [links, setLinks] = useState<AffiliateLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -50,7 +53,7 @@ export function AffiliateLinks() {
 
   useEffect(() => {
     fetchLinks();
-  }, [fetchLinks]);
+  }, [fetchLinks, refreshKey]);
 
   async function handleCopy(link: AffiliateLink) {
     const url = `${window.location.origin}/ref/${link.ref_code}`;
@@ -62,14 +65,20 @@ export function AffiliateLinks() {
   }
 
   async function handleToggle(link: AffiliateLink) {
-    await fetch(`/api/creator/affiliates/links/${link.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ active: !link.active }),
-    });
-    setLinks((prev) =>
-      prev.map((l) => (l.id === link.id ? { ...l, active: !l.active } : l))
-    );
+    const next = !link.active;
+    setLinks((prev) => prev.map((l) => (l.id === link.id ? { ...l, active: next } : l)));
+    try {
+      // Optimistic, but verified: a 403/500 used to render as success because the
+      // response was never read (2026-10-01 audit).
+      await fetchJson(`/api/creator/affiliates/links/${link.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: next }),
+      });
+    } catch {
+      setLinks((prev) => prev.map((l) => (l.id === link.id ? { ...l, active: !next } : l)));
+      toast.error("Couldn't update that link");
+    }
   }
 
   if (loading) {
@@ -122,7 +131,10 @@ export function AffiliateLinks() {
               <div className="text-sm text-muted-foreground space-x-3">
                 {link.deal && (
                   <>
-                    <span>{link.deal.deal_type}</span>
+                    {/* formatDealRate, like YourDealsCard and AffiliateDiscover —
+                        this card used to print the raw `percentage`/`fixed` enum
+                        and no rate at all (2026-10-01 audit). */}
+                    <span>{formatDealRate(link.deal)}</span>
                     <span>• {link.deal.trigger}</span>
                     <span>• {link.deal.scope}</span>
                   </>

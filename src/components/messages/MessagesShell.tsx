@@ -35,6 +35,7 @@ import { Avatar } from "@/components/shared/Avatar";
 import { CountPill } from "@/components/shared/CountPill";
 import { Switch } from "@/components/ui/switch";
 import { LABEL_CLASS } from "@/lib/ui-constants";
+import { MAX_MESSAGE_UPLOAD_BYTES, formatByteLimit } from "@/lib/limits";
 
 // ─── Shared types + fetch helper ─────────────────────────────────────────────
 
@@ -682,8 +683,8 @@ function MessageComposer({
 
   const handleFile = async (file: File | null) => {
     if (!file) return;
-    if (file.size > 8_000_000) {
-      toast.error("Max 8MB per file");
+    if (file.size > MAX_MESSAGE_UPLOAD_BYTES) {
+      toast.error(`Max ${formatByteLimit(MAX_MESSAGE_UPLOAD_BYTES)} per file`);
       return;
     }
     setUploading(true);

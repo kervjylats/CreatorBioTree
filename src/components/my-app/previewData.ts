@@ -39,6 +39,7 @@ export function buildPreviewData(draft: MyAppDraft, base: Creator, items: Conten
     items,
     identity: null as FanIdentity | null,
     purchases: [],
+    spendByCurrency: {},
     connectEmptyText: draft.connect_empty_text ?? "",
     artistLinks: socialLinksToArtistLinks(draft.social_links),
     community: null,

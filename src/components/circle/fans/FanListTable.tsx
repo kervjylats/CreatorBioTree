@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { fetchJson } from "@/lib/fetchJson";
-import { formatDate } from "@/lib/format";
+import { formatDate, money } from "@/lib/format";
 import { EmptyState } from "@/components/shared/EmptyState";
 
 interface FanRow {
@@ -19,6 +19,8 @@ interface FanRow {
   created_at: string;
   referred_by: string | null;
   do_not_contact: boolean;
+  /** Server-derived: password set → Fan, null → Follower (never the hash itself). */
+  has_password: boolean;
   total_spent: number;
 }
 
@@ -28,9 +30,15 @@ interface FanListTableProps {
   onSelectFan?: (fanId: string) => void;
 }
 
+/**
+ * Fan status per relationships.md Part 2: any completed spend → Paid, otherwise a
+ * password-less account is a Follower and "New". This used to test
+ * `do_not_contact` — a CONSENT flag — so flipping it silently relabelled a fan's
+ * identity (2026-10-01 audit).
+ */
 function statusFor(fan: FanRow): { label: string; variant: "default" | "secondary" | "outline" } {
-  if (!fan.do_not_contact && fan.total_spent === 0) return { label: "New", variant: "secondary" };
   if (fan.total_spent > 0) return { label: "Paid", variant: "default" };
+  if (!fan.has_password) return { label: "New", variant: "secondary" };
   return { label: "Follower", variant: "outline" };
 }
 
@@ -51,6 +59,7 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
               created_at: f.created_at as string,
               referred_by: (f.referred_by as string) ?? null,
               do_not_contact: Boolean(f.do_not_contact),
+              has_password: Boolean(f.has_password),
               total_spent: (f.total_spent as number) ?? 0,
             })),
           );
@@ -68,21 +77,13 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
     return true;
   });
 
+  // The CSV is built by GET /api/creator/fans/export — the one exporter, with
+  // proper quoting and the do-not-contact column. This used to assemble a second,
+  // unquoted 5-column file in the browser that ignored the active filter
+  // (2026-10-01 audit). The filter travels as a query param so the file matches
+  // what the creator is looking at.
   const handleExport = () => {
-    const header = "email,joined,referred_by,status,lifetime_value\n";
-    const rows = filtered
-      .map((f) => {
-        const s = statusFor(f);
-        return `${f.email},${f.created_at},${f.referred_by ?? ""},${s.label},${f.total_spent}`;
-      })
-      .join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `fans-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    window.location.href = `/api/creator/fans/export?status=${filter}`;
   };
 
   const filters: { key: Filter; label: string }[] = [
@@ -157,7 +158,7 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
                     <Badge variant={status.variant}>{status.label}</Badge>
                   </td>
                   <td className="px-4 py-2.5 text-right">
-                    ${fan.total_spent.toFixed(2)}
+                    {money(fan.total_spent)}
                   </td>
                 </tr>
               );

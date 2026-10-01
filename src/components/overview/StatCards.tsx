@@ -16,6 +16,7 @@ import { money } from "@/lib/format";
 
 interface Stats {
   totalSales: number;
+  totalSalesCurrency: string;
   totalFans: number;
   pageViews: number;
   contentItems: number;
@@ -24,6 +25,7 @@ interface Stats {
 export function StatCards() {
   const [stats, setStats] = useState<Stats>({
     totalSales: 0,
+    totalSalesCurrency: "usd",
     totalFans: 0,
     pageViews: 0,
     contentItems: 0,
@@ -35,11 +37,13 @@ export function StatCards() {
       items?: unknown[];
       fans_count?: number;
       total_sales?: number;
+      total_sales_currency?: string;
       page_views?: number;
     }>("/api/creator/my-app")
       .then((data) => {
         setStats({
           totalSales: data?.total_sales ?? 0,
+          totalSalesCurrency: data?.total_sales_currency ?? "usd",
           totalFans: data?.fans_count ?? 0,
           pageViews: data?.page_views ?? 0,
           contentItems: data?.items?.length ?? 0,
@@ -52,7 +56,7 @@ export function StatCards() {
   const cards = [
     {
       label: "Total Sales",
-      value: money(stats.totalSales),
+      value: money(stats.totalSales, stats.totalSalesCurrency),
       icon: DollarSign,
     },
     { label: "Total Fans", value: stats.totalFans, icon: Users },

@@ -4,6 +4,7 @@
  */
 import { NextResponse } from "next/server";
 import { requireAuth, handleAuthError } from "@/lib/requireAuth";
+import { inviteExpiry } from "@/lib/limits";
 
 export async function GET() {
   try {
@@ -22,7 +23,7 @@ export async function GET() {
     }
 
     const code = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = inviteExpiry();
     await supabase.from("partner_invites").insert({
       from_creator_id: user.id,
       invite_code: code,

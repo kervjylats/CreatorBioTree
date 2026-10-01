@@ -9,11 +9,31 @@
 /** Message attachment cap — must match `api/messages/upload` (8MB). */
 export const MAX_MESSAGE_UPLOAD_BYTES = 8_000_000;
 
+/**
+ * The same cap expressed as a request-body limit, because the upload route reads
+ * the base64 payload out of a JSON body: base64 inflates bytes by ~4/3. The route
+ * used to hardcode 12,000,000 next to the 8,000,000 constant it derives from.
+ */
+export const MAX_MESSAGE_UPLOAD_B64_BYTES = Math.ceil((MAX_MESSAGE_UPLOAD_BYTES * 4) / 3);
+
+/** Human-readable form of a byte cap, for client-side error copy. */
+export function formatByteLimit(bytes: number): string {
+  return `${Math.round(bytes / (1024 * 1024))}MB`;
+}
+
 /** Creator file upload cap — must match `api/creator/upload` (50MB). */
 export const MAX_AVATAR_UPLOAD_BYTES = 50 * 1024 * 1024;
 
 /** My App PWA icon cap — must match `api/creator/my-app/icon` (2MB). */
 export const MAX_APP_ICON_BYTES = 2_000_000;
+
+/** Shareable invite links (staff + partners) live for 7 days. */
+export const INVITE_TTL_DAYS = 7;
+
+/** The matching expiry timestamp for a newly created invite link. */
+export function inviteExpiry(from: Date = new Date()): string {
+  return new Date(from.getTime() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
+}
 
 /** Billboard text caps — client maxLength AND server `.slice()` both read these. */
 export const BILLBOARD_LIMITS = {

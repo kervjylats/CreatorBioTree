@@ -1,7 +1,8 @@
 /**
  * GET /api/messages/unread — total unread badge count for the floating inbox icon
  * (messaging.md Part 1): sum of messages newer than my last_read_at across my
- * visible conversations. Polled by useUnreadBadge (mock) / realtime (prod).
+ * visible, unmuted conversations. Polled every 30s by useMessages (mock polling;
+ * realtime in production).
  */
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -14,7 +15,9 @@ export async function GET() {
     if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // Server-side filtered COUNT per conversation (never load full history —
-    // this endpoint is polled every 6s by useUnreadBadge).
+    // this endpoint is polled every 30s by useMessages). Muted conversations are
+    // excluded here AND in the per-row counts of /api/messages/conversations, so
+    // the icon total and the row pills always agree (2026-10-01 audit).
     const { data: memberships } = await supabase
       .from("conversation_members")
       .select("*")

@@ -1,8 +1,8 @@
 /** Creator onboarding — sets Link Address (username) + display name on the creator row after signup (onboarding.md). */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { USERNAME_PATTERN } from "@/lib/username";
 
-const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();

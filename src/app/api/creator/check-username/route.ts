@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { enforceRateLimit } from "@/lib/rate-limiter";
+import { USERNAME_PATTERN } from "@/lib/username";
 
-const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
 
 export async function GET(request: NextRequest) {
   const tooMany = await enforceRateLimit(request, "check-username", 20, 60_000);

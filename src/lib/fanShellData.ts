@@ -95,6 +95,18 @@ export async function resolveFanShellData(username: string): Promise<FanShellDat
     return { ...item, file_url: null };
   });
 
+  // Lifetime spend, computed here and grouped BY CURRENCY. The guest receipts card
+  // and the Settings tab each used to `reduce()` the rows themselves and label the
+  // result with the first row's currency — so a mixed-currency fan got a single
+  // number wearing the wrong symbol (2026-10-01 audit). One server-side answer,
+  // per currency, no component math.
+  const spendByCurrency: Record<string, number> = {};
+  for (const p of purchases) {
+    const amount = Number(p.amount_paid ?? 0) || 0;
+    const code = p.currency || "usd";
+    spendByCurrency[code] = (spendByCurrency[code] ?? 0) + amount;
+  }
+
   const artistLinks = socialLinksToArtistLinks(typedCreator.social_links);
 
   // ── Community (messaging.md Part 3) ──────────────────────────────────────
@@ -160,6 +172,7 @@ export async function resolveFanShellData(username: string): Promise<FanShellDat
     items: (items ?? []) as FanShellData["items"],
     identity,
     purchases,
+    spendByCurrency,
     connectEmptyText: typedCreator.connect_empty_text || "",
     artistLinks,
     community,

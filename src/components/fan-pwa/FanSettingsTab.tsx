@@ -44,10 +44,12 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
     return initial;
   });
 
-  const totalSpent = data.purchases.reduce((sum, p) => sum + (p.amount_paid ?? 0), 0);
   const titleFor = (itemId: string) => data.items.find((i) => i.id === itemId)?.title ?? null;
 
   // Subscription: check for an active recurring membership purchase.
+  // What a completed purchase proves: they bought a membership. It cannot prove
+  // the membership is still ACTIVE (no subscriptions table exists), so the copy
+  // says "Purchased" - "Active" was a claim the data can't support (2026-10-01 audit).
   const hasMembership = data.purchases.some(
     (p) =>
       p.status === "completed" &&
@@ -129,15 +131,15 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
             <div className="mt-2 flex items-center gap-2">
               <span className="rounded-full px-2 py-0.5 text-micro font-bold uppercase"
                 style={{ backgroundColor: branding.accentColor + "22", color: branding.accentColor }}>
-                Active
+                Purchased
               </span>
               <span className="text-xs" style={{ color: branding.textColor + "88" }}>
-                You&apos;re a member
+                You bought a membership
               </span>
             </div>
           ) : (
             <p className="mt-2 text-xs" style={{ color: branding.textColor + "77" }}>
-              No active membership — browse the catalog to join.
+              No membership yet — browse the catalog to join.
             </p>
           )}
         </div>
@@ -201,7 +203,12 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
               </div>
             ))}
             <p className="text-right text-xs font-semibold" style={{ color: branding.textColor + "88" }}>
-              Total spent: {money(totalSpent, data.purchases[0]?.currency)}
+              {/* Server-computed per currency (2026-10-01 audit). */}
+              {Object.entries(data.spendByCurrency).map(([code, amount]) => (
+                <span key={code} className="ml-2">
+                  Total spent: {money(amount, code)}
+                </span>
+              ))}
             </p>
           </div>
         )}

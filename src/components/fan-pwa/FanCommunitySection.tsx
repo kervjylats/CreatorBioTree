@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import { Hash, Lock, Megaphone, Users, UserPlus, UserMinus } from "lucide-react";
+import { toast } from "sonner";
 import type { FanShellData } from "./fanData";
 import { cardRadius, contrastText } from "./themeStyles";
 
@@ -37,7 +38,13 @@ export function FanCommunitySection({ data }: FanCommunitySectionProps) {
         const chRes = await fetch(`/api/messages/communities/${community.id}/channels`);
         const chData = await chRes.json();
         setChannels(chData.channels ?? []);
+        return;
       }
+      // Join rules can refuse (invite-only, fans-and-partners only) and a guest
+      // gets 401 — both used to be swallowed, so the button did nothing at all
+      // while the card promised a rule (2026-10-01 audit).
+      const body = (await res.json().catch(() => null)) as { error?: string } | null;
+      toast.error(body?.error ?? (res.status === 401 ? "Sign in to join" : "Couldn't join — try again"));
     } finally {
       setJoining(false);
     }

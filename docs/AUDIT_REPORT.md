@@ -27,6 +27,13 @@ Trigger finding: `overview/StatCards.tsx` read `fans_count` from an API that nev
 | Fan-shell navigation | **Bottom bar at every width** (no desktop top-links variant). |
 | `screens/creator` wing name | **Kept** — wings are named by *who* (creator · fan · admin · public), leaves are named by the *URL word*. |
 
+### Found while fixing (not in the original sweep)
+
+| # | Where | Broken | Fix | Batch |
+|---|---|---|---|---|
+| 76 | `lib/mocks/mockSupabaseClient.ts` `getUser()` / `getSession()` | **Every route that reads the user and then builds a service client returned empty lists.** The mock returned the auth singleton *by reference*; `createServiceClient()` (no cookie hydration) blanks it for the "no cookie" case, so a route's already-captured `user.id` became `""` before the query — `.eq("creator_id", user.id)` matched nothing. `fans/list` and `fans/export` answered `[]` for a creator with 3 fans. | Return a snapshot (`{ ...currentAuthUser }`), as real Supabase does. | ✅ C (2026-10-01) |
+| 77 | `api/creator/fans/export/route.ts:31,39` | *Audit false positive:* "Last Purchase/View Date uses `[0]` of an unordered query". Both queries already had `.order(..., { ascending: false })`, so `[0]` is genuinely the latest. | No change — corrected in this report. | — |
+
 ---
 
 ## 1. HIGH — user sees wrong or zero data
@@ -50,42 +57,42 @@ Trigger finding: `overview/StatCards.tsx` read `fans_count` from an API that nev
 | 15 | `components/fan-pwa/FanHomeTab.tsx:47,61-66` | **Spec'd "Upcoming" section can never render.** `upcoming` filters `items`, which were already filtered by `isScheduledVisible` (drops anything not yet published). | Build `upcoming` from the unfiltered list + countdown. | ✅ B (2026-10-01) |
 | 16 | `app/api/creator/my-app/route.ts:15` vs `lib/limits.ts:21` | **Deploy lockout:** billboard allows a 600-char bio, deploy schema caps 500. A 501–600 char bio saved in the Billboard makes **every** Deploy fail with "Invalid request". | Use `BILLBOARD_LIMITS.bio` in the schema. | ✅ B (2026-10-01) |
 | 17 | `app/api/creator/affiliates/earnings/route.ts:25,39` + `EarningsSummary.tsx:101-103` | **"Total earned" mixes money earned with money owed.** `allDealIds = [...owned, ...promoted]` sums `promoter_cut` for both — on owned deals that cut is what the creator *pays*. | Split into "earned" (promoted) and "owed" (owned). | ✅ B (2026-10-01) |
-| 18 | `app/api/messages/conversations/route.ts:33` vs `unread/route.ts:23` | **Two unread numbers on one screen.** Row pills count muted conversations; the total excludes them → a muted 3-unread thread shows "3" beside a total of "0". | One shared predicate for both routes. | C |
+| 18 | `app/api/messages/conversations/route.ts:33` vs `unread/route.ts:23` | **Two unread numbers on one screen.** Row pills count muted conversations; the total excludes them → a muted 3-unread thread shows "3" beside a total of "0". | One shared predicate for both routes. | ✅ C (2026-10-01) |
 
 ## 2. MED — misleading, fragile, or drifted from a shared helper
 
 | # | Where | Issue | Fix | Batch |
 |---|---|---|---|---|
-| 19 | `components/circle/fans/FanListTable.tsx:31-35` | Status chip derives identity from the **consent** flag (`do_not_contact`); spec's follower test is `password_hash IS NULL`. | Select `password_hash` + subscription state; derive server-side. | C |
-| 20 | `FanListTable.tsx:160` · `FanProfileDrawer.tsx:121` | `${x.toFixed(2)}` hand-rolled money (two renderings of one number on one screen). | `money()`. | C |
-| 21 | `components/layout/MyPeeps.tsx:27-31` vs `api/messages/unread` | Dock unread (direct only, grouped) and 💬 unread (all types) are different scopes, documented in neither. | Document the scopes; or derive the dock from one source. | C |
-| 22 | `InboxRequests.tsx:41` vs `peeps/route.ts:39-43` | Inbox shows incoming+outgoing pending; the dock badge counts incoming only. | Align or label. | C |
-| 23 | `components/network/NetworkPage.tsx:221-224` | Only `YourDealsCard` gets `refreshKey` — a new link never appears in "My Links"/earnings without a full reload. | Thread one key through all four widgets. | C |
-| 24 | `NetworkPage.tsx:117-127` | Billboard instant-toggle: optimistic set, **no `res.ok`**, no rollback → a failed save leaves the switch ON while the DB says OFF. | Check `res.ok`; roll back + toast. | C |
-| 25 | `NetworkPage.tsx:84-98` | Billboard save failure is swallowed (`.catch(() => null)`) with no toast. | Toast on failure. | C |
-| 26 | `AffiliateLinks.tsx:64-73` · `FanProfileDrawer.tsx:65-75` | Toggle/pause writes mutate state without reading `res.ok` → a 403/500 renders as success. | Check + revert + toast. | C |
-| 27 | `FanProfileDrawer.tsx:77-87` | Notes PATCH fires **per keystroke**, optimistic, no `res.ok`, no ordering guard → out-of-order writes clobber newer text. | Debounce, check, guard. | C |
-| 28 | `FanListTable.tsx:71-86` vs `api/creator/fans/export/route.ts` | **Two CSV exporters** that disagree (5 unquoted columns vs 11 quoted, one honors filters, neither has `do_not_contact`). | One server exporter with filter params; delete the client builder. | C |
+| 19 | `components/circle/fans/FanListTable.tsx:31-35` | Status chip derives identity from the **consent** flag (`do_not_contact`); spec's follower test is `password_hash IS NULL`. | Select `password_hash` + subscription state; derive server-side. | ✅ C (2026-10-01) |
+| 20 | `FanListTable.tsx:160` · `FanProfileDrawer.tsx:121` | `${x.toFixed(2)}` hand-rolled money (two renderings of one number on one screen). | `money()`. | ✅ C (2026-10-01) |
+| 21 | `components/layout/MyPeeps.tsx:27-31` vs `api/messages/unread` | Dock unread (direct only, grouped) and 💬 unread (all types) are different scopes, documented in neither. | Document the scopes; or derive the dock from one source. | ✅ C (2026-10-01) |
+| 22 | `InboxRequests.tsx:41` vs `peeps/route.ts:39-43` | Inbox shows incoming+outgoing pending; the dock badge counts incoming only. | Align or label. | ✅ C (2026-10-01) |
+| 23 | `components/network/NetworkPage.tsx:221-224` | Only `YourDealsCard` gets `refreshKey` — a new link never appears in "My Links"/earnings without a full reload. | Thread one key through all four widgets. | ✅ C (2026-10-01) |
+| 24 | `NetworkPage.tsx:117-127` | Billboard instant-toggle: optimistic set, **no `res.ok`**, no rollback → a failed save leaves the switch ON while the DB says OFF. | Check `res.ok`; roll back + toast. | ✅ C (2026-10-01) |
+| 25 | `NetworkPage.tsx:84-98` | Billboard save failure is swallowed (`.catch(() => null)`) with no toast. | Toast on failure. | ✅ C (2026-10-01) |
+| 26 | `AffiliateLinks.tsx:64-73` · `FanProfileDrawer.tsx:65-75` | Toggle/pause writes mutate state without reading `res.ok` → a 403/500 renders as success. | Check + revert + toast. | ✅ C (2026-10-01) |
+| 27 | `FanProfileDrawer.tsx:77-87` | Notes PATCH fires **per keystroke**, optimistic, no `res.ok`, no ordering guard → out-of-order writes clobber newer text. | Debounce, check, guard. | ✅ C (2026-10-01) |
+| 28 | `FanListTable.tsx:71-86` vs `api/creator/fans/export/route.ts` | **Two CSV exporters** that disagree (5 unquoted columns vs 11 quoted, one honors filters, neither has `do_not_contact`). | One server exporter with filter params; delete the client builder. | ✅ C (2026-10-01) |
 | 29 | `components/settings/NotificationsSection.tsx:17-25` | Toggles + success toast, zero persistence (local state only). | Policy: label "Coming soon". | ✅ B (2026-10-01) |
 | 30 | `components/settings/DangerZone.tsx:33-42` | "Export started" / "deletion requested" toasts; only `console.log`. | Policy: label "Coming soon". | ✅ B (2026-10-01) |
 | 31 | `components/admin/AuditLog.tsx:5-17` | Static placeholder reading as a live panel. | Policy: "Coming soon" badge. | ✅ B (2026-10-01) |
 | 32 | `lib/mocks/mockSupabaseClient.ts:884-889` | Admin revenue sums **all** purchases (no `status` filter) while 5 other sites filter `completed`. | Add the filter. | ✅ C (2026-10-01) |
-| 33 | `components/network/AffiliateLinks.tsx:123-131` | Shows raw `deal_type/trigger/scope` and no rate; siblings use `formatDealRate`. | Use the shared formatter. | C |
-| 34 | `lib/affiliate-format.ts:17` + 6 sites | `money(amount)` without the `currency` argument (silently USD): `StatCards:54`, `admin/StatsCards:33`, `EarningsSummary:83,87,91,103`, `PartnerBody:128`. | Thread currency; single-currency assert. | C |
-| 35 | `MessagesShell.tsx:685-686` · `api/messages/upload/route.ts:16,37` | 8MB cap hardcoded in 3 places (plus a 12MB base64 cap not derived from it); `FileUploadField` has no client check. | One exported constant. | C |
-| 36 | Anonymous routes with no rate limit | `api/discover/creators` (full table scan per keystroke) and `api/fan/reset-password`. | `enforceRateLimit` on every anonymous route. | C |
-| 37 | `api/admin/accounts/route.ts:48` + `api-keys/route.ts:24` | Fourth copy of the role vocabulary; api-keys bypasses validation, and `getAdminAccount` (unordered lookup) can return the `agent` row → **admin locks themselves out** after generating a key. | One enum source; privilege-ordered lookup. | C |
-| 38 | `GuestPageContent.tsx:220` · `FanSettingsTab.tsx:47,200` | "Total spent" summed client-side twice; `GET /api/fan/purchases` (0 callers) doesn't return a total; mixed currencies sum into the first row's currency. | Server returns the total (+ per-currency). | C |
-| 39 | `api/landing discover` vs `api/creator/billboard` | `show_in_search`: strict `eq(true)` in landing/discover vs `?? true` elsewhere → a NULL shows the toggle ON but the creator is invisible. | Normalize once. | C |
-| 40 | `FanHomeTab.tsx:75-77` · `FanSettingsTab.tsx:51-55` | "Active member" is permanent (any past membership purchase); no renewal date, per spec. | Derive or relabel. | C |
-| 41 | `PartnerBody.tsx:39-50` | Follow button silently does nothing for guests (401 swallowed). | Show "Sign in to follow" + open the auth modal. | C |
-| 42 | `FanCommunitySection.tsx:26-44` | Join on invite-only/fans-only communities silently no-ops (403 swallowed). | Surface the server error. | C |
-| 43 | `GuestPageContent.tsx:181-182` | Receipt copy keyed on marketing opt-in ("logged to the dev console" vs "see Settings") — consent has nothing to do with it. | One sentence. | C |
-| 44 | `FanAuthModal.tsx:89-90` | Forgot-password ignores the response — a 429 still shows "reset link sent". | Check `{ok,error}`. | C |
+| 33 | `components/network/AffiliateLinks.tsx:123-131` | Shows raw `deal_type/trigger/scope` and no rate; siblings use `formatDealRate`. | Use the shared formatter. | ✅ C (2026-10-01) |
+| 34 | `lib/affiliate-format.ts:17` + 6 sites | `money(amount)` without the `currency` argument (silently USD): `StatCards:54`, `admin/StatsCards:33`, `EarningsSummary:83,87,91,103`, `PartnerBody:128`. | Thread currency; single-currency assert. | ✅ C (2026-10-01) |
+| 35 | `MessagesShell.tsx:685-686` · `api/messages/upload/route.ts:16,37` | 8MB cap hardcoded in 3 places (plus a 12MB base64 cap not derived from it); `FileUploadField` has no client check. | One exported constant. | ✅ C (2026-10-01) |
+| 36 | Anonymous routes with no rate limit | `api/discover/creators` (full table scan per keystroke) and `api/fan/reset-password`. | `enforceRateLimit` on every anonymous route. | ✅ C (2026-10-01) |
+| 37 | `api/admin/accounts/route.ts:48` + `api-keys/route.ts:24` | Fourth copy of the role vocabulary; api-keys bypasses validation, and `getAdminAccount` (unordered lookup) can return the `agent` row → **admin locks themselves out** after generating a key. | One enum source; privilege-ordered lookup. | ✅ C (2026-10-01) |
+| 38 | `GuestPageContent.tsx:220` · `FanSettingsTab.tsx:47,200` | "Total spent" summed client-side twice; `GET /api/fan/purchases` (0 callers) doesn't return a total; mixed currencies sum into the first row's currency. | Server returns the total (+ per-currency). | ✅ C (2026-10-01) |
+| 39 | `api/landing discover` vs `api/creator/billboard` | `show_in_search`: strict `eq(true)` in landing/discover vs `?? true` elsewhere → a NULL shows the toggle ON but the creator is invisible. | Normalize once. | ✅ C (2026-10-01) |
+| 40 | `FanHomeTab.tsx:75-77` · `FanSettingsTab.tsx:51-55` | "Active member" is permanent (any past membership purchase); no renewal date, per spec. | Derive or relabel. | ✅ C (2026-10-01) |
+| 41 | `PartnerBody.tsx:39-50` | Follow button silently does nothing for guests (401 swallowed). | Show "Sign in to follow" + open the auth modal. | ✅ C (2026-10-01) |
+| 42 | `FanCommunitySection.tsx:26-44` | Join on invite-only/fans-only communities silently no-ops (403 swallowed). | Surface the server error. | ✅ C (2026-10-01) |
+| 43 | `GuestPageContent.tsx:181-182` | Receipt copy keyed on marketing opt-in ("logged to the dev console" vs "see Settings") — consent has nothing to do with it. | One sentence. | ✅ C (2026-10-01) |
+| 44 | `FanAuthModal.tsx:89-90` | Forgot-password ignores the response — a 429 still shows "reset link sent". | Check `{ok,error}`. | ✅ C (2026-10-01) |
 | 45 | `FanAppShell.tsx:66-79` · `FanSettingsTab.tsx:37-73` | Bell + 4 notify toggles write `localStorage` only; nothing calls `/api/push/subscribe` and no `Notification.requestPermission` exists → `push_subscriptions` always empty. | Policy: label "Coming soon". | ✅ B (2026-10-01) |
 | 46 | `api/creator/fans/export/route.ts:29,36,69-72` | "Last Purchase/View Date" uses `[0]` of an **unordered** query (storage order = earliest). | `.order(desc)`. | D |
 | 47 | `api/creator/fans/export/route.ts:84` vs `:75` | "Purchases (Total)" counts all statuses while Lifetime Value filters `completed` → columns disagree by design. | State the scope in the header. | D |
-| 48 | `admin/AccountsTable.tsx:181` | A live API-key prefix is rendered in the Admins table. | Mask harder. | C |
+| 48 | `admin/AccountsTable.tsx:181` | A live API-key prefix is rendered in the Admins table. | Mask harder. | ✅ C (2026-10-01) |
 
 ## 3. LOW — cleanup and drift prevention
 

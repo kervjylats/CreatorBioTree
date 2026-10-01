@@ -178,7 +178,10 @@ export function AccountsTable() {
                     )}
                   </td>
                   <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
-                    {a.api_key ? `${a.api_key.slice(0, 12)}...` : "-"}
+                    {/* Show only that a key exists — a 12-character prefix of a live
+                        key is credential material sitting in a table (2026-10-01 audit).
+                        The full key is revealed once, in ApiKeysPanel, at creation. */}
+                    {a.api_key ? "•••••••• (set)" : "-"}
                   </td>
                   <td className="px-4 py-2.5 text-muted-foreground">
                     {formatDate(a.created_at)}
