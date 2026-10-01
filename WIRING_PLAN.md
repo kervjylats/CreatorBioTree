@@ -527,7 +527,7 @@ DEPENDED    #1–5, #12 (chat feature push/fan) → editor tab messaging #2 type
 SCREEN: Partner page · /[username]/partner/[partnerUsername] ·  spec: partner-page.md
 ──────────────────────────────────────────────────────────────────────────────
 ENTRY       app/(fan)/[username]/partner/[partnerUsername]/page.tsx
-            => src/screens/fan/partner-page/Screen.tsx   (thin page re-export)
+            => src/screens/fan/partner/Screen.tsx   (thin page re-export)
 SEARCH?     No — a **modal** from the fan Connect tab. Follow/unfollow + view a collab partner’s catalog.
 COMPONENTS    ProfilePage (fan-auth gate + branding resolve + #list featured + social links)
 ROUTES         POST /api/fan/follow      LIVE (follow toggle)

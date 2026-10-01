@@ -115,7 +115,7 @@ src/
 │   │
 ├── screens/                      # ⚠️ THE MIDDLEMAN — one folder per screen (index.ts barrel + Screen.tsx)
 │   ├── public/                   # landing, login, onboarding, forgot-password, offline
-│   ├── fan/                      # guest, home, content, connect, settings, partner-page
+│   ├── fan/                      # guest, home, content, connect, settings, partner
 │   ├── creator/                  # overview, network, my-app, settings
 │   └── admin/                    # admin
 │                                 # (login/onboarding/forgot-password + fan screens + dashboard screens are wired; landing is deferred)

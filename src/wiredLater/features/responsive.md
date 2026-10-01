@@ -16,7 +16,7 @@
 ## 1. Principles
 
 1. **Content stable, frame adaptive.** The content a creator builds is identical on every device. Only the navigation chrome and background presentation change.
-2. **Device-native feel.** Each device gets the layout that feels natural for it — bottom nav on phones, sidebar on tablet/desktop dashboards, top nav on fan desktop.
+2. **Device-native feel (revised 2026-10-01).** Exactly **two** navigation shapes exist product-wide: a **bottom bar** (phones, small tablets) and a **sidebar** (tablets ≥`md`, desktop, larger). The dashboard/admin switch bottom→sidebar at `md:`; the **fan shell keeps its bottom bar at every width** — the founder rejected the desktop top-nav variant, so a creator's app reads as a phone app on a big screen. No third nav shape.
 3. **Preview = reality.** The My App editor can preview Phone/Tablet/Desktop and each shows the real fan shell with the correct frame.
 4. **Platform UI uses tokens; fan UI uses creator branding.** Landing, login, search, offline, dashboard, admin = platform tokens from `globals.css`. Fan shell = `resolveBranding()` inline styles.
 5. **Touch-first.** Consumer/fan/primary buttons ≥ 44px tap target. Dense admin controls stay compact but padded.
@@ -46,7 +46,7 @@ The 5 device categories cover 100% of phones, tablets, and desktops globally.
 | 0 | (base) | All phones (small/medium/large) |
 | 640px | `sm:` | Large phones + (unused — large phones fall in base) |
 | 768px | `md:` | Tablet (sidebar appears) |
-| 1024px | `lg:` | Desktop (fan top nav appears) |
+| 1024px | `lg:` | Desktop — dashboard content grids widen (nav shape unchanged) |
 | 1280px | `xl:` | Wide desktop |
 
 Rules:
@@ -63,11 +63,9 @@ Rules:
 
 | Device | Nav | Content column | Background |
 |---|---|---|---|
-| Phone (<`lg`) | Bottom bar (`FanBottomNav`) | `max-w-lg` (512px), centered | Creator branding, full-bleed |
-| Tablet/Desktop (≥`lg`) | Top bar with 4 tab links (Home/Content/Connect/Settings) | `max-w-lg` (512px), centered | Creator branding, full-bleed |
+| **Every width** (phone, tablet, desktop) | Bottom bar (`FanBottomNav`) — one shape, no `lg:` swap | `max-w-lg` (512px), centered | Creator branding, full-bleed |
 
-- Bottom nav hides at `lg:` (`lg:hidden`).
-- Top nav appears at `lg:` (`hidden lg:flex`), inside the existing sticky header.
+- The bottom nav is **never** hidden: no `lg:hidden`, no top-nav variant (founder decision 2026-10-01 — only two nav shapes exist product-wide: bottom bar + sidebar; the fan shell is always the bottom bar).
 - Content column width is identical at all sizes → preview = reality for content.
 - Background is always `branding.backgroundColor` full-bleed.
 - Active tab highlighted by `branding.accentColor` in both navs.
@@ -204,8 +202,8 @@ After every responsive pass, test each surface at:
 | 390px | Medium phone | bottom nav, 1-col | bottom nav, 1-col | bottom nav, 1-col | 1-col hero, stacked | centered card |
 | 430px | Large phone | bottom nav, 1-col | bottom nav, 1-col | bottom nav, 1-col | 1-col hero, stacked | centered card |
 | 768px | Tablet | bottom nav, 1-col | sidebar, 2-col network | sidebar | 2-col features | centered card |
-| 1024px | Desktop | **top nav**, 1-col | sidebar, 2-col network | sidebar, 5-tab strip | 3-col features | centered card |
-| 1440px | Wide | top nav, 1-col | sidebar, 2-col network | sidebar, 5-tab | 3-col, max-width capped | centered card |
+| 1024px | Desktop | bottom nav, 1-col | sidebar, 2-col network | sidebar, 5-tab strip | 3-col features | centered card |
+| 1440px | Wide | bottom nav, 1-col | sidebar, 2-col network | sidebar, 5-tab | 3-col, max-width capped | centered card |
 
 No horizontal page scroll at any width. No content hidden behind fixed bars. All primary buttons ≥ 44px. Safe areas respected on notched iPhones.
 

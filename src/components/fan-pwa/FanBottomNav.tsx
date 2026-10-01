@@ -29,7 +29,7 @@ export function FanBottomNav({ activeTab, onTabChange, branding, showGuest, clas
 
   return (
     <nav
-      className={className ?? "fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-lg border-t pb-[env(safe-area-inset-bottom)] lg:hidden"}
+      className={className ?? "fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-lg border-t pb-[env(safe-area-inset-bottom)]"}
       style={{ backgroundColor: branding.cardColor, borderColor: branding.textColor + "1A" }}
     >
       {allTabs.map(({ id, label, icon: Icon }) => {

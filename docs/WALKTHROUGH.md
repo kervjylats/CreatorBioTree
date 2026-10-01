@@ -137,6 +137,51 @@
 | `src/old-code/`   | 🏛️ Museum     | Old code kept for reference — **never wire from it**                                                                   |
 | `docs/`           | 📖 Guidebooks  | `HOW_IT_WORKS`, `CODEBASE`, and this walkthrough                                                                       |
 
+### 🗺️ The Map — every screen and where its pieces live
+
+**Two naming laws** (decided 2026-10-01, after the wing-name confusion):
+
+> **🪽 Wings (the 4 big folders) = WHO** → `screens/creator` · `screens/fan` · `screens/admin` · `screens/public`
+> **🍃 Leaves (the folders inside) = the URL's own word** → `network`, `my-app`, `settings`, `circle`, `guest`, `home`…
+
+So `/dashboard/network` → screen folder `screens/creator/network` (leaf matches exactly; the wing says *whose* side you're on — search either word and you find it).
+
+| URL | 🚪 Door | 🧠 Manager | 🎨 Pixels | 🔧 Kitchen | 📐 Blueprint |
+|---|---|---|---|---|---|
+| `/` | `app/(public)/page.tsx` | `screens/public/landing` | `components/landing/` | showcase loader | `public/landing.md` |
+| `/login` | `app/(public)/login/page.tsx` | `screens/public/login` | `components/auth/LoginForm` | auth (Supabase) | `public/login.md` |
+| `/onboarding` | `app/(public)/onboarding/page.tsx` | `screens/public/onboarding` | `components/auth/OnboardingForm` | `creator/check-username`, `creator/register` | `public/onboarding.md` |
+| `/forgot-password` | `app/(public)/forgot-password/page.tsx` | `screens/public/forgot-password` | `components/auth/ForgotPasswordForm` | `creator/forgot-password` | `public/login.md` Part 4 |
+| `/offline` | `app/(public)/offline/page.tsx` | `screens/public/offline` | — (static shell) | — | `public/offline.md` |
+| `/dashboard` | `app/(shell)/dashboard/page.tsx` | `screens/creator/overview` | `components/overview/` (5 cards) | `creator/my-app`, `creator/activity` | `creator-dashboard/overview/overview.md` |
+| `/dashboard/my-app` | `…/my-app/page.tsx` | `screens/creator/my-app` | `components/my-app/` (+ `catalog/`) | `creator/my-app` GET/PUT, `creator/upload` | `creator-dashboard/my-app/my-app.md` |
+| `/dashboard/network` | `…/network/page.tsx` | `screens/creator/network` | `components/network/` | `creator/billboard`, `discover/creators`, `creator/affiliates/*` | `creator-dashboard/network/network.md` |
+| `/dashboard/circle/partners` | `…/circle/partners/page.tsx` | `screens/creator/circle/partners` | `components/circle/partners/` (+ collab widgets in `network/`) | `creator/partners/*` | `features/partnership.md` |
+| `/dashboard/circle/fans` | `…/circle/fans/page.tsx` | `screens/creator/circle/fans` | `components/circle/fans/` | `creator/fans/*` | `features/relationships.md` |
+| `/dashboard/circle/staff` | `…/circle/staff/page.tsx` | `screens/creator/circle/staff` | `components/circle/staff/` | `creator/staff/*` | `features/staff.md` |
+| `/dashboard/settings` | `…/settings/page.tsx` | `screens/creator/settings` | `components/settings/` | `creator/my-app` | `creator-dashboard/settings/settings.md` |
+| `/admin` | `app/(shell)/admin/page.tsx` | `screens/admin` | `components/admin/` | `admin/*` | `screens/admin/admin.md` |
+| `/{username}` | `app/(fan)/[username]/page.tsx` | — *signpost* → `/guest` | — | — | — |
+| `/{username}/guest` | `…/guest/page.tsx` | `screens/fan/guest` | `components/fan-pwa/GuestPageContent` | `creator/pageview`, `fan/*` | `fan-shell.md` Part 3 |
+| `/{username}/home` | `…/home/page.tsx` | `screens/fan/home` | `components/fan-pwa/FanHomeTab` | `fan/partners`, `fan/content/list` | `fan-shell.md` Part 4a |
+| `/{username}/content` | `…/content/page.tsx` | `screens/fan/content` | `components/fan-pwa/FanContentTab` | `fan/content/list` | `fan-shell.md` Part 4b |
+| `/{username}/connect` | `…/connect/page.tsx` | `screens/fan/connect` | `components/fan-pwa/FanConnectTab` | `fan/partners`, `messages/communities` | `fan-shell.md` Part 4c |
+| `/{username}/settings` | `…/settings/page.tsx` | `screens/fan/settings` | `components/fan-pwa/FanSettingsTab` | `fan/purchases`, `fan/logout` | `fan-shell.md` Part 4d |
+| `/{username}/partner/[name]` | `…/partner/[partnerUsername]/page.tsx` | `screens/fan/partner` | `components/fan-pwa/PartnerPageContent` | `fan/partner-data`, `fan/follow` | `features/partner-page.md` |
+
+**Chrome shared by many screens** (not a screen of their own):
+
+| Folder | Serves |
+|---|---|
+| `components/layout/` | The frame: sidebar + phone bottom bar, the My Peeps/💬 dock |
+| `components/messages/` | Messages engine (`MessagesShell` + inbox popover) — dashboard **and** fan shell |
+| `components/fan-pwa/` | The fan app's pixels — **also rendered inside the My App phone preview** (one copy, both surfaces) |
+| `components/analytics/` | `PageViewTracker` (fan pages) |
+| `components/shared/` · `components/ui/` | Reusable odds-and-ends · the shadcn kit |
+
+**Doors with no manager** — and that's fine, they have no logic to manage:
+`app/(fan)/[username]/app/` = old URL that redirects · `…/dashboard/overview/` = the "we moved" signpost · `manifest.json/` = a generated PWA file, not a page.
+
 ### 3 primer facts that apply everywhere
 
 1. **URL = folder mirror:** `/dashboard/circle/staff` →

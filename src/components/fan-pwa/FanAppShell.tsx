@@ -14,7 +14,7 @@ import { Bell, BellOff } from "lucide-react";
 import { toast } from "sonner";
 import type { CreatorBranding } from "@/lib/branding";
 import type { FanViewId } from "@/types";
-import { AUTHENTICATED_FAN_TABS, FAN_TAB_BY_PATH } from "@/lib/nav-config";
+import { FAN_TAB_BY_PATH } from "@/lib/nav-config";
 import { FanBottomNav } from "./FanBottomNav";
 import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { InstallBanner } from "./InstallBanner";
@@ -80,29 +80,6 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
             </div>
           </div>
 
-          {/* Desktop top nav — hidden on phone/tablet, visible at lg */}
-          <nav className="mx-auto mt-2 hidden max-w-lg gap-1 lg:flex">
-            {AUTHENTICATED_FAN_TABS.map(({ id, label }) => {
-              const active = activeTab === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => {
-                    if (id === activeTab) return;
-                    router.push(`/${branding.creatorUsername}/${id}`);
-                  }}
-                  className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
-                  style={{
-                    color: active ? branding.accentColor : branding.textColor + "88",
-                    backgroundColor: active ? branding.accentColor + "15" : "transparent",
-                  }}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </nav>
         </header>
 
         {/* PWA install layer — each piece decides its own visibility */}
@@ -110,14 +87,14 @@ export function FanAppShell({ branding, creatorId, children }: FanAppShellProps)
         <InstallBanner branding={branding} />
         <IOSInstallGuide branding={branding} />
 
-        <main className="flex-1 pb-[var(--bottom-nav-height)] lg:pb-8">
+        <main className="flex-1 pb-[var(--bottom-nav-height)]">
           {children}
           <PoweredByFooter branding={branding} />
         </main>
 
         <UpdateToast branding={branding} />
         <PageViewTracker creatorId={creatorId} />
-        <div className="fixed bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)] right-[max(1rem,calc(50%-var(--shell-width)/2+1rem))] z-50 lg:bottom-6">
+        <div className="fixed bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)] right-[max(1rem,calc(50%-var(--shell-width)/2+1rem))] z-50">
           <MessageInboxPopover />
         </div>
         <FanBottomNav
