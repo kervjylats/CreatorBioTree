@@ -80,9 +80,13 @@ export async function POST(req: Request) {
       .select("id")
       .single();
 
-    if (error) return NextResponse.json({ error: "Failed to create deal" }, { status: 500 });
+    if (error) {
+      console.error("[affiliates/deals] insert failed:", error);
+      return NextResponse.json({ error: "Failed to create deal" }, { status: 500 });
+    }
     return NextResponse.json({ deal }, { status: 201 });
   } catch (err) {
+    console.error("[affiliates/deals] POST:", err);
     return handleAuthError(err) ?? NextResponse.json({ error: "Failed to create deal" }, { status: 500 });
   }
 }
