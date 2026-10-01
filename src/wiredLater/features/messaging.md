@@ -220,7 +220,9 @@ Per founder request: **one `MessagesShell.tsx` file** (in `src/components/`, wir
 - `MessageThread` — full conversation view (messages, composer, files)
 - `MessageList` / `MessageBubble` / `MessageComposer` / `AttachmentPreview`
 - `MessageIcon` — the per-name quick-chat icon (mini box + open-full)
-- `useUnreadBadge` — badge count hook for the floating icon / sidebar
+- `useMessages` — the hook that owns the conversation list, the 30s polling and the
+  unread badge for the floating icon (the old `useUnreadBadge` export was removed in
+  the 2026-09-29 Chat→Messages rename; `useMessages` does both jobs)
 
 ---
 

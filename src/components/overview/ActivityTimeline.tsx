@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { fetchJson } from "@/lib/fetchJson";
+import { formatDateTime } from "@/lib/format";
 
 interface Activity {
   id: string;
@@ -66,7 +67,7 @@ export function ActivityTimeline() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-foreground">{a.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(a.created_at).toLocaleString()}
+                      {formatDateTime(a.created_at)}
                     </p>
                   </div>
                 </div>

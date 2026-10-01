@@ -613,24 +613,31 @@ export interface StaffActivity {
 
 // ─── Affiliates (network.md §7 + monetization/creators.md Part 2) ────────────
 
-export type AffiliateDealType = "percent" | "fixed" | "free" | "tiered" | "custom";
+export type AffiliateDealType = "percentage" | "fixed" | "free" | "tiered" | "custom";
 export type AffiliateScope = "item" | "creator";
 export type AffiliateTrigger = "purchase" | "follow" | "subscribe" | "tip" | "signup" | "any";
 
+/**
+ * Column names and enum values match what the routes actually read and write
+ * (2026-10-01 audit): `owner_id` / `promoter_id` / `item_id` / `custom_terms`,
+ * deal_type "percentage", status active|paused|expired|revoked. The previous
+ * shape (owner_creator_id, terms, "percent", "ended") matched no query and was
+ * shadowed by local component interfaces, so nothing caught the drift.
+ */
 export interface AffiliateDeal {
   id: string;
   /** Creator who OWNS the item/catalog being promoted. */
-  owner_creator_id: string;
+  owner_id: string;
   /** Creator who PROMOTES the owner's items (the promoter). */
-  promoter_creator_id: string;
+  promoter_id: string;
   scope: AffiliateScope;
   trigger: AffiliateTrigger;
   deal_type: AffiliateDealType;
   /** Rate for percent deals (0-100), amount for fixed deals. No min/max validation per spec. */
   rate: number;
-  content_item_id: string | null;
-  terms: string | null;
-  status: "active" | "paused" | "ended";
+  item_id: string | null;
+  custom_terms: string | null;
+  status: "active" | "paused" | "expired" | "revoked";
   created_at: string;
   updated_at: string;
 }
@@ -657,9 +664,12 @@ export interface AffiliateConversion {
 export interface AffiliateLink {
   id: string;
   deal_id: string;
-  promoter_creator_id: string;
-  code: string;
+  /** Creator who owns the link (the promoter) — real column name. */
+  creator_id: string;
+  /** The `/ref/<ref_code>` token — real column name (was `code`). */
+  ref_code: string;
   click_count: number;
+  active: boolean;
   created_at: string;
 }
 
@@ -696,7 +706,6 @@ export interface FanProfile {
   fan: FanAccount;
   total_spent: number;
   last_purchase_at: string | null;
-  subscription_status: string | null;
   install_count: number;
   purchase_count: number;
 }

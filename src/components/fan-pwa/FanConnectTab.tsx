@@ -226,7 +226,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
                 {data.community.name}
               </span>
               <span className="text-xs" style={{ color: branding.textColor + "77" }}>
-                {data.community.isMember ? `${data.community.channels.length} channels` : "Open community"}
+                {data.community.isMember ? `${data.community.channels.length} ${data.community.channels.length === 1 ? "channel" : "channels"}` : "Open community"}
               </span>
             </div>
             <Users size={16} style={{ color: branding.accentColor }} />

@@ -14,7 +14,7 @@ import { TYPE_ICONS } from "@/types/contentTypes";
 import { MessageIcon } from "@/components/messages/MessagesShell";
 import type { FanIdentity, ItemGate } from "./fanData";
 import { computeItemGate } from "./fanData";
-import { money, DAY_LABELS } from "@/lib/format";
+import { money, formatDateTime, DAY_LABELS } from "@/lib/format";
 import { Sheet } from "@/components/shared/Sheet";
 import { buttonClass, buttonShape, cardRadius, contrastText } from "./themeStyles";
 
@@ -85,14 +85,6 @@ export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuth
     onUnlock(item, unlockEmail.trim().toLowerCase());
   };
 
-  const handleMessage = () => {
-    if (!identity) {
-      setShowUnlockBox(true);
-      return;
-    }
-    toast("Messages is coming soon — you're on the list.");
-  };
-
   return (
     <article data-tl="ItemCards" className={`overflow-hidden ${cardRadius(branding)}`} style={{ backgroundColor: branding.cardColor }}>
       {cover ? (
@@ -160,7 +152,7 @@ export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuth
             (identity ? (
               <MessageIcon otherKey={branding.creatorId} otherParty="creator" name={branding.displayName} accentColor={branding.accentColor} />
             ) : (
-              <button type="button" {...buttonClass(branding)} onClick={handleMessage}>
+              <button type="button" {...buttonClass(branding)} onClick={() => setShowUnlockBox(true)}>
                 <MessageCircle size={14} /> Message
               </button>
             ))}
@@ -210,7 +202,7 @@ export function ItemCard({ item, identity, purchases, branding, onUnlock, onAuth
           )}
           {item.type === "live" && item.scheduled_publish_at && (
             <span className="text-xs" style={{ color: branding.textColor + "88" }}>
-              Starts {new Date(item.scheduled_publish_at).toLocaleString()}
+              Starts {formatDateTime(item.scheduled_publish_at)}
             </span>
           )}
         </div>

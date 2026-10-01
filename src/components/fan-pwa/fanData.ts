@@ -22,7 +22,12 @@ export interface FanShellData {
   username: string;
   /** Creator bio (artists row — shown under the display name in the header). */
   bio: string | null;
-  /** Published items (scheduled filters applied server-side). */
+  /**
+   * Published items. The resolver filters `is_published`; the SCHEDULE window
+   * (isScheduledVisible) is applied per surface (guest page, tabs, partner page) —
+   * an earlier comment here claimed the server did it, which would have tempted
+   * someone to trust it and leak a scheduled item.
+   */
   items: ContentItem[];
   /** Session identity — null when the visitor is unknown. */
   identity: FanIdentity | null;

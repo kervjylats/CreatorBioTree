@@ -29,10 +29,6 @@ export function FanSettingsTab({ data }: FanSettingsTabProps) {
   const { branding, identity } = data;
   const { installState, triggerInstall } = usePWAInstall();
 
-  const [notify, setNotify] = useState(
-    () => typeof window !== "undefined" && window.localStorage.getItem(`fan_notify_${branding.creatorId}`) === "1",
-  );
-
   // Notification toggles — each stored independently in localStorage.
   const [toggles, setToggles] = useState(() => {
     const initial: Record<string, boolean> = {};

@@ -35,7 +35,11 @@ type CreatorRow = {
   created_at?: string | null;
 };
 
-/** Discoverable creators for the showcase marquee (featured first, newest, max 12). Never throws. */
+/** How many creators the scrolling showcase shows, and how many the returning-fan row lists. */
+const SHOWCASE_LIMIT = 12;
+const YOUR_CREATORS_LIMIT = 12;
+
+/** Discoverable creators for the showcase marquee (featured first, newest, capped). Never throws. */
 async function getShowcaseCreators(): Promise<ShowcaseCreator[]> {
   try {
     const supabase = await createClient();
@@ -55,7 +59,7 @@ async function getShowcaseCreators(): Promise<ShowcaseCreator[]> {
           Number(!!b.is_featured) - Number(!!a.is_featured) ||
           String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")),
       )
-      .slice(0, 12)
+      .slice(0, SHOWCASE_LIMIT)
       .map((c) => ({ username: c.username as string, display_name: c.display_name, avatar_url: c.avatar_url }));
   } catch {
     return [];
@@ -81,7 +85,7 @@ async function getYourCreators(): Promise<FollowedCreator[]> {
     if (!creators) return [];
     return (creators as CreatorRow[])
       .filter((c) => c.username && c.id && ids.has(c.id))
-      .slice(0, 12)
+      .slice(0, YOUR_CREATORS_LIMIT)
       .map((c) => ({ username: c.username as string, display_name: c.display_name, avatar_url: c.avatar_url }));
   } catch {
     return [];

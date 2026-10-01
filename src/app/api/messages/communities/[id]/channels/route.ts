@@ -52,7 +52,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const enriched = visible.map((ch) => ({
       ...ch,
       myRole: myMemberships[ch.id as string] ?? null,
-      memberCount: 0,
     }));
 
     return NextResponse.json({ channels: enriched });

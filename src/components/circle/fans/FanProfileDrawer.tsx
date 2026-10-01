@@ -18,6 +18,7 @@ import { MessageIcon } from "@/components/messages/MessagesShell";
 import { toast } from "sonner";
 import { fetchJson } from "@/lib/fetchJson";
 import { formatDate, money } from "@/lib/format";
+import { Spinner } from "@/components/shared/Spinner";
 
 interface FanProfile {
   fan: {
@@ -131,7 +132,9 @@ export function FanProfileDrawer({
           <DialogTitle>Fan Profile</DialogTitle>
         </DialogHeader>
         {loading && (
-          <div className="py-8 text-center text-muted-foreground">Loading...</div>
+          <div className="flex justify-center py-8">
+            <Spinner />
+          </div>
         )}
         {profile && (
           <div className="space-y-4 py-2">

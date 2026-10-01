@@ -17,7 +17,6 @@ import {
   Check,
   Download,
   Image as ImageIcon,
-  Loader2,
   MessageCircle,
   Paperclip,
   Plus,
@@ -753,7 +752,7 @@ function MessageComposer({
         onClick={() => void send(text)}
         className="rounded-full bg-foreground p-2.5 text-background disabled:opacity-40"
       >
-        {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+        {sending ? <Spinner size={16} /> : <Send size={16} />}
       </button>
     </div>
   );

@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { BILLBOARD_LIMITS } from "@/lib/limits";
+import { Spinner } from "@/components/shared/Spinner";
 
 export interface BillboardSettings {
   display_name: string;
@@ -146,7 +147,7 @@ export function BillboardEditor({ settings, onFieldChange, onSave, saving, onIns
       </div>
 
       <Button onClick={onSave} disabled={saving} className="w-full">
-        {saving ? <Loader2 size={14} className="animate-spin" /> : "Save Billboard"}
+        {saving ? <Spinner size={14} /> : "Save Billboard"}
       </Button>
 
       {/* Media Kit — expandable */}

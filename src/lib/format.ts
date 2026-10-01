@@ -25,6 +25,27 @@ export function formatDate(value: string | number | Date): string {
   return new Date(value).toLocaleDateString();
 }
 
+/** Date-ish → locale date AND time (e.g. "9/29/2026, 4:12 PM"). */
+export function formatDateTime(value: string | number | Date): string {
+  return new Date(value).toLocaleString();
+}
+
+/**
+ * Countdown to a future moment ("in 2h 14m"). Returns null for anything in the
+ * past or unparseable, so callers can skip the line entirely.
+ */
+export function formatCountdown(target: string | number | Date, now: Date = new Date()): string | null {
+  const ms = new Date(target).getTime() - now.getTime();
+  if (!Number.isFinite(ms) || ms <= 0) return null;
+  const minutes = Math.floor(ms / 60_000);
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const mins = minutes % 60;
+  if (days > 0) return `in ${days}d ${hours}h`;
+  if (hours > 0) return `in ${hours}h ${mins}m`;
+  return `in ${mins}m`;
+}
+
 /** Weekday full names, indexed by JS day number (0 = Sunday). */
 export const DAY_LABELS = [
   "Sunday",

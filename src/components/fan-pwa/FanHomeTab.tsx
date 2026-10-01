@@ -10,7 +10,7 @@ import Link from "next/link";
 import { ArrowRight, Clock, CreditCard, Tag } from "lucide-react";
 import type { FanShellData } from "./fanData";
 import { isScheduledVisible } from "./fanData";
-import { money } from "@/lib/format";
+import { money, formatCountdown, formatDateTime } from "@/lib/format";
 import { cardRadius } from "./themeStyles";
 import { SectionTitle } from "./SectionTitle";
 import { CreatorHeader } from "./CreatorHeader";
@@ -189,7 +189,8 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
       <FanCommunitySection data={data} />
 
       {/* Section 5: Your activity */}
-      {(hasPurchases || hasMembership || data.identity) && (
+      {/* Live-stack rule: hide the section when it would have no rows (2026-10-01 audit). */}
+      {(hasPurchases || hasMembership) && (
         <section className="px-4 pt-4">
           <SectionTitle branding={branding}>Your activity</SectionTitle>
           <div className="flex flex-col gap-2">
@@ -252,12 +253,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
                 <div className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-bold">{item.title}</span>
                   <span className="text-xs" style={{ color: branding.textColor + "77" }}>
-                    {new Date(item.scheduled_publish_at!).toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
+                    {formatCountdown(item.scheduled_publish_at!, new Date(now)) ?? formatDateTime(item.scheduled_publish_at!)}
                   </span>
                 </div>
                 <span className="rounded-full px-2 py-0.5 text-micro font-bold uppercase"
@@ -270,7 +266,9 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
         </section>
       )}
 
-      {/* Section 7: Announcements */}
+      {/* Section 7: Announcements — placeholder copy only until the channel's pinned
+          messages are fetched. It says so rather than showing a titled, empty card
+          that looks broken (2026-10-01 audit). */}
       {announcementsChannel && (
         <section className="px-4 pt-4">
           <SectionTitle branding={branding}>Announcements</SectionTitle>
@@ -280,7 +278,7 @@ export function FanHomeTab({ data, editMode, onEdit }: FanHomeTabProps) {
           >
             <p className="text-sm" style={{ color: branding.textColor + "88" }}>
               {data.community?.isMember
-                ? "Announcements from the community will appear here."
+                ? "Announcements aren’t being shown here yet."
                 : "Join the community to see announcements."}
             </p>
           </div>

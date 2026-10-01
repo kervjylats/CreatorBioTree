@@ -3,7 +3,8 @@
  * Visual shell only; wire it to `useCreatorSearch` for live search.
  * Used by the Network hub Discover center; admin tables can adopt later.
  */
-import { Search, Loader2 } from "lucide-react";
+import { Search } from "lucide-react";
+import { Spinner } from "@/components/shared/Spinner";
 
 interface SearchBoxProps {
   value: string;
@@ -31,7 +32,7 @@ export function SearchBox({
         className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none focus:border-foreground"
       />
       {loading && (
-        <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />
+        <Spinner size={16} className="absolute right-3 top-1/2 -translate-y-1/2" />
       )}
     </div>
   );

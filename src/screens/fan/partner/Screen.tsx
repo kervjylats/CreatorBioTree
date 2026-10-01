@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { resolveBranding, socialLinksToArtistLinks } from "@/lib/branding";
 import { contentService } from "@/services/contentService";
+import { isScheduledVisible } from "@/components/fan-pwa/fanData";
 import { PartnerPageContent } from "@/components/fan-pwa/PartnerPageContent";
 
 interface PartnerPageProps {
@@ -35,9 +36,12 @@ export default async function PartnerPageScreen({ params }: PartnerPageProps) {
 
   if (!partnerCreator) return notFound();
 
-  const items = await contentService
-    .getForCreator(partnerCreator.id, supabase)
-    .catch(() => []);
+  // Same schedule filter the guest page applies, so a not-yet-published item
+  // can't appear on a partner page while being hidden on the creator's own page
+  // (2026-10-01 audit).
+  const items = (
+    await contentService.getForCreator(partnerCreator.id, supabase).catch(() => [])
+  ).filter((item) => isScheduledVisible(item));
 
   const branding = resolveBranding(partnerCreator);
 

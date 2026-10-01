@@ -16,7 +16,6 @@ import { contrastText } from "@/components/fan-pwa/themeStyles";
 interface CreatorHeaderProps {
   branding: CreatorBranding;
   /** Follower + fan count for this creator (server-resolved). */
-  fanCount?: number;
   /** Creator bio from the artists row (not part of the theme). */
   bio?: string | null;
   /** When true, each element is independently tappable. */
