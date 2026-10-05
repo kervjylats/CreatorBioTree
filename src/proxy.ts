@@ -1,4 +1,4 @@
-/** Edge middleware — wildcard subdomain rewrite + auth/admin guards for the dashboard and admin routes. */
+/** Edge middleware — wildcard subdomain rewrite, legacy-route redirects (moved/renamed screens), and auth/admin guards for the dashboard and admin routes. */
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
@@ -18,7 +18,30 @@ export async function proxy(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  // --- 2. MOCK MODE AUTH GUARD ---
+  // --- 2. LEGACY ROUTE REDIRECTS (moved screens — ONE table for the whole platform) ---
+  // Old URLs from renames/restructures land on their new homes instead of 404s.
+  // Exact match (plus trailing-slash tolerance); query strings are preserved.
+  // 307 (temporary) for now → switch to 308 (permanent) at launch, once old links are out of circulation.
+  const LEGACY_ROUTES: Record<string, string> = {
+    "/dashboard/overview": "/dashboard", // Overview IS the dashboard root (2026-09-30)
+    "/dashboard/my-app": "/dashboard/playground", // My App renamed Playground (2026-10-01)
+    "/dashboard/messages": "/dashboard/circle/messages", // dock routes unified under /circle (2026-09-27)
+    "/dashboard/network/partners": "/dashboard/circle/partners",
+    "/dashboard/network/fans": "/dashboard/circle/fans",
+    "/dashboard/network/staff": "/dashboard/circle/staff",
+    "/dashboard/admin": "/admin", // admin moved out of /dashboard (2026-09-26)
+    "/search": "/dashboard/network", // Network hub owns search; /search deleted (2026-09-28)
+  };
+  const legacyKey =
+    pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+  const legacyDest = LEGACY_ROUTES[legacyKey];
+  if (legacyDest) {
+    const dest = new URL(legacyDest, request.url);
+    dest.search = request.nextUrl.search;
+    return NextResponse.redirect(dest);
+  }
+
+  // --- 3. MOCK MODE AUTH GUARD ---
   // Mock mode requires an existing session cookie (set during login/onboarding).
   // No auto-provisioning — login/onboarding must be exercised from scratch.
   if (USE_MOCKS) {
@@ -53,7 +76,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next({ request: { headers: request.headers } });
   }
 
-  // --- 3. REAL AUTH PROTECTION FOR DASHBOARD ---
+  // --- 4. REAL AUTH PROTECTION FOR DASHBOARD ---
   let response = NextResponse.next({
     request: { headers: request.headers },
   });
