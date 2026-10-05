@@ -85,7 +85,6 @@ src/
 │   │   ├── layout.tsx             # THE FRAME: auth guard (no user → /login, no creator row → /onboarding) + admin gate + sidebar + dock stack (My Peeps + Messages)
 │   │   ├── dashboard/             # /dashboard
 │   │   │   ├── page.tsx           # Overview (address-book entry → src/screens/creator/overview/)
-│   │   │   ├── overview/          # REDIRECT → /dashboard (signpost — old links keep working)
 │   │   │   ├── playground/            # /dashboard/playground (see + edit fan shell — WIRED)
 │   │   │   ├── circle/            # /dashboard/circle (My Peeps dock pages: partners/, fans/, staff/, messages/ — WIRED)
 │   │   │   ├── network/           # /dashboard/network (Discover hub — WIRED)
@@ -190,7 +189,7 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `/onboarding` | New creator signup (wired) | No |
 | `/forgot-password` | Creator forgot-password (wired) | No |
 | `/dashboard` | Dashboard Overview — stats, activity, quick actions (moved here 2026-09-30) — **wired** | Yes (creator/admin) |
-| `/dashboard/overview` | REDIRECT → `/dashboard` (signpost, keeps old links working) | Yes (creator/admin) |
+| `/dashboard/overview` | REDIRECT → `/dashboard` (proxy.ts legacy table, keeps old links working) | Yes (creator/admin) |
 | `/dashboard/playground` | See + edit your fan shell — full-screen, tap-to-edit (wired) | Yes (creator/admin) |
 | `/dashboard/circle/messages` | Full chat screen (wired) | Yes (creator/admin) |
 | `/dashboard/network` | Discover hub (Billboard + Affiliates rail, creator search) — **wired**; My Peeps dock pages live at `/dashboard/circle/*` | Yes (creator/admin) |
@@ -570,7 +569,7 @@ Page reloads → FanAppShell renders (authenticated view)
 
 - All old screens backed up to `src/old-code/allScreens/<name>/page-old.tsx`; every page became a naked skeleton
 - All 101 code files moved out of `wiredLater/` to `src/old-code/` (parts archive) — `wiredLater/` is now specs only (index: `wiredLater.md`)
-- Specs written for every screen (playground → formerly Playground, network, admin, landing, screens index)
+- Specs written for every screen (playground, network, admin, landing, screens index)
 - Social scrape route did not exist (re-added later as an UNWIRED 503 stub for rebuild)
 - **A1/A1.5/A2 restructure (2026-08-07):** `src/app/` became a thin address book — route groups `(public)/`, `(fan)/[username]/`, `(creator)/dashboard/`, `(admin)/admin/` — and a new `src/screens/` middleman was created (17 screen folders, one `index.ts` + `Screen.tsx` each). Every page.tsx is a 2-line re-export. Planning + audit docs at repo root: `WIRING_PLAN.md`, `CODEBASE_AUDIT.md`, `CODEBASE_INVENTORY.md`.
 - **Foundation prep (2026-08-07):** adopted `api-utils`/`api-error`/`requireAuth` into `src/lib/`; added messaging/staff/affiliate types + 14 mock tables + 9 brand presets; killed 5 dead files; added 5 missing rate limits.

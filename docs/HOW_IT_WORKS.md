@@ -206,7 +206,7 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 | Onboarding (`/onboarding`) | ✅ Wired (Sheet 7) — Link Address availability check + permanence dialog + register route | `screens/public/onboarding.md` (full) |
 | Forgot-password (`/forgot-password`) | ✅ Wired — anonymous, no enumeration, mock logs reset link | `screens/public/login.md` Part 4 |
 | Dashboard Overview (`/dashboard`) | ✅ Wired (Sheet 10) — moved here from `/dashboard/overview` 2026-09-30 | `screens/creator-dashboard/overview/overview.md` (full) |
-| Playground (`/dashboard/playground`, formerly Playground) | ✅ Wired (Sheet 19-V1) — full editor, 16 types, uploads, draft/deploy | `screens/creator-dashboard/playground/playground.md` (full) |
+| Playground (`/dashboard/playground`, formerly "My App") | ✅ Wired (Sheet 19-V1) — full editor, 16 types, uploads, draft/deploy | `screens/creator-dashboard/playground/playground.md` (full) |
 | Dashboard Network | ✅ Wired (Sheet 18) | `screens/creator-dashboard/network/network.md` (full) |
 | Dashboard Messages (`/dashboard/circle/messages`) | ✅ Wired (Sheet 12) — full chat screen + floating inbox | `features/messaging.md` (full) |
 | Admin (`/admin`) | ✅ Wired (Sheet 8) — 5-tab panel | `screens/admin/admin.md` (full) |
@@ -372,7 +372,7 @@ Every mock file has `// PRODUCTION-NOTE:` comments marking what the real service
 | `/login` | ✅ | ✅ | ✅ | ✅ |
 | `/onboarding` | ✅ (new) | ✅ (new) | ❌ | ❌ |
 | `/dashboard` | ✅ Dashboard Overview (moved here 2026-09-30) | ✅ (new) | ✅ (new) | ❌ | ❌ |
-| `/dashboard/overview` | REDIRECT → `/dashboard` (signpost, keeps old links working) | ✅ | ✅ | ❌ | ❌ |
+| `/dashboard/overview` | REDIRECT → `/dashboard` (proxy.ts legacy table, keeps old links working) | ✅ | ✅ | ❌ | ❌ |
 | `/dashboard/playground` | ✅ | ✅ | ❌ | ❌ |
 | `/dashboard/network` | ✅ | ✅ | ❌ | ❌ |
 | `/dashboard/settings` | ✅ | ✅ | ❌ | ❌ |
@@ -393,7 +393,7 @@ These have full specs in `src/wiredLater/`:
 
 | Item | Spec | Status |
 |---|---|---|
-| **Playground rebuild** (formerly Playground) — full-screen guest-first shell + tap-to-edit brand popovers + editor sheet + 16 item types + device uploads + draft/deploy | `screens/creator-dashboard/playground/playground.md` | ⚠️ PREVIEW-FIRST (2026-09-24) — phone frame (Draft/Live + real fan surfaces) is the only surface; editor/catalog UI deferred to a later design pass |
+| **Playground rebuild** (2026-08-05 re-architecture) — full-screen guest-first shell + tap-to-edit brand popovers + editor sheet + 16 item types + device uploads + draft/deploy | `screens/creator-dashboard/playground/playground.md` | ⚠️ PREVIEW-FIRST (2026-09-24) — phone frame (Draft/Live + real fan surfaces) is the only surface; editor/catalog UI deferred to a later design pass |
 | **Fan page rebuild** — guest page + 4-tab PWA (account model, gates, activity hub, settings hub) + mock PayPal checkout | `screens/fan-shell/fan-shell.md` (+ `playground.md` Part 3 for display layers) | ✅ DONE (Sheet 21-V1) |
 | **Messaging** — floating inbox both sides, requests/blocks/toggles, groups + announcements, attachments | `features/messaging.md` | ✅ DONE (Sheet 12); Part 3 Community NOT built |
 | **Network rebuild** — search, billboard, collabs, affiliates | `screens/creator-dashboard/network/network.md` | ✅ DONE (Sheet 18) |

@@ -22,7 +22,7 @@
 | 02  | Login                                            | `/login`                     | ✅      |
 | 03  | Onboarding (signup + Link Address)               | `/onboarding`                | ✅      |
 | 04  | The Frame — shell (sidebar / bottom bar / dock)  | `/dashboard`                 | ✅      |
-| 05  | Overview                                         | `/dashboard`                 | ⬜      |
+| 05  | Overview                                         | `/dashboard`                 | ✅      |
 | 06  | Playground (phone preview + deploy)                  | `/dashboard/playground`          | ⬜      |
 | 07  | Network hub (Discover + affiliate rail)          | `/dashboard/network`         | ⬜      |
 | 08  | Circle → Partners                                | `/dashboard/circle/partners` | ⬜      |
@@ -156,7 +156,7 @@ So `/dashboard/network` → screen folder `screens/creator/network` (leaf matche
 | `/onboarding` | `app/(public)/onboarding/page.tsx` | `screens/public/onboarding` | `components/auth/OnboardingForm` | `creator/check-username`, `creator/register` | `public/onboarding.md` |
 | `/forgot-password` | `app/(public)/forgot-password/page.tsx` | `screens/public/forgot-password` | `components/auth/ForgotPasswordForm` | `creator/forgot-password` | `public/login.md` Part 4 |
 | `/offline` | `app/(public)/offline/page.tsx` | `screens/public/offline` | — (static shell) | — | `public/offline.md` |
-| `/dashboard` | `app/(shell)/dashboard/page.tsx` | `screens/creator/overview` | `components/overview/` (5 cards) | `creator/playground`, `creator/activity` | `creator-dashboard/overview/overview.md` |
+| `/dashboard` | `app/(shell)/dashboard/page.tsx` | `screens/creator/overview` | `components/overview/` (5 widgets) | `creator/playground`, `creator/activity`, `creator/fans/export` | `creator-dashboard/overview/overview.md` |
 | `/dashboard/playground` | `…/playground/page.tsx` | `screens/creator/playground` | `components/playground/` (+ `catalog/`) | `creator/playground` GET/PUT, `creator/upload` | `creator-dashboard/playground/playground.md` |
 | `/dashboard/network` | `…/network/page.tsx` | `screens/creator/network` | `components/network/` | `creator/billboard`, `discover/creators`, `creator/affiliates/*` | `creator-dashboard/network/network.md` |
 | `/dashboard/circle/partners` | `…/circle/partners/page.tsx` | `screens/creator/circle/partners` | `components/circle/partners/` (+ collab widgets in `network/`) | `creator/partners/*` | `features/partnership.md` |
@@ -183,7 +183,7 @@ So `/dashboard/network` → screen folder `screens/creator/network` (leaf matche
 | `components/shared/` · `components/ui/` | Reusable odds-and-ends · the shadcn kit |
 
 **Doors with no manager** — and that's fine, they have no logic to manage:
-`app/(fan)/[username]/app/` = old URL that redirects · `…/dashboard/overview/` = the "we moved" signpost · `manifest.json/` = a generated PWA file, not a page.
+`app/(fan)/[username]/app/` = old URL that redirects · `…/dashboard/overview/` = old URL, 307s via the `proxy.ts` legacy table · `manifest.json/` = a generated PWA file, not a page.
 
 ### 3 primer facts that apply everywhere
 
@@ -380,7 +380,7 @@ and the security gates — for **every** page under `/dashboard` *and* `/admin`.
 
 | Layer      | File                                                        | Role                                                                                                                                              |
 | ---------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🚪 Door    | `src/app/(shell)/dashboard/page.tsx` (2 lines)              | The Overview screen itself — a 2-line address-book entry to `src/screens/creator/overview/`. `/dashboard/overview` is now a **signpost back here**            |
+| 🚪 Door    | `src/app/(shell)/dashboard/page.tsx` (2 lines)              | The Overview screen itself — a 2-line address-book entry to `src/screens/creator/overview/`. Old `/dashboard/overview` links **307 back here** via the `LEGACY_ROUTES` table in `proxy.ts` |
 | 🧠 Frame   | `src/app/(shell)/layout.tsx` (67 lines)                     | THE FRAME — auth gate → `/login`, onboarding gate → `/onboarding`, admin gate → `/dashboard`; renders sidebar + main + the dock stack              |
 | 🎨 Pixels  | `components/layout/DashboardSidebar.tsx` (127)              | Desktop left rail (`w-60`, `md:flex`) + phone bottom bar (`md:hidden`) — same nav items in both                                                     |
 |            | `components/layout/MyPeeps.tsx` (94)                        | The 3 dock buttons (Partners · Fans · Staff) + red count badges — position-less, no placement of their own                                         |
@@ -405,10 +405,11 @@ and the security gates — for **every** page under `/dashboard` *and* `/admin`.
   (line 49) → `/dashboard`. That last one is **defense-in-depth** — `proxy.ts`
   is the primary bouncer; this is the second lock on the same door.
 - **One canonical link: Overview lives AT `/dashboard`** (founder decision
-  2026-09-30) — it used to be `/dashboard/overview`, and `/dashboard` was the
-  signpost pointing to it. Today the roles are **swapped**: `/dashboard` *is* the
-  Overview screen, and `/dashboard/overview` is the 6-line "we've moved"
-  signpost, so old bookmarks, open tabs, and `?next=` bounces still land
+  2026-09-30) — it used to live at `/dashboard/overview`. Today `/dashboard`
+  *is* the Overview screen, and the old URL doesn't exist as a file at all:
+  `proxy.ts` `LEGACY_ROUTES` 307s it (one redirect table for the whole
+  platform — the old 6-line "we've moved" signpost file was deleted when the
+  table landed), so old bookmarks, open tabs, and `?next=` bounces still land
   correctly. The sidebar's active-highlight needed a matching fix — a plain
   `startsWith("/dashboard")` would light "Overview" on *every* dashboard page,
   so the root compares **exactly** (`DashboardSidebar.tsx:38`).
@@ -459,4 +460,82 @@ and the security gates — for **every** page under `/dashboard` *and* `/admin`.
 
 ---
 
-*(Stops 05–15 get appended here as we walk.)*
+## 📊 Stop 05 — Overview `/dashboard`
+
+**🎯 What it is:** the dashboard's home screen — four stat cards, recent activity,
+one quick action, your share link, and a fan CSV export. It doesn't sit *inside*
+`/dashboard`, it **is** `/dashboard`: the door file is a 2-line address-book entry,
+the layout (Stop 04) draws the walls around it.
+
+**🗂️ The chain:**
+
+| Layer      | File                                                     | Role                                                                                                                                                                                          |
+| ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🚪 Door    | `src/app/(shell)/dashboard/page.tsx` (2 lines)           | Address-book entry → `src/screens/creator/overview/`. Old `/dashboard/overview` **307s here** via `proxy.ts` `LEGACY_ROUTES` (the signpost file is gone)                                       |
+| 🧠 Screen  | `src/screens/creator/overview/Screen.tsx` (36)           | Server component: `h1` + FanExportButton, StatCards, then a grid — ActivityTimeline + QuickActions span 2 of 3 columns, QrCard sits right (`md:grid-cols-2 lg:grid-cols-3`)                   |
+| 🎨 Widgets | `components/overview/StatCards.tsx` (84)                 | 4 cards — Total Sales · Total Fans · Page Views · Content items. Every number arrives **pre-computed** from `GET /api/creator/playground`; `money()` formats, server picks the currency        |
+|            | `components/overview/ActivityTimeline.tsx` (81)          | `GET /api/creator/activity` → the route's `describe()` turns raw `{type, email\|amount}` rows into `{action, description, created_at}`; 10 newest, one icon per action                          |
+|            | `components/overview/QuickActions.tsx` (27)              | The single "do something" card: one button → `/dashboard/playground`                                                                                                                          |
+|            | `components/overview/QrCard.tsx` (65)                    | "Share Your Page": `origin/username` + copy button + an honest note (no scannable QR yet)                                                                                                     |
+|            | `components/overview/FanExportButton.tsx` (52)           | The screen's only raw `fetch`: downloads the CSV **blob** from `GET /api/creator/fans/export`, filename parsed from `Content-Disposition`                                                      |
+| 🔧 Kitchen | `GET /api/creator/playground`                            | The same route the Playground editor uses for read+deploy — it also serves these stats + `creator.username` (one fetch for both)                                                               |
+|            | `GET /api/creator/activity` · `GET /api/creator/fans/export` | Raw RPC rows → described sentences · filter-aware CSV (server-built, incl. `do_not_contact`)                                                                                            |
+| 📐 Spec    | `screens/creator-dashboard/overview/overview.md`         | Sheet 10 blueprint (stats, activity, quick actions, share, export)                                                                                                                            |
+
+**🧠 Gotchas:** _the traps we already stepped on while building/fixing this screen — read them first, spare yourself the same sting._
+
+- **This screen is where the "API computes, the widget displays" law was born.**
+  The 2026-10-01 audit found: Total Sales summed catalog **price tags** (not
+  sales), and Fans/whatever read `fans_count`/`subscribers_count` fields the
+  route never sent — masked by `?? 0`, so they showed 0 *forever*. All four
+  cards now display route-computed fields only (`total_sales` = **completed**
+  purchases, `total_sales_currency`, `fans_count`, `page_views`,
+  `items.length`). New number → compute it in the route, never in the card.
+- **The stats piggyback on the Playground editor's endpoint — on purpose (for
+  now).** `GET /api/creator/playground` returns `creator` + `items` (editor)
+  **and** the four stats in one payload, so Overview and QrCard share a single
+  fetch. A dedicated `GET /api/creator/stats` is specced (overview.md Part 11)
+  but **parked** — founder said wait. Known stopgap, not an accident; don't
+  "fix" it without the go-ahead.
+- **Activity descriptions are built SERVER-side.** The RPC answers raw rows
+  (`{type, email|amount}`); `describe()` in `/api/creator/activity` writes the
+  sentence ("A fan spent $9.00") and the widget renders `description`
+  verbatim. Pre-audit the widget read a field the RPC never sent → every row
+  rendered blank.
+- **QrCard tells the truth.** It used to draw `Math.random()` noise as a "QR
+  code" and offer a download that scanned to nothing (founder policy: **never
+  fake a success**) — fake grid + download deleted 2026-10-01, replaced by the
+  real link + copy + an honest note. Want a real QR? Add an encoder (e.g.
+  `qrcode` package) — the URL to encode is already on screen.
+- **`/dashboard/overview` is not a page anymore.** The 6-line signpost file
+  was deleted the day the central `LEGACY_ROUTES` table landed in `proxy.ts`
+  (2026-10-01): old URL → 307 `/dashboard`; logged-out visitors route through
+  `/login?next=/dashboard`. Never re-create the signpost file — extend the
+  table instead.
+- **SetupChecklist is gone** (unmounted long ago, file deleted 2026-09-28).
+  If you remember a checklist widget here: QuickActions is the only
+  action card now.
+- **FanExportButton bypasses `fetchJson` on purpose** — it needs the response
+  as a **blob** (CSV), not JSON, and only toasts "downloaded" *after* the
+  browser actually received the file (no faking success). The CSV itself is
+  one server-side exporter, filter-aware, shared app-wide.
+- **Currency is data, not decoration:** `money(total_sales,
+  total_sales_currency)` — the route decides the currency; the widget never
+  hardcodes `$`.
+
+**🛠️ Common edits:**
+
+| You want to change...                 | Touch                                                                                          |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Add a new stat card                    | Compute the field in `GET /api/creator/playground` → display-only line in `StatCards.tsx`       |
+| Fix a stat's math                      | Same route (the route is the accountant — never sum inside the widget)                          |
+| Activity wording or icons              | `describe()` in `/api/creator/activity` + `ACTION_ICONS` in `ActivityTimeline.tsx`              |
+| Add a quick action                     | `QuickActions.tsx` (today: one link → Playground)                                              |
+| Bring back a real QR code              | Add a QR encoder; render in `QrCard.tsx` (URL already computed)                                |
+| CSV columns / filters                  | `/api/creator/fans/export` (the app's one exporter)                                            |
+| Where the cards' numbers come from     | `StatCards.tsx` fetch + the stats block in `GET /api/creator/playground`                       |
+| Old `/dashboard/overview` behavior     | `proxy.ts` `LEGACY_ROUTES` (add table entries — never re-add signpost files)                   |
+
+---
+
+*(Stops 06–15 get appended here as we walk.)*
