@@ -37,7 +37,7 @@ Two audiences, one search engine:
 
 ### Username = unique handle
 
-- **Username is unique** — no two creators can own the same one, chosen once at signup and **permanent** (never changeable — see `onboarding.md` and `my-app.md` Part 2a). Debounced availability check at creation (per `my-app.md`: 3-20 chars, lowercase, numbers, underscores).
+- **Username is unique** — no two creators can own the same one, chosen once at signup and **permanent** (never changeable — see `onboarding.md` and `playground.md` Part 2a). Debounced availability check at creation (per `playground.md`: 3-20 chars, lowercase, numbers, underscores).
 - It's the public URL: `creatorbiotree.com/{username}`.
 - Typing an exact username finds **THE one creator** — no ambiguity.
 

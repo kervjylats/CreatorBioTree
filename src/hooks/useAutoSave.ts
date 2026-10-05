@@ -1,8 +1,8 @@
-/** useAutoSave — debounced localStorage auto-save (my-app.md Part 4a: 3s cadence, draft survives browser close). */
+/** useAutoSave — debounced localStorage auto-save (playground.md Part 4a: 3s cadence, draft survives browser close). */
 import { useEffect, useRef } from "react";
 
 interface UseAutoSaveOptions {
-  /** localStorage key (e.g. `my-app_draft_${creatorId}`). */
+  /** localStorage key (e.g. `playground_draft_${creatorId}`). */
   key: string;
   /** Serialized payload — saved on every change after the debounce delay. */
   data: unknown;

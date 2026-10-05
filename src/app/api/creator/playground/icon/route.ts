@@ -1,5 +1,5 @@
 /**
- * POST /api/creator/my-app/icon — persists a generated/uploaded app icon
+ * POST /api/creator/playground/icon — persists a generated/uploaded app icon
  * (2026-08-13). Receives a 512px PNG data URL, writes it to storage, and
  * returns a real hosted URL (mock: public/mock-uploads via mock storage;
  * real: Supabase "creator-icons" bucket). Hosted icons are required — Chrome
@@ -18,7 +18,7 @@ const iconSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const tooMany = await enforceRateLimit(request, "my-app-icon", 10, 60_000);
+    const tooMany = await enforceRateLimit(request, "playground-icon", 10, 60_000);
     if (tooMany) return tooMany;
 
     const { user, supabase } = await requireAuth();
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       .upload(path, buffer, { contentType: "image/png", upsert: true });
 
     if (uploadError) {
-      console.error("[creator/my-app/icon] upload:", uploadError);
+      console.error("[creator/playground/icon] upload:", uploadError);
       return NextResponse.json({ error: "Failed to save icon" }, { status: 500 });
     }
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const handled = handleAuthError(err);
     if (handled) return handled;
-    console.error("[creator/my-app/icon] POST:", err);
+    console.error("[creator/playground/icon] POST:", err);
     return NextResponse.json({ error: "Failed to save icon" }, { status: 500 });
   }
 }

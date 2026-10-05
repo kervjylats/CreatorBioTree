@@ -17,11 +17,11 @@
 
 1. **Content stable, frame adaptive.** The content a creator builds is identical on every device. Only the navigation chrome and background presentation change.
 2. **Device-native feel (revised 2026-10-01).** Exactly **two** navigation shapes exist product-wide: a **bottom bar** (phones, small tablets) and a **sidebar** (tablets ≥`md`, desktop, larger). The dashboard/admin switch bottom→sidebar at `md:`; the **fan shell keeps its bottom bar at every width** — the founder rejected the desktop top-nav variant, so a creator's app reads as a phone app on a big screen. No third nav shape.
-3. **Preview = reality.** The My App editor can preview Phone/Tablet/Desktop and each shows the real fan shell with the correct frame.
+3. **Preview = reality.** The Playground editor can preview Phone/Tablet/Desktop and each shows the real fan shell with the correct frame.
 4. **Platform UI uses tokens; fan UI uses creator branding.** Landing, login, search, offline, dashboard, admin = platform tokens from `globals.css`. Fan shell = `resolveBranding()` inline styles.
 5. **Touch-first.** Consumer/fan/primary buttons ≥ 44px tap target. Dense admin controls stay compact but padded.
 6. **Safe areas everywhere.** `env(safe-area-inset-*)` on all fixed/sticky bars. `100dvh` for full-height sections.
-7. **Screen-inside-a-screen (2026-09-25).** The My App preview is a *narrower container* rendering the *same* fan components as the real shell — a phone frame inside a bigger browser window. Fan content must therefore adapt to its **container width** via flex-wrap (`flex-wrap`, `min-w-0`, `truncate`, `flex-auto`) or container queries (`@container` + `@max-[…]:`), **never** viewport breakpoints: browser width ≠ frame width (the browser can be 1920px wide while the frame is 229px). Rows must wrap before they clip, and elements designed for 390px phones (fixed `w-24` inputs, `buttonClass` padding) must never exceed the narrowest frame (220px). Preview and real shell share ONE copy of these components, so a width-agnostic fix lands in both automatically.
+7. **Screen-inside-a-screen (2026-09-25).** The Playground preview is a *narrower container* rendering the *same* fan components as the real shell — a phone frame inside a bigger browser window. Fan content must therefore adapt to its **container width** via flex-wrap (`flex-wrap`, `min-w-0`, `truncate`, `flex-auto`) or container queries (`@container` + `@max-[…]:`), **never** viewport breakpoints: browser width ≠ frame width (the browser can be 1920px wide while the frame is 229px). Rows must wrap before they clip, and elements designed for 390px phones (fixed `w-24` inputs, `buttonClass` padding) must never exceed the narrowest frame (220px). Preview and real shell share ONE copy of these components, so a width-agnostic fix lands in both automatically.
 
 ---
 
@@ -74,7 +74,7 @@ Rules:
 
 | Device | Nav | Content |
 |---|---|---|
-| Phone (<`md`) | Bottom bar (Overview/Network/My App/Settings) | `flex-1 pt-14 md:pt-0` |
+| Phone (<`md`) | Bottom bar (Overview/Network/Playground/Settings) | `flex-1 pt-14 md:pt-0` |
 | Tablet/Desktop (≥`md`) | Sidebar (w-60, full nav + Admin for admins) | `flex-1` |
 
 - Mobile bottom bar renders the visible nav items (4 for creators; admins get a 5th "Admin" cell — deliberate, per 2026-09-25). Sign out lives in Settings.
@@ -101,7 +101,7 @@ Rules:
 | `--shell-width` | `512px` | Fan shell content column + overlays (CSS custom property) |
 | `max-w-lg` (512px) | Fan content column at all sizes | FanAppShell, GuestPageContent, PartnerPageContent |
 | `max-w-2xl` (672px) | Reading column for desktop fan content (future) | Out of scope for initial pass |
-| `max-w-6xl` (1152px) | Dashboard content cap | Overview, My App, Admin |
+| `max-w-6xl` (1152px) | Dashboard content cap | Overview, Playground, Admin |
 | `max-w-7xl` (1280px) | Wide dashboard grids (large monitors) | Network, optional future |
 | Sidebar width | `w-60` (240px) | Dashboard sidebar |
 | Network rail (2026-09-26 hub) | `220px` at `md`, `250px` at `lg`, LEFT only | NetworkPage 2-col — `grid-cols-1 md:grid-cols-[220px_1fr] lg:grid-cols-[250px_1fr]`; Discover center; no right rail (My Peeps moved to the dock). Inline items wrap/flex-wrap inside the rail; earnings/rate stats `flex-wrap min-w-[100px]` so 3-up collapses to rows when the rail is narrow. |
@@ -133,9 +133,9 @@ The `.touch-target` utility class (`min-h-11 min-w-11`) should be applied to any
 
 ---
 
-## 7. My App Preview — Fluid Phone Frame (preview-first, 2026-09-24)
+## 7. Playground Preview — Fluid Phone Frame (preview-first, 2026-09-24)
 
-The My App editor is **preview-first**: the ONLY surface is a phone frame (the
+The Playground editor is **preview-first**: the ONLY surface is a phone frame (the
 editor/catalog UI is deferred). No Phone/Tablet/Desktop toggle, no
 `src/lib/devices.js` (that was a stale plan — neither ever shipped).
 

@@ -1,5 +1,5 @@
 /**
- * ItemEditor — generic editor for ALL 16 catalog item types (my-app.md Part
+ * ItemEditor — generic editor for ALL 16 catalog item types (playground.md Part
  * 2c; the 9 deferred types landed 2026-08-13): title/description, per-type
  * fields (URL, file, course lessons, session slots, membership benefits,
  * bundle contents, physical/product variants + stock, live stream, page body),
@@ -556,7 +556,7 @@ export function ItemEditor({ item, catalogItems, onSave, onClose }: ItemEditorPr
 
           <PricingEditor item={draft} patch={patch} />
 
-          {/* Scheduling (my-app.md — link scheduling) */}
+          {/* Scheduling (playground.md — link scheduling) */}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className={LABEL_CLASS}>Publish at (optional)</label>

@@ -46,7 +46,7 @@ These are free open-source libs that remove hand-writing UI logic:
 | Toast/toast notifications | `sonner` | Already installed + wired in root layout |
 | Icons | `lucide-react` | Already installed |
 | Drag & drop | `@dnd-kit` | Not installed — remove if no longer needed; was used for catalog reorder |
-| Form state | `react-hook-form` | Not installed yet — only if My App forms get complex |
+| Form state | `react-hook-form` | Not installed yet — only if Playground forms get complex |
 | Date handling | `date-fns` | Not installed — SQL/ISO strings may be enough |
 
 ## 4. What STAYS in our code (the secret sauce — don't outsource)
@@ -55,7 +55,7 @@ These are your product. Outsourcing them would mean renting out your differentia
 
 | Feature | Why it stays |
 |---|---|
-| **The fan-app builder** (My App designer, catalog editor) | The core product — creator-to-fan publishing |
+| **The fan-app builder** (Playground designer, catalog editor) | The core product — creator-to-fan publishing |
 | **The branding system** (`resolveBranding`, custom themes) | Your look-and-feel, not a service's |
 | **The messaging engine** (`MessagesShell`) | Spec'd custom via `messaging.md`; realtime provider is the only external bit |
 | **Affiliate deal ledger + attribution + distribution** | Custom trust layer (`affiliate_*` tables) — the platform's credibility |

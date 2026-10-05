@@ -113,7 +113,7 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 - **Per-creator deals:** in the collab detail (My Peeps → Partners → collab detail):
   - Same fields as above, plus a **scope selector: "This item" (pick one) vs "My whole catalog"** — per-creator deals target everything the creator sells
   - One collab can carry multiple deals (several per-item + one per-creator); per-item wins on a sale when both exist
-- **No-payout-rail warning (2026-08-10):** items using **external-link payment** (PayPal.me / Stripe Payment Link / Gumroad — `my-app.md` Catalog "Payment handling" + `creators.md` Part 1c) are **quarantined from affiliate deals** — the platform can't see or split off-platform transactions. The editor shows an amber note on the item row ("Pays off-platform — excluded from deals") and the deal rule builder blocks/warns when a selected item is external-link. No silent partial sums — a deal covers only in-app-processed items.
+- **No-payout-rail warning (2026-08-10):** items using **external-link payment** (PayPal.me / Stripe Payment Link / Gumroad — `playground.md` Catalog "Payment handling" + `creators.md` Part 1c) are **quarantined from affiliate deals** — the platform can't see or split off-platform transactions. The editor shows an amber note on the item row ("Pays off-platform — excluded from deals") and the deal rule builder blocks/warns when a selected item is external-link. No silent partial sums — a deal covers only in-app-processed items.
 
 **Asymmetry (2026-08-05):** each side's deals are THEIR OWN rows. A configures "10% on my course" for B; B configures "free cross-promo" for A — or nothing at all. No shared deal object, no echo. Money flows from the deal's owner to the promoter per conversion.
 
@@ -295,6 +295,6 @@ NetworkPage
 | **Chat/messaging** | Spec'd above — implement when building from this spec |
 | **Deal Maker** | Parked — affiliate deals (§7) are the active money mechanism in v1 |
 | **Billboard interactivity** | Parked — user will return with specific ideas |
-| **My App Connection** | How Network links to My App — TBD |
+| **Playground Connection** | How Network links to Playground — TBD |
 | **External brand affiliates** | Self-serve brand deals (Beacon-style 12K network) — v2 |
 | **Auto-DM for affiliates** | Auto-notify affiliates when their link converts |

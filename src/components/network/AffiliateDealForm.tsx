@@ -187,7 +187,7 @@ export function AffiliateDealForm({ onSubmit, onCancel }: AffiliateDealFormProps
               </Select>
               {pickerItems.length === 0 ? (
                 <p className="text-xs text-muted-foreground">
-                  No eligible items — add catalog items in My App first.
+                  No eligible items — add catalog items in Playground first.
                 </p>
               ) : hiddenExternals > 0 ? (
                 <Badge variant="secondary" className="text-xs">

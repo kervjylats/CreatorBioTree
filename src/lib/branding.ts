@@ -6,7 +6,7 @@
  * from this module — never from a raw Creator row or `as any` casts.
  */
 
-import type { Creator, MyAppTheme, ButtonStyle } from "@/types";
+import type { Creator, PlaygroundTheme, ButtonStyle } from "@/types";
 
 // ─── Font mapping ────────────────────────────────────────────────────────────
 
@@ -18,7 +18,7 @@ export const FONT_MAP: Record<string, string> = {
 
 // ─── Theme presets (9) ───────────────────────────────────────────────────────
 //
-// The 9 preset designs creators can pick in My App → Design. `resolveBranding()`
+// The 9 preset designs creators can pick in Playground → Design. `resolveBranding()`
 // uses these when a creator has NOT overridden a value in `custom_theme`.
 
 export interface BrandPreset {
@@ -106,17 +106,17 @@ export interface CreatorBranding {
  * `(creator.custom_theme as any)?.profile?.appName || ...` ever again.
  *
  * Identity (display_name, bio, avatar, banner) comes from Profile.
- * Design (app icon, colours, fonts) comes from My App (`custom_theme`).
+ * Design (app icon, colours, fonts) comes from Playground (`custom_theme`).
  *
  * Resolution order: `custom_theme` override → the 9 presets → the minimal preset.
  */
 export function resolveBranding(creator: Creator): CreatorBranding {
-  const ct      = (creator.custom_theme as MyAppTheme) ?? ({} as MyAppTheme);
-  const profile = ct.profile ?? ({} as MyAppTheme["profile"]);
-  const colors  = ct.colors  ?? ({} as MyAppTheme["colors"]);
+  const ct      = (creator.custom_theme as PlaygroundTheme) ?? ({} as PlaygroundTheme);
+  const profile = ct.profile ?? ({} as PlaygroundTheme["profile"]);
+  const colors  = ct.colors  ?? ({} as PlaygroundTheme["colors"]);
   const preset  = presetById(creator.theme_id);
 
-  // App name: My App override → fallback (never leaks profile data)
+  // App name: Playground override → fallback (never leaks profile data)
   const appName    = profile.appName || "Creator App";
   const appIconUrl = profile.appIconUrl || "/icons/icon-192x192.png";
   const avatarUrl  = creator.avatar_url || "/icons/icon-192x192.png";
@@ -156,7 +156,7 @@ export function resolveBranding(creator: Creator): CreatorBranding {
 /**
  * socialLinksToArtistLinks — convert a creator's `social_links` record
  * ({ platform: url }) into the `{ label, url }[]` shape the Connect tab,
- * partner pages, and My App preview render. Empty URLs are dropped.
+ * partner pages, and Playground preview render. Empty URLs are dropped.
  * Single source so partner-page no longer shows blank links (2026-09-29 audit).
  */
 export function socialLinksToArtistLinks(

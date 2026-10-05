@@ -1,13 +1,13 @@
-# My App — Complete Vision & Spec
+# Playground — Complete Vision & Spec
 
-> **Filename:** this file is `my-app.md` (in `screens/creator-dashboard/my-app/`). The **user-facing name is "My App"** — the sidebar entry, the route `/dashboard/my-app`, and all creator-facing copy. **"My App" replaces the earlier names "Playground" + "My Page" + "View My App"** (full rename founder decision 2026-08-05). Type names (`MyAppTheme`, `MyAppColors`, `MyAppProfile`) and the old-code component names (`useMyAppForm`, `MyAppInfoBanner`) follow the same rename.
+> **Filename + name history:** this file is `playground.md` (in `screens/creator-dashboard/playground/`). The **user-facing name is "Playground"** — the sidebar entry, the route `/dashboard/playground`, and all creator-facing copy. History: born **Playground** → renamed **"My App"** (founder decision 2026-08-05) → **renamed back to "Playground"** (founder decision 2026-10-01, *"I prefer the words playground"*). Type names (`PlaygroundTheme`, `PlaygroundColors`, `PlaygroundProfile`) and component names (`usePlaygroundForm`, `PlaygroundForm`) follow the current name; `src/old-code/` keeps its archived pre-2026-08-05 filenames.
 
-> **⚠️ STATUS 2026-09-24 — PREVIEW-FIRST (temporary direction).** Only the **phone frame** is visible on `/dashboard/my-app` right now: the Draft/Live/Deployed bar + the real fan surfaces (Guest/Home/Content/Connect/Settings) in a fluid 390×844 frame (420px wide on desktop). **The editor UI described below (tap-to-edit popovers, editor sheet, Identity/Design/Catalog/Artist Links/Integrations/Email tabs) is deferred to a later design pass** — this file remains the full target spec for when that pass happens. The old editor component files were removed; the generic catalog components (`AddItemPicker`, `ItemEditor`, `PricingEditor`, `FileUploadField`) are kept for reuse.
+> **⚠️ STATUS 2026-09-24 — PREVIEW-FIRST (temporary direction).** Only the **phone frame** is visible on `/dashboard/playground` right now: the Draft/Live/Deployed bar + the real fan surfaces (Guest/Home/Content/Connect/Settings) in a fluid 390×844 frame (420px wide on desktop). **The editor UI described below (tap-to-edit popovers, editor sheet, Identity/Design/Catalog/Artist Links/Integrations/Email tabs) is deferred to a later design pass** — this file remains the full target spec for when that pass happens. The old editor component files were removed; the generic catalog components (`AddItemPicker`, `ItemEditor`, `PricingEditor`, `FileUploadField`) are kept for reuse.
 
 
 ## Concept
 
-**My App** is the single place where a creator sees and edits their **entire fan shell** — one sidebar entry that replaces the old Playground editor AND the old "View My App" action. ("My App" because you get YOUR own app — that's the whole point of the platform.)
+**Playground** is the single place where a creator sees and edits their **entire fan shell** — one sidebar entry that replaces both the old Playground editor AND the old "View my fan page" action (merged 2026-08-05). ("Playground" — where you build the app your fans install.)
 
 It opens as a **full-screen phone view** (no cramped 3-panel editor) that shows the **guest page first** — exactly what a visitor sees — and the creator swipes through the fan tabs (Home / Content / Connect / Settings). **The page IS the editor:** tap any visible element to edit it (brand layer), or tap an Edit button to reach the content editor (sheet). One screen, both jobs.
 
@@ -15,7 +15,7 @@ It opens as a **full-screen phone view** (no cramped 3-panel editor) that shows 
 
 ---
 
-## Part 1: My App — Full-Screen Phone View
+## Part 1: Playground — Full-Screen Phone View
 
 - The phone frame **fills the available screen** (no left/right panels, no small 260×520 mockup). It renders the real fan shell components at full size
 - **Defaults to the guest page** (the first thing any visitor sees — founder decision, 2026-08-05)
@@ -45,7 +45,7 @@ It opens as a **full-screen phone view** (no cramped 3-panel editor) that shows 
 - **Changes are global by design** — the brand layer is universal. Change the accent once → every button on all 5 surfaces changes (the "make everything look the same" requirement)
 - Live update as you tweak (same `resolveBranding()` resolver — `features/branding.md` Part 4)
 - Popovers are the SAME on every surface — no per-surface popovers (theme is global; per-tab theming is a deferred premium idea, `features/branding.md` Part 10)
-- All changes go to the local draft buffer (`localStorage[my-app_draft_${creatorId}]`) until **Deploy** (Part 4c)
+- All changes go to the local draft buffer (`localStorage[playground_draft_${creatorId}]`) until **Deploy** (Part 4c)
 - Data model: same `custom_theme` fields as the Design tab — tap-to-edit and the Design tab edit the same thing (see `features/branding.md` Part 6)
 - **Not tappable:** content data (item titles, prices, images, partner names, updates, payments). Those are per-box content — they go through the editor sheet (Part 1c)
 
@@ -55,7 +55,7 @@ It opens as a **full-screen phone view** (no cramped 3-panel editor) that shows 
 
 ## Part 1b: Preview State Toggle (Draft / Live)
 
-A **toggle at the top center** of My App (above the phone frame) lets the creator compare what they have in the editor right now (Draft) against what fans currently see on the live `/{username}` page (Live). The same toggle also appears at the top of the live page when the owner views their own `/{username}` (per `overview.md` Part 7).
+A **toggle at the top center** of Playground (above the phone frame) lets the creator compare what they have in the editor right now (Draft) against what fans currently see on the live `/{username}` page (Live). The same toggle also appears at the top of the live page when the owner views their own `/{username}` (per `overview.md` Part 7).
 
 **UI:**
 
@@ -83,18 +83,18 @@ A **toggle at the top center** of My App (above the phone frame) lets the creato
 
 **Data sources:**
 
-- **Draft view** — reads from `localStorage[my-app_draft_${creatorId}]` (auto-saved every 3s per Part 4a). For "Live" comparison, also reads from the DB
+- **Draft view** — reads from `localStorage[playground_draft_${creatorId}]` (auto-saved every 3s per Part 4a). For "Live" comparison, also reads from the DB
 - **Live view** — reads from `creators.custom_theme` + `creators.theme_id` + `creators.content_items` (filtered to **published only** per the Three Gates in `fan-shell.md` Part 2). Same `resolveBranding()` resolver as the real `/{username}` page (see `features/branding.md` Part 4)
 
 **Defaults (founder decision, 2026-08-05):**
 
-- **Default to Live** on opening My App — creators see "what fans see" first
+- **Default to Live** on opening Playground — creators see "what fans see" first
 - **Orange dot on the "Draft" label only** when `localStorage draft ≠ DB deployed state`
 - **No dot on "Live"** — Live is always the source of truth
 - **Same toggle when the owner visits their own live `/{username}`** — a bar at the top shows the same toggle (Draft / Live, default Live, orange dot on Draft when un-deployed). Same data sources + same resolver
 - **Tap-to-edit popovers are always available** — every edit goes to the draft buffer (Live or Draft mode); the toggle only changes what's rendered
 
-**Component name (tentative):** `PreviewStateToggle` — single component reused in both My App and the owner-view page.
+**Component name (tentative):** `PreviewStateToggle` — single component reused in both Playground and the owner-view page.
 
 ---
 
@@ -357,7 +357,7 @@ When a fan visits `/[username]`, they see 3 layers stacked:
 ## Part 4: System Features
 
 ### 4a. Draft System (auto-save)
-- Every change auto-saved to localStorage every 3s (`my-app_draft_${creatorId}`)
+- Every change auto-saved to localStorage every 3s (`playground_draft_${creatorId}`)
 - On mount, restores draft if one exists
 - Deploy clears the draft
 - Survives: browser close, lost connection, crash
@@ -406,7 +406,7 @@ When a fan visits `/[username]`, they see 3 layers stacked:
 ## Part 6: Build Priority
 
 ### Phase 1 — Core
-1. Wire My App full-screen shell (5 surfaces, swipe, guest-first) + Preview State Toggle
+1. Wire Playground full-screen shell (5 surfaces, swipe, guest-first) + Preview State Toggle
 2. Wire tap-to-edit popovers (Part 1a) + `ElementPopover` component
 3. Wire editor sheet Option A (Part 1c) with the 8-tab strip + surface→tab mapping
 4. Wire CatalogManager + 16 item types into the Catalog tab
@@ -440,15 +440,15 @@ When a fan visits `/[username]`, they see 3 layers stacked:
 
 | Component | File | Purpose |
 |---|---|---|
-| PhonePreview | `PhonePreview.tsx` | Old phone mockup + mini strip — **becomes the full-screen My App shell** (Part 1) |
+| PhonePreview | `PhonePreview.tsx` | Old phone mockup + mini strip — **becomes the full-screen Playground shell** (Part 1) |
 | ElementPopover | *(new — no old code)* | Tap-to-edit popovers (Part 1a) |
 | PreviewStateToggle | *(new — see branding.md Part 1b)* | Draft/Live toggle (Part 1b) |
 | AppIdentityEditor | `AppIdentityEditor.tsx` | Link Address (read-only), app name, icon, bio |
 | GlobalSettingsEditor | `GlobalSettingsEditor.tsx` | Colors, fonts, AI palette |
 | BottomEditor | `BottomEditor.tsx` | Tab wrapper |
 | BottomPanel | `BottomPanel.tsx` | Deploy bar (merge into BottomEditor) |
-| MyAppInfoBanner | `MyAppInfoBanner.tsx` (formerly `PlaygroundInfoBanner.tsx`) | Dismissable banner |
-| useMyAppForm | `useMyAppForm.ts` (formerly `usePlaygroundForm.ts`) | State + deploy + auto-save |
+| PlaygroundInfoBanner | archived as `PlaygroundInfoBanner.tsx` in `src/old-code/` (live copy deleted 2026-09-24) | Dismissable banner |
+| usePlaygroundForm | `usePlaygroundForm.ts` (live) + archive copy in `src/old-code/` | State + deploy + auto-save |
 | useAutoSave | `useAutoSave.tsx` | localStorage auto-save |
 | CatalogManager | `catalog/CatalogManager.tsx` | Catalog list + editors |
 | AddItemPicker | `catalog/AddItemPicker.tsx` | Type picker modal |
@@ -487,7 +487,7 @@ When a fan visits `/[username]`, they see 3 layers stacked:
 
 ## Merger Reference
 
-This single `my-app.md` (formerly `playground.md` — full rename 2026-08-05) replaces these 5 separate files:
+This single `playground.md` (file history: born `playground.md` → `my-app.md` 2026-08-05 → back to `playground.md` 2026-10-01) replaces these 5 separate files:
 
 | Old File | Merged Into |
 |---|---|

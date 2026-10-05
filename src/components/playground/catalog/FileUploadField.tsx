@@ -1,5 +1,5 @@
 /**
- * FileUploadField — device file upload for catalog items (my-app.md Part 2c).
+ * FileUploadField — device file upload for catalog items (playground.md Part 2c).
  * Hidden file input opens the OS/phone picker, posts to the existing
  * POST /api/creator/upload (per-type MIME validation, mock storage →
  * public/mock-uploads/), and shows a preview (thumbnail for image/video,

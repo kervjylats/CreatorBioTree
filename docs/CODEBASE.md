@@ -1,6 +1,6 @@
 # Codebase Structure & Walkthrough
 
-> As-of: August 2026. Running in **mock mode** (`USE_MOCKS=true`). All external services are in-memory mocks. Phase F wiring is **nearly complete** — login, onboarding, forgot-password, My App (16 item types + device uploads), fan shell, messaging, dashboard overview, network, settings, search, admin, and all feature families are wired (WIRING_PLAN Sheets 6–12, 18–22 done). Landing page is the only unwired screen.
+> As-of: August 2026. Running in **mock mode** (`USE_MOCKS=true`). All external services are in-memory mocks. Phase F wiring is **nearly complete** — login, onboarding, forgot-password, Playground (16 item types + device uploads), fan shell, messaging, dashboard overview, network, settings, search, admin, and all feature families are wired (WIRING_PLAN Sheets 6–12, 18–22 done). Landing page is the only unwired screen.
 
 ---
 
@@ -16,7 +16,7 @@
 │  │ /manifest.json│  │ Dashboard     │  │ /[username]     │  │
 │  │               │  │ /dashboard/*  │  │                 │  │
 │  │ Landing       │  │ Overview      │  │ Guest view OR   │  │
-│  │ Login         │  │ My App       │  │ Fan app (4 tab) │  │
+│  │ Login         │  │ Playground       │  │ Fan app (4 tab) │  │
 │  │ Onboarding    │  │ Network       │  └─────────────────┘  │
 │  │               │  │ Admin         │                       │
 │  │               │  └───────────────┘  ┌─────────────────┐  │
@@ -86,7 +86,7 @@ src/
 │   │   ├── dashboard/             # /dashboard
 │   │   │   ├── page.tsx           # Overview (address-book entry → src/screens/creator/overview/)
 │   │   │   ├── overview/          # REDIRECT → /dashboard (signpost — old links keep working)
-│   │   │   ├── my-app/            # /dashboard/my-app (see + edit fan shell — WIRED)
+│   │   │   ├── playground/            # /dashboard/playground (see + edit fan shell — WIRED)
 │   │   │   ├── circle/            # /dashboard/circle (My Peeps dock pages: partners/, fans/, staff/, messages/ — WIRED)
 │   │   │   ├── network/           # /dashboard/network (Discover hub — WIRED)
 │   │   │   └── settings/          # /dashboard/settings (wired)
@@ -106,7 +106,7 @@ src/
 │   └── api/                      # REST API routes (88 api routes; + 2 manifest routes + 1 /ref/[code] redirect outside api/)
 │       ├── admin/                # Platform admin APIs (RBAC)
 │       ├── messages/                 # Messaging engine (19 routes — WIRED)
-│       ├── creator/              # Creator CRUD, upload, catalog, my-app, fans, partners, staff, affiliates, AI
+│       ├── creator/              # Creator CRUD, upload, catalog, playground, fans, partners, staff, affiliates, AI
 │       ├── fan/                  # Fan auth, content, follow, purchases
 │       ├── paypal/               # Mock PayPal checkout (v1 rail)
 │       ├── push/                 # Push notification subscribe/send
@@ -116,7 +116,7 @@ src/
 ├── screens/                      # ⚠️ THE MIDDLEMAN — one folder per screen (index.ts barrel + Screen.tsx)
 │   ├── public/                   # landing, login, onboarding, forgot-password, offline
 │   ├── fan/                      # guest, home, content, connect, settings, partner
-│   ├── creator/                  # overview, network, my-app, settings
+│   ├── creator/                  # overview, network, playground, settings
 │   └── admin/                    # admin
 │                                 # (login/onboarding/forgot-password + fan screens + dashboard screens are wired; landing is deferred)
 │
@@ -133,20 +133,20 @@ src/
 │   ├── shared/                   # Used by 2+ different features: InviteEmail (staff + admin)
 │   ├── overview/ settings/ admin/ analytics/  # Screen-owned widgets (e.g. FanExportButton → overview/)
 │   ├── fan-pwa/                  # Fan app: shells, tabs, cards, guest page (wired — 20 files)
-│   ├── my-app/                   # Preview-first: MyAppForm, PhonePreview, PreviewStateToggle, previewData, catalog/
+│   ├── playground/                   # Preview-first: PlaygroundForm, PhonePreview, PreviewStateToggle, previewData, catalog/
 │   └── ServiceWorkerRegister.tsx  # SW registration
 │
 ├── wiredLater/                   # ⚠️ SPECS ONLY — .md blueprints (read before anything else)
 │   ├── wiredLater.md             # Index of ALL spec files (read this first)
 │   ├── screens.md                # Walkthrough of every screen, grouped by category
 │   ├── screens/                  # SCREENS — grouped by what they are
-│   │   ├── creator-dashboard/     # The 4 major sidebar screens (overview, network, my-app, settings)
+│   │   ├── creator-dashboard/     # The 4 major sidebar screens (overview, network, playground, settings)
 │   │   ├── admin/                 #   Platform owner + staff control room
 │   │   ├── fan-shell/             #   What fans experience (/{username})
 │   │   └── public/                #   Outside the app, no sidebar (landing, login, onboarding, offline)
 │   ├── features/                 # FEATURES — cross-cutting: live AS tabs/sections inside the major screens
 │   │                             #   (messaging, relationships, staff, partnership, partner-page, search +
-│   │                             #   merged My App editor-tab stubs: catalog-roadmap, funnel, integrations,
+│   │                             #   merged Playground editor-tab stubs: catalog-roadmap, funnel, integrations,
 │   │                             #   email-campaigns, media-kit, affiliates)
 │   ├── monetization/               # Money specs (split 2026-08-05): index + owner (platform) + creators (affiliates)
 │   ├── ai/                         # AI assistant + AI agents specs
@@ -158,7 +158,7 @@ src/
 │   ├── integrations/             # Social scrape route backup
 │   └── *.ts(x)                   # 56 reusable components/hooks (Sidebar, PhonePreview, useAutoSave…)
 │
-├── hooks/                        # Custom React hooks (3 live: useAutoSave, useMyAppForm, usePWAInstall)
+├── hooks/                        # Custom React hooks (3 live: useAutoSave, usePlaygroundForm, usePWAInstall)
 ├── lib/                          # Libraries, utilities, and ALL mocks
 │   ├── mocks/                    # Mock system (fake external services)
 │   ├── supabase/                 # Supabase client variants
@@ -191,7 +191,7 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `/forgot-password` | Creator forgot-password (wired) | No |
 | `/dashboard` | Dashboard Overview — stats, activity, quick actions (moved here 2026-09-30) — **wired** | Yes (creator/admin) |
 | `/dashboard/overview` | REDIRECT → `/dashboard` (signpost, keeps old links working) | Yes (creator/admin) |
-| `/dashboard/my-app` | See + edit your fan shell — full-screen, tap-to-edit (wired) | Yes (creator/admin) |
+| `/dashboard/playground` | See + edit your fan shell — full-screen, tap-to-edit (wired) | Yes (creator/admin) |
 | `/dashboard/circle/messages` | Full chat screen (wired) | Yes (creator/admin) |
 | `/dashboard/network` | Discover hub (Billboard + Affiliates rail, creator search) — **wired**; My Peeps dock pages live at `/dashboard/circle/*` | Yes (creator/admin) |
 | `/dashboard/circle/partners` | Collab requests + active collabs + invite card — **wired** (My Peeps dock) | Yes (creator/admin) |
@@ -219,11 +219,11 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `check-username/` | GET | Check if username is available (rate-limited 20/min) |
 | `activity/` | GET | Creator activity stats |
 | `ai-summary/` | POST | Generate AI summary of bio (mocked) |
-| `my-app/ai/` | POST | AI prompt for theme/branding (mocked) |
+| `playground/ai/` | POST | AI prompt for theme/branding (mocked) |
 | `register/` | POST | Onboarding: set Link Address + display name on the mock-created row |
 | `forgot-password/` | POST | Anonymous reset email (no enumeration, 3/min) |
-| `my-app/` | GET/PUT | Read + deploy the fan app (branding, theme, items, links) |
-| `my-app/icon/` | POST | App icon upload |
+| `playground/` | GET/PUT | Read + deploy the fan app (branding, theme, items, links) |
+| `playground/icon/` | POST | App icon upload |
 | `catalog/` | GET/POST | List/create catalog items |
 | `catalog/[itemId]/` | GET/PATCH/DELETE | Single item CRUD (variants, booking slots, lessons, scheduling…) |
 | `catalog/[itemId]/modules/` | GET/POST | Course modules |
@@ -313,7 +313,7 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 
 ## 6. Components (`src/components/`)
 
-> **Phase F wiring is in progress** — the parts archive `src/old-code/` is reference-only; specs in `src/wiredLater/` (index: `wiredLater.md`). Live component families: `ui/` (shadcn), `auth/`, `messages/`, `circle/`, `network/`, `fan-pwa/`, `my-app/`.
+> **Phase F wiring is in progress** — the parts archive `src/old-code/` is reference-only; specs in `src/wiredLater/` (index: `wiredLater.md`). Live component families: `ui/` (shadcn), `auth/`, `messages/`, `circle/`, `network/`, `fan-pwa/`, `playground/`.
 
 ### 6.1 ui/ — shadcn UI Primitives (11 files — LIVE)
 
@@ -344,19 +344,19 @@ Single-file messaging engine per messaging.md: `useMessages` (6s polling), `useU
 
 Server-side resolver: `src/lib/fanShellData.ts` (creator → branding → items → fan_session identity → purchases). The no-password render rule (Follower/visitor → `/guest`) is enforced there.
 
-### 6.5 my-app/ — My App Editor (WIRED, Sheet 19-V1)
+### 6.5 playground/ — Playground Editor (WIRED, Sheet 19-V1)
 
-`MyAppForm` (draft buffer + deploy), `PhonePreview` (full phone frame, real fan components via `previewData.ts`), `PreviewStateToggle` (Draft/Live + orange dot + Deploy), `catalog/` — `AddItemPicker` (3 sections: Upload from your device / Links / Everything else), `ItemEditor` (per-type + `PricingEditor` + scheduling + external-link quarantine), `FileUploadField` (device uploads → `/api/creator/upload`). Tap-to-edit `ElementPopover` + the Design/Identity/Catalog/ArtistLinks editor tabs removed 2026-09-24 (preview-first).
+`PlaygroundForm` (draft buffer + deploy), `PhonePreview` (full phone frame, real fan components via `previewData.ts`), `PreviewStateToggle` (Draft/Live + orange dot + Deploy), `catalog/` — `AddItemPicker` (3 sections: Upload from your device / Links / Everything else), `ItemEditor` (per-type + `PricingEditor` + scheduling + external-link quarantine), `FileUploadField` (device uploads → `/api/creator/upload`). Tap-to-edit `ElementPopover` + the Design/Identity/Catalog/ArtistLinks editor tabs removed 2026-09-24 (preview-first).
 
 ### 6.6 Parts archive (all in `src/old-code/` — old code, reference only)
 
-- **root:** Sidebar, SidebarContent, PhonePreview, MyAppInfoBanner, GlobalSettingsEditor, BottomEditor, AppIdentityEditor, CreatorManagementWidgets, FanStatsCard, AnalyticsWidgets, CreatorSearchInput, CreatorCard, StripeConnectPanel, HelpButton, CreatorHeader, FanAuthModal, FanBottomNav, GuestPageContent, LandingPage, LandingPWA, PageViewTracker, FollowButton, PoweredByFooter, InstallBanner, InstallButton, IOSInstallGuide, InAppBrowserWarning, UpdateToast, LandingHeader, HeroSection, FeaturesSection, TestimonialsSection, DemoSection, CTASection, Footer, AuthCard, LoginForm, OnboardingForm, PartnerOnboarding, CreatorResultCard, DiscoverCreators, SocialLinks, LoadingSpinner, EmptyState, ErrorBoundary, useCreatorSearch, search-utils, DashboardTimeline, useMyAppForm, useAutoSave, usePWAInstall
+- **root:** Sidebar, SidebarContent, PhonePreview, PlaygroundInfoBanner, GlobalSettingsEditor, BottomEditor, AppIdentityEditor, CreatorManagementWidgets, FanStatsCard, AnalyticsWidgets, CreatorSearchInput, CreatorCard, StripeConnectPanel, HelpButton, CreatorHeader, FanAuthModal, FanBottomNav, GuestPageContent, LandingPage, LandingPWA, PageViewTracker, FollowButton, PoweredByFooter, InstallBanner, InstallButton, IOSInstallGuide, InAppBrowserWarning, UpdateToast, LandingHeader, HeroSection, FeaturesSection, TestimonialsSection, DemoSection, CTASection, Footer, AuthCard, LoginForm, OnboardingForm, PartnerOnboarding, CreatorResultCard, DiscoverCreators, SocialLinks, LoadingSpinner, EmptyState, ErrorBoundary, useCreatorSearch, search-utils, DashboardTimeline, usePlaygroundForm, useAutoSave, usePWAInstall
 - **catalog/:** CatalogManager, AddItemPicker, PricingEditor, CoverUploader, CountdownField, FileEditor, LinkEditor, SessionEditor, LiveEditor, MessagingEditor, MembershipEditor, PhysicalEditor, ProductEditor, CourseEditor, TipJarEditor, BundleEditor, NewsletterEditor
 - **allScreens/:** 27 old screen/API backups — `allScreens/<name>/page-old.tsx` (pre-skeleton page versions), `*-old.tsx` (components), `allScreens/network/api/*-route-old.ts` (API routes)
 - **integrations/:** social-scrape-route-old.ts (unwired — live returns 503)
 
 > 📤 **Adopted into live code (2026-08-07):** `api-error.ts`, `requireAuth.ts` → now live in `src/lib/` (G6 — use them in new routes instead of inline `NextResponse.json`; `api-utils.ts` removed in the 2026-09-28 cleanup).
-> 📤 **Promoted to live (Phase F, 2026-08-10→):** AuthCard, LoginForm, OnboardingForm, ForgotPasswordForm, useMyAppForm, useAutoSave, usePWAInstall, PhonePreview, UpdateToast, CreatorHeader, GuestPageContent, FanAuthModal, FanBottomNav, PageViewTracker — see their wired homes above. Archive copies remain as reference.
+> 📤 **Promoted to live (Phase F, 2026-08-10→):** AuthCard, LoginForm, OnboardingForm, ForgotPasswordForm, usePlaygroundForm, useAutoSave, usePWAInstall, PhonePreview, UpdateToast, CreatorHeader, GuestPageContent, FanAuthModal, FanBottomNav, PageViewTracker — see their wired homes above. Archive copies remain as reference.
 
 ### 6.7 Spec files (blueprints — `src/wiredLater/`, specs ONLY)
 
@@ -365,7 +365,7 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 **Screens** (grouped by what they are):
 | Spec | What it covers |
 |---|---|
-| `screens/creator-dashboard/my-app/my-app.md` | My App (formerly "Playground") — MEGA: full-screen shell, tap-to-edit brand popovers, 8 editor tabs, fan 3-layer display, free/pro tiers, build priority |
+| `screens/creator-dashboard/playground/playground.md` | Playground (formerly "Playground") — MEGA: full-screen shell, tap-to-edit brand popovers, 8 editor tabs, fan 3-layer display, free/pro tiers, build priority |
 | `screens/creator-dashboard/network/network.md` | Network search, billboard, collabs, affiliates |
 | `screens/creator-dashboard/overview/overview.md` | Dashboard Overview — stats, activity, quick actions |
 | `screens/creator-dashboard/settings/settings.md` | Dashboard Settings — money, identity, permissions |
@@ -386,7 +386,7 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 | `features/partnership.md` | Outside-app invite flow (`?invite=CODE`). Wiring home: My Peeps → Partners row |
 | `features/partner-page.md` | Fan-only partner modal (Connect tab) |
 | `features/search.md` | Search — Network hub Discover + landing placements (standalone `/search` page removed 2026-09-28; `GET /api/discover/creators` stays live) |
-| `features/catalog-roadmap.md`, `funnel.md`, `integrations.md`, `email-campaigns.md`, `media-kit.md`, `affiliates.md` | Merged My App/Network-tab stubs (reference only) |
+| `features/catalog-roadmap.md`, `funnel.md`, `integrations.md`, `email-campaigns.md`, `media-kit.md`, `affiliates.md` | Merged Playground/Network-tab stubs (reference only) |
 
 **Other:** `monetization/index.md` + `owner.md` + `creators.md` (money specs — split 2026-08-05) · `ai/ai-features.md` + `ai/ai-agents.md` (post-launch)
 
@@ -396,8 +396,8 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 
 | Hook | Purpose |
 |---|---|
-| `useMyAppForm` | My App draft buffer (`my-app_draft_${creatorId}`, 3s debounce) + deploy + hasChanges |
-| `useAutoSave` | Debounced save helper used by `useMyAppForm` |
+| `usePlaygroundForm` | Playground draft buffer (`playground_draft_${creatorId}`, 3s debounce) + deploy + hasChanges |
+| `useAutoSave` | Debounced save helper used by `usePlaygroundForm` |
 | `usePWAInstall` | Install state / triggerInstall / dismiss |
 
 ---
@@ -539,7 +539,7 @@ Mock client returns user based on mock_auth_uid cookie
     ↓
 Layout loads creator profile from mockDataStore
     ↓
-Wired pages render (My App editor, Messages; floating chat inbox everywhere)
+Wired pages render (Playground editor, Messages; floating chat inbox everywhere)
 ```
 
 > ⚠️ **Remove the auto-provision block in `src/proxy.ts` before real-mode migration** (WIRING_PLAN.md Sheet 6 warning). `/admin*` auto-provisions the seeded admin instead.
@@ -570,23 +570,23 @@ Page reloads → FanAppShell renders (authenticated view)
 
 - All old screens backed up to `src/old-code/allScreens/<name>/page-old.tsx`; every page became a naked skeleton
 - All 101 code files moved out of `wiredLater/` to `src/old-code/` (parts archive) — `wiredLater/` is now specs only (index: `wiredLater.md`)
-- Specs written for every screen (my-app → formerly Playground, network, admin, landing, screens index)
+- Specs written for every screen (playground → formerly Playground, network, admin, landing, screens index)
 - Social scrape route did not exist (re-added later as an UNWIRED 503 stub for rebuild)
 - **A1/A1.5/A2 restructure (2026-08-07):** `src/app/` became a thin address book — route groups `(public)/`, `(fan)/[username]/`, `(creator)/dashboard/`, `(admin)/admin/` — and a new `src/screens/` middleman was created (17 screen folders, one `index.ts` + `Screen.tsx` each). Every page.tsx is a 2-line re-export. Planning + audit docs at repo root: `WIRING_PLAN.md`, `CODEBASE_AUDIT.md`, `CODEBASE_INVENTORY.md`.
 - **Foundation prep (2026-08-07):** adopted `api-utils`/`api-error`/`requireAuth` into `src/lib/`; added messaging/staff/affiliate types + 14 mock tables + 9 brand presets; killed 5 dead files; added 5 missing rate limits.
-- **Wiring (2026-08-10 → 2026-08-31):** Sheets 6-7 (login/onboarding/forgot-password), Sheet 19-V1 (My App — 16 item types + device uploads), Sheet 21-V1 (fan shell + mock PayPal checkout), Sheet 12 (messaging engine — 12 routes + MessagesShell), Sheets 8-11 + 13-16 + 18 + 20 + 22 (admin, settings, overview, search, partnerships, relationships, staff, affiliates, network, partner page, offline — all wired 2026-08-30). 18 API routes rewritten from mock store to Supabase clients. Dead code removed (Stripe, Paddle, playground/ai, ai-summary, unused deps).
+- **Wiring (2026-08-10 → 2026-08-31):** Sheets 6-7 (login/onboarding/forgot-password), Sheet 19-V1 (Playground — 16 item types + device uploads), Sheet 21-V1 (fan shell + mock PayPal checkout), Sheet 12 (messaging engine — 12 routes + MessagesShell), Sheets 8-11 + 13-16 + 18 + 20 + 22 (admin, settings, overview, search, partnerships, relationships, staff, affiliates, network, partner page, offline — all wired 2026-08-30). 18 API routes rewritten from mock store to Supabase clients. Dead code removed (Stripe, Paddle, playground/ai, ai-summary, unused deps).
 
 ### What's LIVE vs EXTRACTED
 
 | Area | Live | Extracted (old-code parts archive) |
 |---|---|---|
-| Pages | login, onboarding, forgot-password, my-app, messages, fan shell (6 tabs), overview, network, settings, admin, dashboard layout + chat popover | `allScreens/<name>/page-backup.tsx` backups |
+| Pages | login, onboarding, forgot-password, playground, messages, fan shell (6 tabs), overview, network, settings, admin, dashboard layout + chat popover | `allScreens/<name>/page-backup.tsx` backups |
 | UI primitives | `components/ui/` (11 shadcn) | — |
 | Fan shell | `components/fan-pwa/` (20 files — full implementation) | Pre-wiring versions |
-| My App editor | `components/my-app/` (MyAppForm, PhonePreview, PreviewStateToggle, catalog/ editors…) + hooks | Old playground versions |
+| Playground editor | `components/playground/` (PlaygroundForm, PhonePreview, PreviewStateToggle, catalog/ editors…) + hooks | Old playground versions |
 | Messaging | `components/messages/MessagesShell.tsx` + `lib/messages.ts` + 12 routes | — (wired fresh from spec) |
-| Catalog | CRUD + my-app + upload routes; 16 editors live in `catalog/` | 17 old editors + manager |
-| Hooks | 3 live (useAutoSave, useMyAppForm, usePWAInstall) | Archive copies |
+| Catalog | CRUD + playground + upload routes; 16 editors live in `catalog/` | 17 old editors + manager |
+| Hooks | 3 live (useAutoSave, usePlaygroundForm, usePWAInstall) | Archive copies |
 | Admin RBAC | Roles, permissions, API routes, `admin-permissions.ts` + 5-tab admin UI | — |
 | API helpers (G6) | `src/lib/api-error.ts`, `requireAuth.ts` (adopted; `api-utils.ts` removed 2026-09-28) | — |
 | External services | All mocked | `docs/EXTERNAL_SERVICES.md` = the migration checklist |

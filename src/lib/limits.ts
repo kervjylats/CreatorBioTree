@@ -24,7 +24,7 @@ export function formatByteLimit(bytes: number): string {
 /** Creator file upload cap — must match `api/creator/upload` (50MB). */
 export const MAX_AVATAR_UPLOAD_BYTES = 50 * 1024 * 1024;
 
-/** My App PWA icon cap — must match `api/creator/my-app/icon` (2MB). */
+/** Playground PWA icon cap — must match `api/creator/playground/icon` (2MB). */
 export const MAX_APP_ICON_BYTES = 2_000_000;
 
 /** Shareable invite links (staff + partners) live for 7 days. */

@@ -1,6 +1,6 @@
 /**
- * GET/PUT /api/creator/my-app — the My App editor's read + deploy endpoint
- * (my-app.md Part 2/4b). GET returns the creator row (theme + identity +
+ * GET/PUT /api/creator/playground — the Playground editor's read + deploy endpoint
+ * (playground.md Part 2/4b). GET returns the creator row (theme + identity +
  * social links) and the catalog; PUT persists a deploy: display_name, bio,
  * avatar_url, banner_url, custom_theme, connect_empty_text, social_links. Both are
  * auth-guarded — the write whitelists only the allowed profile/theme fields.
@@ -80,8 +80,8 @@ export async function GET() {
   } catch (err) {
     const handled = handleAuthError(err);
     if (handled) return handled;
-    console.error("[creator/my-app] GET:", err);
-    return NextResponse.json({ error: "Failed to load My App" }, { status: 500 });
+    console.error("[creator/playground] GET:", err);
+    return NextResponse.json({ error: "Failed to load Playground" }, { status: 500 });
   }
 }
 
@@ -101,7 +101,7 @@ export async function PUT(request: NextRequest) {
       .eq("id", user.id);
 
     if (updateError) {
-      console.error("[creator/my-app] PUT:", updateError);
+      console.error("[creator/playground] PUT:", updateError);
       return NextResponse.json({ error: "Failed to deploy" }, { status: 500 });
     }
 
@@ -109,7 +109,7 @@ export async function PUT(request: NextRequest) {
   } catch (err) {
     const handled = handleAuthError(err);
     if (handled) return handled;
-    console.error("[creator/my-app] PUT:", err);
+    console.error("[creator/playground] PUT:", err);
     return NextResponse.json({ error: "Failed to deploy" }, { status: 500 });
   }
 }

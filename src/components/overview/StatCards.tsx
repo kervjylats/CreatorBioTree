@@ -1,6 +1,6 @@
 /**
  * OverviewStatCards — 4 stat cards: Total Sales, Total Fans, Page Views,
- * Content items. Every number arrives COMPUTED from GET /api/creator/my-app
+ * Content items. Every number arrives COMPUTED from GET /api/creator/playground
  * (2026-10-01 audit): this widget used to read `fans_count`/`subscribers_count`
  * — fields the route never sent, masked by `?? 0`, so those cards showed 0
  * forever — and to sum catalog price tags as if they were sales. The API is the
@@ -39,7 +39,7 @@ export function StatCards() {
       total_sales?: number;
       total_sales_currency?: string;
       page_views?: number;
-    }>("/api/creator/my-app")
+    }>("/api/creator/playground")
       .then((data) => {
         setStats({
           totalSales: data?.total_sales ?? 0,

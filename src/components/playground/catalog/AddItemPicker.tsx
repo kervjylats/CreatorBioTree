@@ -1,5 +1,5 @@
 /**
- * AddItemPicker — the "Add item" type grid (my-app.md Part 2c). All 16 types
+ * AddItemPicker — the "Add item" type grid (playground.md Part 2c). All 16 types
  * are enabled (Stage A, 2026-08-13 — the 9 deferred types landed); each type's
  * fields are handled by the generic ItemEditor. Grouped by how the content is
  * created (2026-08-19): Upload from your device / Links / Everything else.

@@ -42,7 +42,7 @@ export const AUTHENTICATED_FAN_TABS: FanTab[] = FAN_TABS.filter(
   (t) => t.id !== "guest",
 );
 
-/** Fan tab ID list for validation (MyAppForm). */
+/** Fan tab ID list for validation (PlaygroundForm). */
 export const FAN_TAB_IDS = FAN_TABS.map((t) => t.id);
 
 /** Reverse map: URL path segment → FanViewId (for FanAppShell). */
@@ -62,7 +62,7 @@ export interface DashboardNavItem {
 export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/network", label: "Network", icon: Globe },
-  { href: "/dashboard/my-app", label: "My App", icon: Smartphone },
+  { href: "/dashboard/playground", label: "Playground", icon: Smartphone },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
   { href: "/admin", label: "Admin Panel", icon: Shield, adminOnly: true },
 ];

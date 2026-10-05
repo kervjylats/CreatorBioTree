@@ -1,6 +1,6 @@
 /**
- * FanBottomNav — branded bottom bar (fan-shell.md Part 3; my-app.md Part 1).
- * In the My App preview, showGuest adds a Guest tab (red accent) so creators
+ * FanBottomNav — branded bottom bar (fan-shell.md Part 3; playground.md Part 1).
+ * In the Playground preview, showGuest adds a Guest tab (red accent) so creators
  * can preview the landing page vs the 4 authenticated fan tabs.
  * In the real fan shell, showGuest is never true — only 4 tabs.
  * Labels truncate instead of overflowing; inside the preview frame's
@@ -23,7 +23,7 @@ interface FanBottomNavProps {
   className?: string;
 }
 
-/** The bottom nav shown inside the fan shell (and mocked on the My App phone frame). */
+/** The bottom nav shown inside the fan shell (and mocked on the Playground phone frame). */
 export function FanBottomNav({ activeTab, onTabChange, branding, showGuest, className }: FanBottomNavProps) {
   const allTabs = showGuest ? FAN_TABS : AUTHENTICATED_FAN_TABS;
 

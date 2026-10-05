@@ -1,7 +1,7 @@
 /**
- * useMyAppForm — the My App editor's draft manager (my-app.md Part 4a/b).
- * Loads the creator row + catalog from /api/creator/my-app, keeps a draft
- * buffer auto-saved to localStorage (`my-app_draft_${creatorId}`, 3s debounce,
+ * usePlaygroundForm — the Playground editor's draft manager (playground.md Part 4a/b).
+ * Loads the creator row + catalog from /api/creator/playground, keeps a draft
+ * buffer auto-saved to localStorage (`playground_draft_${creatorId}`, 3s debounce,
  * survives browser close), and deploys via PUT. Catalog items save
  * immediately through the catalog API — only theme/profile/link edits draft.
  */
@@ -10,11 +10,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAutoSave } from "@/hooks/useAutoSave";
-import type { ContentItem, Creator, MyAppTheme } from "@/types";
+import type { ContentItem, Creator, PlaygroundTheme } from "@/types";
 import { DEFAULT_ACCENT } from "@/lib/branding";
 
-export interface MyAppDraft {
-  custom_theme: MyAppTheme;
+export interface PlaygroundDraft {
+  custom_theme: PlaygroundTheme;
   display_name: string | null;
   bio: string | null;
   avatar_url: string | null;
@@ -23,7 +23,7 @@ export interface MyAppDraft {
   social_links: Record<string, string>;
 }
 
-const EMPTY_THEME: MyAppTheme = {
+const EMPTY_THEME: PlaygroundTheme = {
   fontStyle: "sans",
   buttonStyle: "rounded",
   accent: DEFAULT_ACCENT,
@@ -32,33 +32,33 @@ const EMPTY_THEME: MyAppTheme = {
   profile: { appName: "", appIconUrl: "" },
 };
 
-interface UseMyAppFormResult {
+interface UsePlaygroundFormResult {
   loading: boolean;
   creatorId: string | null;
   baseCreator: Creator | null;
   serverItems: ContentItem[];
-  draft: MyAppDraft;
-  serverDraft: MyAppDraft | null;
+  draft: PlaygroundDraft;
+  serverDraft: PlaygroundDraft | null;
   hasChanges: boolean;
-  patch: (partial: Partial<MyAppDraft>) => void;
+  patch: (partial: Partial<PlaygroundDraft>) => void;
   reset: () => void;
   deploy: () => Promise<void>;
   deploying: boolean;
 }
 
 /** Deep-compare the draft against the last server snapshot (JSON — both sides plain). */
-function draftEquals(a: MyAppDraft, b: MyAppDraft | null): boolean {
+function draftEquals(a: PlaygroundDraft, b: PlaygroundDraft | null): boolean {
   if (!b) return false;
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-export function useMyAppForm(): UseMyAppFormResult {
+export function usePlaygroundForm(): UsePlaygroundFormResult {
   const [loading, setLoading] = useState(true);
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [baseCreator, setBaseCreator] = useState<Creator | null>(null);
   const [serverItems, setServerItems] = useState<ContentItem[]>([]);
-  const [serverDraft, setServerDraft] = useState<MyAppDraft | null>(null);
-  const [draft, setDraft] = useState<MyAppDraft>({
+  const [serverDraft, setServerDraft] = useState<PlaygroundDraft | null>(null);
+  const [draft, setDraft] = useState<PlaygroundDraft>({
     custom_theme: EMPTY_THEME,
     display_name: null,
     bio: null,
@@ -70,7 +70,7 @@ export function useMyAppForm(): UseMyAppFormResult {
   const [deploying, setDeploying] = useState(false);
   const loadedOnce = useRef(false);
 
-  const fromCreator = useCallback((creator: Creator): MyAppDraft => {
+  const fromCreator = useCallback((creator: Creator): PlaygroundDraft => {
     return {
       custom_theme: creator.custom_theme ?? EMPTY_THEME,
       display_name: creator.display_name ?? creator.username,
@@ -82,14 +82,14 @@ export function useMyAppForm(): UseMyAppFormResult {
     };
   }, []);
 
-  const { clear } = useAutoSave({    key: creatorId ? `my-app_draft_${creatorId}` : "my-app_draft_pending",
+  const { clear } = useAutoSave({    key: creatorId ? `playground_draft_${creatorId}` : "playground_draft_pending",
     data: draft,
     enabled: Boolean(creatorId) && loadedOnce.current && !deploying,
     onRestore: (restored) => {
       if (!restored || typeof restored !== "object") return;
       // Merge the restored draft over the server snapshot — hasChanges turns
       // true, and the orange Draft dot + Unsaved modal reappear on reload.
-      setDraft((prev) => ({ ...prev, ...(restored as Partial<MyAppDraft>) }));
+      setDraft((prev) => ({ ...prev, ...(restored as Partial<PlaygroundDraft>) }));
     },
   });
 
@@ -97,7 +97,7 @@ export function useMyAppForm(): UseMyAppFormResult {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/creator/my-app");
+        const res = await fetch("/api/creator/playground");
         const json = await res.json();
         if (!res.ok) throw new Error(json?.error ?? "Failed to load");
         if (cancelled) return;
@@ -111,7 +111,7 @@ export function useMyAppForm(): UseMyAppFormResult {
         setServerDraft(snapshot);
         loadedOnce.current = true;
       } catch {
-        if (!cancelled) toast.error("Couldn't load My App — refresh to retry.");
+        if (!cancelled) toast.error("Couldn't load Playground — refresh to retry.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -121,7 +121,7 @@ export function useMyAppForm(): UseMyAppFormResult {
     };
   }, [fromCreator]);
 
-  const patch = useCallback((partial: Partial<MyAppDraft>) => {
+  const patch = useCallback((partial: Partial<PlaygroundDraft>) => {
     setDraft((prev) => ({ ...prev, ...partial }));
   }, []);
 
@@ -135,7 +135,7 @@ export function useMyAppForm(): UseMyAppFormResult {
   const deploy = useCallback(async () => {
     setDeploying(true);
     try {
-      const res = await fetch("/api/creator/my-app", {
+      const res = await fetch("/api/creator/playground", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(draft),

@@ -1,7 +1,7 @@
 /**
  * GuestPageContent.tsx — the 3-layer guest fan page (fan-shell.md Part 2/3):
  * Header → Spotlight → Catalog Feed, plus the Follow gate (Layer 1b) and the
- * payment-success handoff (?payment=success&item=). In `editMode` (My App
+ * payment-success handoff (?payment=success&item=). In `editMode` (Playground
  * preview) elements become selection targets for tap-to-edit popovers.
  */
 "use client";

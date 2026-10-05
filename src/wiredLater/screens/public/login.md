@@ -49,7 +49,7 @@ In mock mode: **any email + password logs in** (creates/signs in the mock user) 
 |---|---|
 | Mock | Set `mock_auth_uid` + `mock_auth_email` cookies (`max-age=3600`) → redirect |
 | Default redirect | `/dashboard` |
-| Deep-link | `?next=/dashboard/my-app` (etc.) → redirect there instead (Gumroad `next` param pattern) |
+| Deep-link | `?next=/dashboard/playground` (etc.) → redirect there instead (Gumroad `next` param pattern) |
 | `next` validation | Only allow internal paths (same-origin) — never open redirects to external URLs |
 | Already logged in | Visiting `/login` while authenticated → redirect straight to `/dashboard` |
 

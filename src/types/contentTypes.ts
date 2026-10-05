@@ -1,7 +1,7 @@
 /**
  * Content type metadata registry — defines the 16 catalog item types, their
  * pricing defaults, allowed pricing models, file subtypes, and capability flags.
- * Used by the My App catalog editor (AddItemPicker, ItemEditor, PricingEditor)
+ * Used by the Playground catalog editor (AddItemPicker, ItemEditor, PricingEditor)
  * and the fan shell (ItemCards gate logic). The `editor` field was removed
  * (2026-08-11) — the generic ItemEditor handles all types.
  */

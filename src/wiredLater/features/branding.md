@@ -15,7 +15,7 @@ The system is **read at render time** by one resolver — `resolveBranding(creat
 | Layer | Type | Where it lives | When it wins |
 |---|---|---|---|
 | **Layer 1 — Preset** | `Theme` (one of 9 built-ins) | `creators.theme_id` (string ID) | When `custom_theme` is empty — gives every new creator a clean default |
-| **Layer 2 — Override** | `MyAppTheme` (per-creator JSONB) | `creators.custom_theme` | Wins over the preset when set; controls the fine-grained fields |
+| **Layer 2 — Override** | `PlaygroundTheme` (per-creator JSONB) | `creators.custom_theme` | Wins over the preset when set; controls the fine-grained fields |
 | **Layer 0 — Platform default** | Hardcoded in `branding.ts:24-25` | `THEME_CONFIGS.minimal` | Final fallback when neither preset nor override resolves |
 
 **Resolver chain (read top to bottom, first hit wins):**
@@ -25,10 +25,10 @@ custom_theme (override)  →  theme_id preset  →  platform default (THEME_CONF
 
 **Data model (already in `src/types/index.ts`):**
 - `Creator.theme_id: string` — one of: `minimal`, `dark`, `coffee_shop`, `neon_nightlife`, `clean_editorial`, `ocean`, `rose`, `emerald`, `gold`
-- `Creator.custom_theme: MyAppTheme | null` — JSONB; full set of fine-grained values
-- `MyAppTheme` (line 70): `fontStyle`, `buttonStyle`, `accent`, `borderRadius`, `colors`, `profile`
-- `MyAppColors` (line 44): `background`, `card`, `text`, `accent`, `backgroundImage`, `backgroundGradient`, `backgroundOpacity`, `backgroundBlend`, `fillType`, `gradientType`, `gradientAngle`
-- `MyAppProfile` (line 36): `appName`, `appIconUrl`
+- `Creator.custom_theme: PlaygroundTheme | null` — JSONB; full set of fine-grained values
+- `PlaygroundTheme` (line 70): `fontStyle`, `buttonStyle`, `accent`, `borderRadius`, `colors`, `profile`
+- `PlaygroundColors` (line 44): `background`, `card`, `text`, `accent`, `backgroundImage`, `backgroundGradient`, `backgroundOpacity`, `backgroundBlend`, `fillType`, `gradientType`, `gradientAngle`
+- `PlaygroundProfile` (line 36): `appName`, `appIconUrl`
 - `Theme` (line 288): preset `id`, name, `config: ThemeConfig` (colors + fonts + layout + borderRadius + buttonStyle)
 
 ---
@@ -157,7 +157,7 @@ The platform stays safe because **the resolver + `globals.css` never change** �
 
 ## Part 7: The 9 Presets
 
-Each preset is a named bundle of: background + card + text + accent + font + button style. The creator picks one as a starting point, then customizes on top via the My App Design tab (or the tap-to-edit popovers — `my-app.md` Part 1a). From old-code `GlobalSettingsEditor.tsx:14-22`:
+Each preset is a named bundle of: background + card + text + accent + font + button style. The creator picks one as a starting point, then customizes on top via the Playground Design tab (or the tap-to-edit popovers — `playground.md` Part 1a). From old-code `GlobalSettingsEditor.tsx:14-22`:
 
 | # | ID | Name | Background | Card | Text | Accent | Font | Button |
 |---|---|---|---|---|---|---|---|---|
@@ -175,9 +175,9 @@ Each preset is a named bundle of: background + card + text + accent + font + but
 
 ---
 
-## Part 8: The Editor (My App Design tab)
+## Part 8: The Editor (Playground Design tab)
 
-The full editor lives in `screens/creator-dashboard/my-app/my-app.md` Part 2b. This spec only documents the controls — cross-ref for full UI.
+The full editor lives in `screens/creator-dashboard/playground/playground.md` Part 2b. This spec only documents the controls — cross-ref for full UI.
 
 | Control | What it sets | Notes |
 |---|---|---|
@@ -194,7 +194,7 @@ The full editor lives in `screens/creator-dashboard/my-app/my-app.md` Part 2b. T
 | **Button style** | 5 choices (founder decision) | Rounded / Sharp / Pill / Squircle / Outline — see Part 10 |
 | **AI Copilot** | LLM-generated palettes | Uses the unified AI assistant (`ai/ai-features.md`); vibe chips + text prompt → palette |
 
-**Auto-save:** every change is auto-saved to `localStorage` every 3 seconds (per `my-app.md:4a — draft system`). The DB-deploy happens via the deploy button (Part 4c).
+**Auto-save:** every change is auto-saved to `localStorage` every 3 seconds (per `playground.md:4a — draft system`). The DB-deploy happens via the deploy button (Part 4c).
 
 ---
 
@@ -204,13 +204,13 @@ These extend the brand system with new creator-controlled surfaces. All safe to 
 
 | # | Extension | Where it appears | Spec |
 |---|---|---|---|
-| 1 | **Branded 404 / offline page** | When a fan follows a dead link or goes offline | Renders the creator's theme + their custom "page not found" / "you went offline" copy. Empty `custom_404` falls back to platform default copy with the creator's theme applied. Spec: a new `custom_404` field in `MyAppTheme` (title + body + button label + button URL) |
+| 1 | **Branded 404 / offline page** | When a fan follows a dead link or goes offline | Renders the creator's theme + their custom "page not found" / "you went offline" copy. Empty `custom_404` falls back to platform default copy with the creator's theme applied. Spec: a new `custom_404` field in `PlaygroundTheme` (title + body + button label + button URL) |
 | 2 | **Branded share card (OG meta + image)** | When a fan shares the page in WhatsApp / iMessage / Twitter | The `<meta property="og:title">`, `og:description`, `og:image` use the creator's name, bio, and avatar. Optional `custom_share_card` field lets the creator upload a 1200×630 image. Empty = auto-generated from avatar + bio |
 | 3 | **Branded loading skeletons** | Every loading state in the fan shell | Skeleton bars use `colors.card` + `colors.accent` (low-opacity) instead of generic grey. No new fields — just the resolver outputs already |
 | 4 | **Custom status bar color (PWA)** | Phone status bar when the app is open | `manifest.json` `theme_color` = `colors.accent`. iOS + Android respect this. No new field — uses `colors.accent` |
-| 5 | **Branded empty states** | "No items yet" / "No partners yet" / "No posts yet" / "No messages yet" / "No community channels" / "No notifications" | The empty illustration background + accent + text color use the creator's theme. No new fields — resolver outputs. Empty-state copy stays platform default unless overridden. **Creator-overridable empty copy:** the Connect tab's all-empty message is a new field `connect_empty_text` (max 200 chars, editable anytime — spec in `my-app.md` Part 2a; shown per `fan-shell.md` Part 4c) |
-| 6 | **Font pair 1-click presets** | A new section in the Design tab: "Font pairs" with 5 named pairs | One tap applies both font + accent + bg combinations curated for that style. New field: `MyAppColors.fontPair?: string` (one of `editorial` / `bold` / `soft` / `tech` / `classic`) |
-| 7 | **Creator-saved color palettes** | A "My palettes" section in the Design tab | Creator can save 2-3 of their own palettes and switch between them. New field: `MyAppTheme.savedPalettes?: MyAppColors[]` (array of color sets, 2-3 entries) |
+| 5 | **Branded empty states** | "No items yet" / "No partners yet" / "No posts yet" / "No messages yet" / "No community channels" / "No notifications" | The empty illustration background + accent + text color use the creator's theme. No new fields — resolver outputs. Empty-state copy stays platform default unless overridden. **Creator-overridable empty copy:** the Connect tab's all-empty message is a new field `connect_empty_text` (max 200 chars, editable anytime — spec in `playground.md` Part 2a; shown per `fan-shell.md` Part 4c) |
+| 6 | **Font pair 1-click presets** | A new section in the Design tab: "Font pairs" with 5 named pairs | One tap applies both font + accent + bg combinations curated for that style. New field: `PlaygroundColors.fontPair?: string` (one of `editorial` / `bold` / `soft` / `tech` / `classic`) |
+| 7 | **Creator-saved color palettes** | A "My palettes" section in the Design tab | Creator can save 2-3 of their own palettes and switch between them. New field: `PlaygroundTheme.savedPalettes?: PlaygroundColors[]` (array of color sets, 2-3 entries) |
 
 **Font pair presets (Part 9 #6):**
 
@@ -222,7 +222,7 @@ These extend the brand system with new creator-controlled surfaces. All safe to 
 | 4 | `tech` | Tech | Space Grotesk + Inter | Geometric, futuristic, clean |
 | 5 | `classic` | Classic | Lora + Lato | Traditional, warm, trustworthy |
 
-**Storage for extensions:** all Part 9 extensions add fields to `MyAppTheme` in `src/types/index.ts`. The resolver extends to include them. Missing values = platform default.
+**Storage for extensions:** all Part 9 extensions add fields to `PlaygroundTheme` in `src/types/index.ts`. The resolver extends to include them. Missing values = platform default.
 
 ---
 
@@ -277,7 +277,7 @@ Every extension to the brand system MUST lock these 4 rules. Plain-English expla
 
 **What this means for a brand-new creator:**
 - They see the Minimal preset (white bg, indigo accent, Inter font, rounded buttons) — looks clean
-- The full-screen My App view shows the same Minimal theme
+- The full-screen Playground view shows the same Minimal theme
 - Fans visiting `/{username}` see the same Minimal theme
 - The deployed PWA uses the same Minimal defaults for app name, icon, colors
 
@@ -317,7 +317,7 @@ Every extension to the brand system MUST lock these 4 rules. Plain-English expla
 
 ## Part 12: The 7-Day Lock Rule
 
-Per the identity model decision (`my-app.md` 2a):
+Per the identity model decision (`playground.md` 2a):
 
 | Field | Change frequency | Lock | Notes |
 |---|---|---|---|
@@ -357,9 +357,9 @@ The brand powers the **installed PWA** on the fan's phone (and the creator's own
 |---|---|---|
 | `src/lib/branding.ts` | `resolveBranding()` resolver + `CreatorBranding` interface (lines 30-67) + `FONT_MAP` (lines 13-17) + 2 hardcoded presets `minimal`, `dark` (lines 24-25) | Promote to canonical. Add the 7 missing presets (Part 7). Extend with Part 9 fields |
 | `src/styles/globals.css` | Platform design tokens: `--color-background`, `--color-foreground`, `--color-border`, `--color-primary`, `--color-secondary`, `--color-muted`, `--color-card`, `--radius-card`, `--radius-item`, `--shadow-card`, text clamps, font stack, focus ring, scrollbar, `.content-grid`, `.touch-target`, `.min-h-screen-safe` | Keep as platform defaults; never re-write per creator |
-| `src/types/index.ts` (lines 36-78, 117-118, 275-289) | `MyAppTheme`, `MyAppColors`, `MyAppProfile`, `Theme`, `ThemeConfig`, `ThemeColors`, `ThemeFonts`, `FontStyle`, `ButtonStyle`, `BorderRadius`, `Creator.custom_theme`, `Creator.theme_id`, `Creator.remove_branding` | Source of truth for the data shape. Extend with Part 9 fields |
-| `src/old-code/GlobalSettingsEditor.tsx` (parts archive) | Old Design tab editor with the **9 preset definitions** in code (lines 14-22) | Reuse the 7 missing preset definitions; rebuild the editor per `my-app.md` 2b |
-| `src/old-code/MyAppForm*` (parts archive) | Old draft + auto-save hooks (`useAutoSave`, `useMyAppForm`) | Reuse `useAutoSave` pattern for the Design tab |
+| `src/types/index.ts` (lines 36-78, 117-118, 275-289) | `PlaygroundTheme`, `PlaygroundColors`, `PlaygroundProfile`, `Theme`, `ThemeConfig`, `ThemeColors`, `ThemeFonts`, `FontStyle`, `ButtonStyle`, `BorderRadius`, `Creator.custom_theme`, `Creator.theme_id`, `Creator.remove_branding` | Source of truth for the data shape. Extend with Part 9 fields |
+| `src/old-code/GlobalSettingsEditor.tsx` (parts archive) | Old Design tab editor with the **9 preset definitions** in code (lines 14-22) | Reuse the 7 missing preset definitions; rebuild the editor per `playground.md` 2b |
+| `src/old-code/PlaygroundForm*` (parts archive) | Old draft + auto-save hooks (`useAutoSave`, `usePlaygroundForm`) | Reuse `useAutoSave` pattern for the Design tab |
 | `package.json` | `react-colorful@5.7.0` — reinstall when wiring (removed in the 2026-09-28 cleanup) | Reuse for the Figma-style color picker |
 
 ---
@@ -393,10 +393,10 @@ The brand powers the **installed PWA** on the fan's phone (and the creator's own
 | 8 | Skipped for v1: cursor, hover, click sounds, favicon, music, video backgrounds (mobile/PWA-first) | ✅ Decided 2026-08-05 |
 | 9 | 4 safety rules: validation, fallback, performance, accessibility — enforced globally | ✅ Decided 2026-08-05 |
 | 10 | 7-day lock on App Name + Icon + Display Name (per identity decision) | ✅ Decided (earlier) |
-| 11 | Preview state toggle (Draft / Live) in My App (full-screen editor) + on the owner's live `/{username}` view | ✅ Decided 2026-08-05 (orange dot on Draft only when un-deployed; default to Live). **Updated 2026-08-05:** Playground + "View My App" merged into ONE surface — My App (`my-app.md` Part 1b); the toggle renders at the top of the full-screen page and (same component) on the live page when the owner visits it |
+| 11 | Preview state toggle (Draft / Live) in Playground (full-screen editor) + on the owner's live `/{username}` view | ✅ Decided 2026-08-05 (orange dot on Draft only when un-deployed; default to Live). **Updated 2026-08-05:** Playground + the "View my fan page" action merged into ONE surface — Playground (`playground.md` Part 1b); the toggle renders at the top of the full-screen page and (same component) on the live page when the owner visits it |
 | 12 | Font pair 1-click presets (5 pairs: editorial / bold / soft / tech / classic) | ✅ Decided 2026-08-05 |
 | 13 | Saved palette limit: 3 per creator | ✅ Decided 2026-08-05 |
 | 14 | Empty states: 6 surfaces (catalog / no partners / no posts / no messages / no community / no notifications) | ✅ Decided 2026-08-05 |
-| 15 | "View My App" preview toggle default: **Live** (so creators see "what fans see" first) | ✅ Decided 2026-08-05 |
-| 16 | **Tap-to-edit popovers** are the primary brand-editing mechanism in My App (Part 1a): tap any visible element (background / text / font / button / card / link) → floating popover with that element's controls; changes are global across all surfaces. The Design tab remains as the richer non-tap editor for the same data | ✅ Decided 2026-08-05 |
-| 17 | **PWA integration separated from on-page editing** — App Name, App Icon, status bar color live in the Identity tab's App sub-section (`my-app.md` Part 2a), NOT on the page | ✅ Decided 2026-08-05 |
+| 15 | Owner-view preview toggle default: **Live** (so creators see "what fans see" first) | ✅ Decided 2026-08-05 |
+| 16 | **Tap-to-edit popovers** are the primary brand-editing mechanism in Playground (Part 1a): tap any visible element (background / text / font / button / card / link) → floating popover with that element's controls; changes are global across all surfaces. The Design tab remains as the richer non-tap editor for the same data | ✅ Decided 2026-08-05 |
+| 17 | **PWA integration separated from on-page editing** — App Name, App Icon, status bar color live in the Identity tab's App sub-section (`playground.md` Part 2a), NOT on the page | ✅ Decided 2026-08-05 |

@@ -20,7 +20,7 @@ Not scattered tools. One assistant, one conversation, infinite use cases.
 │                                                    └───┘   │  (bottom-right corner)
 │                                                             │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  My App content here...                        │    │
+│  │  Playground content here...                        │    │
 │  │                                                     │    │
 │  └─────────────────────────────────────────────────────┘    │
 │                                                             │
@@ -51,7 +51,7 @@ The AI assistant understands the creator's context (what page they're on, what i
 
 ### 1. Design Help
 > *"I want a dark theme with neon accents and a modern font"*
-→ AI generates theme (colors, font, button style) and applies it to the My App preview
+→ AI generates theme (colors, font, button style) and applies it to the Playground preview
 
 > *"Make it feel like a cozy coffee shop"*
 → AI generates warm brown/tan palette
@@ -147,7 +147,7 @@ If the AI can perform an action (apply a theme, fill a form), it shows a preview
 │  Font: Modern (sans)                     │
 │  Button: Pill                            │
 │                                          │
-│  [Apply to My App] [Regenerate]     │
+│  [Apply to Playground] [Regenerate]     │
 └──────────────────────────────────────────┘
 ```
 
@@ -213,15 +213,15 @@ If the AI navigates somewhere, it opens the relevant page/panel:
 
 ```
 Creator: "Design a dark theme"
-  → POST /api/ai/assistant { message, context: { page: "my-app", theme, items } }
+  → POST /api/ai/assistant { message, context: { page: "playground", theme, items } }
   → Mock: returns random curated dark palette
   → Frontend: shows preview card + [Apply] button
-  → Creator clicks Apply → theme saved to My App state → preview updates live
+  → Creator clicks Apply → theme saved to Playground state → preview updates live
 ```
 
 ```
 Creator: "What's my best-selling item?"
-  → POST /api/ai/assistant { message, context: { page: "my-app", items: [...] } }
+  → POST /api/ai/assistant { message, context: { page: "playground", items: [...] } }
   → Mock: returns {"type":"answer","text":"Your course 'Social Media Mastery' has the most sales this month."}
   → Frontend: shows inline answer in the chat bubble
 ```
@@ -233,6 +233,6 @@ Creator: "What's my best-selling item?"
 - The AI button is a small floating FAB in the bottom-right corner of every dashboard page
 - Chat history is ephemeral (not saved across sessions) — or saved per session in localStorage
 - Context is sent with every request: `{ page, theme, itemCount, recentActivity }`
-- Old scattered AI code (my-app AI route, ai-summary route) was discarded — does not match this vision
+- Old scattered AI code (playground AI route, ai-summary route) was discarded — does not match this vision
 - **PRODUCTION-NOTE:** Real LLM implementation uses Groq. See `docs/HOW_IT_WORKS.md` for migration notes.
 - **PRODUCTION-NOTE:** Rate limiting, content moderation, and token cost management needed for real API.

@@ -12,9 +12,9 @@ Open items from manual testing. Not wired yet — design/product decisions pendi
 ## Overview Screen (/dashboard)
 
 - [x] **Remove setup checklist** — **DONE:** the Overview no longer renders it (component unreferenced) and `components/overview/SetupChecklist.tsx` was deleted in the 2026-09-28 cleanup.
-- [ ] **Remove quick actions except "Edit My App"** — View my page is already in the sidebar, Install my fan app is already in the sidebar, Share your page is already in the QR section. Only "Edit My App" should remain. Move it to take the space where the setup checklist was.
+- [ ] **Remove quick actions except "Edit Playground"** — View my page is already in the sidebar, Install my fan app is already in the sidebar, Share your page is already in the QR section. Only "Edit Playground" should remain. Move it to take the space where the setup checklist was.
 
-## My App Editor — Identity Tab
+## Playground Editor — Identity Tab
 
 - [ ] **Move Display Name to Identity tab** — currently in Design tab, user expects it in Identity alongside App Name. Move it.
 - [ ] **App Icon needs upload button** — currently URL-only input. Add a file upload button (same pattern as catalog cover uploads).

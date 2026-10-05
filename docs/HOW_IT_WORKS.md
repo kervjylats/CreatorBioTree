@@ -1,6 +1,6 @@
 # How the App Works — Complete Reference
 
-> As-of: August 2026. Running in **mock mode** (`USE_MOCKS=true`). All external services are in-memory mocks. **Wired so far (Phase F):** login, onboarding, forgot-password, the My App editor (all 16 catalog item types incl. device file uploads), the fan shell (guest + 4-tab app, mock PayPal checkout), the full messaging engine, dashboard overview, network, settings, search, admin, and all feature families (partnerships, staff, relationships, affiliates, community), plus the landing page (Phase 4 extras: showcase, hero auth modal, install button, returning-fan row). "Mock-as-Draft Philosophy" below explains the mock system.
+> As-of: August 2026. Running in **mock mode** (`USE_MOCKS=true`). All external services are in-memory mocks. **Wired so far (Phase F):** login, onboarding, forgot-password, the Playground editor (all 16 catalog item types incl. device file uploads), the fan shell (guest + 4-tab app, mock PayPal checkout), the full messaging engine, dashboard overview, network, settings, search, admin, and all feature families (partnerships, staff, relationships, affiliates, community), plus the landing page (Phase 4 extras: showcase, hero auth modal, install button, returning-fan row). "Mock-as-Draft Philosophy" below explains the mock system.
 
 ---
 
@@ -30,7 +30,7 @@ A marketing page with hero section, "How it works" steps, creator showcase marqu
 
 **Login:** Enter email + password. In mock mode, any email/password creates a new account.
 
-**Onboarding (for new creators):** Display name, email, password (min 8 chars). Optional `?invite=XXX` param for partnership referral. After onboarding, redirected to `/dashboard/my-app`.
+**Onboarding (for new creators):** Display name, email, password (min 8 chars). Optional `?invite=XXX` param for partnership referral. After onboarding, redirected to `/dashboard/playground`.
 
 ---
 
@@ -38,7 +38,7 @@ A marketing page with hero section, "How it works" steps, creator showcase marqu
 
 ### 4.1 Sidebar
 
-**Sidebar (≥`md`):** visible on tablet/desktop. On phones, a bottom bar (Overview/Network/My App/Settings + More → drawer) replaces the sidebar. A single floating dock stack sits bottom-right on every `/dashboard/*` page: the **My Peeps** buttons (Partners/Fans/Staff) with the 💬 **chat inbox bubble** at the bottom — four uniform round icon buttons in one evenly-spaced vertical column.
+**Sidebar (≥`md`):** visible on tablet/desktop. On phones, a bottom bar (Overview/Network/Playground/Settings + More → drawer) replaces the sidebar. A single floating dock stack sits bottom-right on every `/dashboard/*` page: the **My Peeps** buttons (Partners/Fans/Staff) with the 💬 **chat inbox bubble** at the bottom — four uniform round icon buttons in one evenly-spaced vertical column.
 
 The planned sidebar (when the dashboard shell is wired) is:
 
@@ -46,7 +46,7 @@ The planned sidebar (when the dashboard shell is wired) is:
 |---|---|
 | **Overview** | Home page — stats, action center, link/QR, export |
 | **Network** | Partner discovery & collaboration |
-| **My App** | See + edit your fan shell in one full-screen surface (formerly "Playground" + "View My App") |
+| **Playground** | See + edit your fan shell in one full-screen surface (formerly "Playground" + "View Playground") |
 | **Settings** | Account/security, payments, notifications, messaging & privacy |
 | **Admin Panel** | (Admin only) Platform management |
 | **Install my fan app** | (persistent) Installs your branded fan PWA on your phone |
@@ -55,11 +55,11 @@ The planned sidebar (when the dashboard shell is wired) is:
 
 ### 4.2 Overview (`/dashboard`)
 
-**WIRED (Sheet 10, 2026-08-30).** 4 stat cards (Total Sales, Total Fans, Page Views, Content items), activity timeline, quick actions (Edit My App, View my page, Install my fan app) and a share-link card + fan CSV export. Every number is computed by `GET /api/creator/my-app` (`fans_count`, `total_sales` from **completed** purchases, `total_sales_currency`, `page_views`, item count) — the cards display, they never sum or default a missing field to 0 (2026-10-01 audit). The share card shows the real page link and copies it: a scannable QR needs a real encoder, so the old random-pattern "QR code" and its download were removed rather than left faking success. Spec: `screens/creator-dashboard/overview/overview.md`.
+**WIRED (Sheet 10, 2026-08-30).** 4 stat cards (Total Sales, Total Fans, Page Views, Content items), activity timeline, quick actions (Edit Playground, View my page, Install my fan app) and a share-link card + fan CSV export. Every number is computed by `GET /api/creator/playground` (`fans_count`, `total_sales` from **completed** purchases, `total_sales_currency`, `page_views`, item count) — the cards display, they never sum or default a missing field to 0 (2026-10-01 audit). The share card shows the real page link and copies it: a scannable QR needs a real encoder, so the old random-pattern "QR code" and its download were removed rather than left faking success. Spec: `screens/creator-dashboard/overview/overview.md`.
 
-### 4.3 My App (`/dashboard/my-app`)
+### 4.3 Playground (`/dashboard/playground`)
 
-The one surface for seeing + editing the fan shell (founder decision 2026-08-05 — replaces the old Playground editor and the old "View My App" action). **WIRED (Sheet 19-V1, 2026-08-11 + upload pass 2026-08-19).** Full-screen phone preview with the **guest page first**; swipe Guest → Home → Content → Connect → Settings (they render the REAL fan components). **Tap any visible element** (background / text / button / card / header) to edit the brand layer via a floating popover. Editor sheet with 4 live tabs — Identity, Design, Catalog, Artist Links (Integrations / Email / Media Kit / Spotlight = "soon" placeholders).
+The one surface for seeing + editing the fan shell (founder decision 2026-08-05 — replaces the old Playground editor and the old "View Playground" action). **WIRED (Sheet 19-V1, 2026-08-11 + upload pass 2026-08-19).** Full-screen phone preview with the **guest page first**; swipe Guest → Home → Content → Connect → Settings (they render the REAL fan components). **Tap any visible element** (background / text / button / card / header) to edit the brand layer via a floating popover. Editor sheet with 4 live tabs — Identity, Design, Catalog, Artist Links (Integrations / Email / Media Kit / Spotlight = "soon" placeholders).
 
 | Tab | What it does |
 |---|---|
@@ -68,11 +68,11 @@ The one surface for seeing + editing the fan shell (founder decision 2026-08-05 
 | **Catalog** | All **16 item types** (link, video, audio, image, pdf, product, course, session, membership, physical, tip jar, bundle, live, messaging, newsletter, page) + pricing + scheduling. **Video/Image/Audio/PDF + product cover + course lessons use real device file uploads** (via `/api/creator/upload`) |
 | **Artist Links** | Social URLs → shown in the preview's Connect tab |
 
-- **Tap-to-edit:** tapping any visible element (background, text, button, card, header) opens a floating popover with that element's brand controls — changes apply globally to every surface (`my-app.md` Part 1a)
-- **Editor option A (slide-up sheet)** was built (default from the A/B/C/D spec, `my-app.md` Part 1c — no A/B test was run)
+- **Tap-to-edit:** tapping any visible element (background, text, button, card, header) opens a floating popover with that element's brand controls — changes apply globally to every surface (`playground.md` Part 1a)
+- **Editor option A (slide-up sheet)** was built (default from the A/B/C/D spec, `playground.md` Part 1c — no A/B test was run)
 - **Deploy:** one click makes everything live. Draft system (localStorage auto-save, ~3s debounce, restore-on-mount) + Draft/Live toggle with an orange dot when un-deployed changes exist. (No unsaved-changes modal — not built.)
 
-Full spec: `src/wiredLater/screens/creator-dashboard/my-app/my-app.md`.
+Full spec: `src/wiredLater/screens/creator-dashboard/playground/playground.md`.
 
 ### 4.4 Network (`/dashboard/network`)
 
@@ -178,7 +178,7 @@ Free WhatsApp-style chat engine (spec: `features/messaging.md`). **Creators:** f
 
 ## 7. The Content Catalog System
 
-**WIRED (Sheet 19-V1 + upload pass 2026-08-19).** All 16 item types are buildable in the My App Catalog tab and render in the fan shell. Editors live in `src/components/my-app/catalog/`; the fan-side cards in `src/components/fan-pwa/ItemCards.tsx`. File-backed types (video, image, audio, pdf + product cover + course lessons) use **real device file uploads** via `POST /api/creator/upload` (50MB cap, per-type MIME validation) — no URL fields for file types.
+**WIRED (Sheet 19-V1 + upload pass 2026-08-19).** All 16 item types are buildable in the Playground Catalog tab and render in the fan shell. Editors live in `src/components/playground/catalog/`; the fan-side cards in `src/components/fan-pwa/ItemCards.tsx`. File-backed types (video, image, audio, pdf + product cover + course lessons) use **real device file uploads** via `POST /api/creator/upload` (50MB cap, per-type MIME validation) — no URL fields for file types.
 
 ### Content types
 
@@ -206,7 +206,7 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 | Onboarding (`/onboarding`) | ✅ Wired (Sheet 7) — Link Address availability check + permanence dialog + register route | `screens/public/onboarding.md` (full) |
 | Forgot-password (`/forgot-password`) | ✅ Wired — anonymous, no enumeration, mock logs reset link | `screens/public/login.md` Part 4 |
 | Dashboard Overview (`/dashboard`) | ✅ Wired (Sheet 10) — moved here from `/dashboard/overview` 2026-09-30 | `screens/creator-dashboard/overview/overview.md` (full) |
-| My App (`/dashboard/my-app`, formerly Playground) | ✅ Wired (Sheet 19-V1) — full editor, 16 types, uploads, draft/deploy | `screens/creator-dashboard/my-app/my-app.md` (full) |
+| Playground (`/dashboard/playground`, formerly Playground) | ✅ Wired (Sheet 19-V1) — full editor, 16 types, uploads, draft/deploy | `screens/creator-dashboard/playground/playground.md` (full) |
 | Dashboard Network | ✅ Wired (Sheet 18) | `screens/creator-dashboard/network/network.md` (full) |
 | Dashboard Messages (`/dashboard/circle/messages`) | ✅ Wired (Sheet 12) — full chat screen + floating inbox | `features/messaging.md` (full) |
 | Admin (`/admin`) | ✅ Wired (Sheet 8) — 5-tab panel | `screens/admin/admin.md` (full) |
@@ -230,10 +230,10 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 | **Forgot-password** | Creator + fan routes, anonymous, no account enumeration |
 | **Fan auth** | Email + password only (no magic link — founder decision 2026-08-08), session cookie (per-creator accounts), Follower (email-only) → Fan (password) upgrade |
 | **Admin RBAC system** | `admin_accounts` table, 4 roles, permission checks (`canPerform`) — fully wired (Sheet 8, 2026-08-30) |
-| **My App editor** | Full-screen preview, Identity/Design/Catalog/Artist Links, 16 item types + device uploads, auto-save, draft/live/deploy, tap-to-edit |
+| **Playground editor** | Full-screen preview, Identity/Design/Catalog/Artist Links, 16 item types + device uploads, auto-save, draft/live/deploy, tap-to-edit |
 | **Fan shell** | Guest 3-layer page, 4-tab fan app, item cards for all 16 types, gates, receipts, install trio, update toast |
 | **Messaging engine** | 12 `/api/messages/*` routes + MessagesShell (floating inbox, requests, groups, announcements, block, attachments) |
-| **Catalog API routes** | item CRUD + my-app + fan data + purchases + upload + paypal + chat families live |
+| **Catalog API routes** | item CRUD + playground + fan data + purchases + upload + paypal + chat families live |
 | **Content service** | Shared infrastructure stays live |
 | **File uploads** | Images/files saved to `/public/mock-uploads/` via `/api/creator/upload` (50MB, per-type MIME check) |
 | **Mock checkout** | Mock PayPal rail (`/api/paypal/checkout`), success → `?payment=success`, email-keyed receipts |
@@ -373,7 +373,7 @@ Every mock file has `// PRODUCTION-NOTE:` comments marking what the real service
 | `/onboarding` | ✅ (new) | ✅ (new) | ❌ | ❌ |
 | `/dashboard` | ✅ Dashboard Overview (moved here 2026-09-30) | ✅ (new) | ✅ (new) | ❌ | ❌ |
 | `/dashboard/overview` | REDIRECT → `/dashboard` (signpost, keeps old links working) | ✅ | ✅ | ❌ | ❌ |
-| `/dashboard/my-app` | ✅ | ✅ | ❌ | ❌ |
+| `/dashboard/playground` | ✅ | ✅ | ❌ | ❌ |
 | `/dashboard/network` | ✅ | ✅ | ❌ | ❌ |
 | `/dashboard/settings` | ✅ | ✅ | ❌ | ❌ |
 | `/admin` | ✅ | ❌ | ❌ | ❌ |
@@ -393,8 +393,8 @@ These have full specs in `src/wiredLater/`:
 
 | Item | Spec | Status |
 |---|---|---|
-| **My App rebuild** (formerly Playground) — full-screen guest-first shell + tap-to-edit brand popovers + editor sheet + 16 item types + device uploads + draft/deploy | `screens/creator-dashboard/my-app/my-app.md` | ⚠️ PREVIEW-FIRST (2026-09-24) — phone frame (Draft/Live + real fan surfaces) is the only surface; editor/catalog UI deferred to a later design pass |
-| **Fan page rebuild** — guest page + 4-tab PWA (account model, gates, activity hub, settings hub) + mock PayPal checkout | `screens/fan-shell/fan-shell.md` (+ `my-app.md` Part 3 for display layers) | ✅ DONE (Sheet 21-V1) |
+| **Playground rebuild** (formerly Playground) — full-screen guest-first shell + tap-to-edit brand popovers + editor sheet + 16 item types + device uploads + draft/deploy | `screens/creator-dashboard/playground/playground.md` | ⚠️ PREVIEW-FIRST (2026-09-24) — phone frame (Draft/Live + real fan surfaces) is the only surface; editor/catalog UI deferred to a later design pass |
+| **Fan page rebuild** — guest page + 4-tab PWA (account model, gates, activity hub, settings hub) + mock PayPal checkout | `screens/fan-shell/fan-shell.md` (+ `playground.md` Part 3 for display layers) | ✅ DONE (Sheet 21-V1) |
 | **Messaging** — floating inbox both sides, requests/blocks/toggles, groups + announcements, attachments | `features/messaging.md` | ✅ DONE (Sheet 12); Part 3 Community NOT built |
 | **Network rebuild** — search, billboard, collabs, affiliates | `screens/creator-dashboard/network/network.md` | ✅ DONE (Sheet 18) |
 | **Admin rebuild** — founder setup, RBAC, audit log, API keys | `screens/admin/admin.md` | ✅ DONE (Sheet 8) |
@@ -423,7 +423,7 @@ These have full specs in `src/wiredLater/`:
 | **Follow-source tracking** | `follow_sources` table (referral cookie alternative) |
 | **Account settings (creators)** | Email/password change, danger zone |
 | **Per-creator settings: consolidated fan view** | All creators a fan follows in one place |
-| **Walkthrough overlay** | Beacon-style first-visit tour of My App **+ Figma-style contextual tips/coach-marks** — part of the post-launch polish pass, batches with landing, onboarding, and AI features |
+| **Walkthrough overlay** | Beacon-style first-visit tour of Playground **+ Figma-style contextual tips/coach-marks** — part of the post-launch polish pass, batches with landing, onboarding, and AI features |
 | **Platform updates feed** | "What's new at CreatorBioTree" — small strip in dashboard Overview + small link in fan Settings; built with the landing page (deferred); no competitor does in-app platform news (they all use blogs/email) |
 | **Deal Maker** | Commission agreements between partners (network.md) |
 | **Community (Part 3)** | ✅ DONE | Creator clubhouse — chat channels on the messaging engine (messaging.md Part 3) — wired 2026-08-30 |

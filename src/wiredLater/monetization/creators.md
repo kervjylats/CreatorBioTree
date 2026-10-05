@@ -18,7 +18,7 @@ Two money flows belong to creators. The platform takes **0% of either in v1** (m
 ## Part 1: Creator ↔ Fan (catalog sales)
 
 - **Creators set their own prices per catalog item** — free, email-gated, paid (`"Buy — $X"`), or subscription (`"Join membership"`). See `fan-shell.md` Part 2 (the Three Gates) for the fan-facing rules.
-- **16 item types** in the My App Catalog tab (`my-app.md` Part 2c — the 16-type table) — every type can carry any of the pricing states above.
+- **16 item types** in the Playground Catalog tab (`playground.md` Part 2c — the 16-type table) — every type can carry any of the pricing states above.
 - **Payments route through PayPal — PayPal-first (founder decision 2026-08-10).** Guest checkout = email only, no account required (`fan-shell.md` Part 1, Layer 1). In dev: mock PayPal (`USE_MOCKS=true`, fake checkout sessions — `src/lib/mocks/mockPayments.ts` is the design draft). `src/lib/stripe.ts` is the deferred **Atlas path**; Paddle is the future Flow-3 processor, not a draft rail — see `owner.md`.
 - **Refunds + access control** — production: creator-managed via PayPal (`settings.md` payments); mocked in v1.
 - **GDPR / receipts** — purchase records in `fan_purchases`; the receipt email IS the access key (`fan-shell.md` Part 1, Layer 2).
@@ -38,7 +38,7 @@ Two money flows belong to creators. The platform takes **0% of either in v1** (m
 
 ### 1c. External-link quarantine (NEW 2026-08-10)
 
-- Per-item, a creator may set **"Payment: External link"** (e.g., a direct PayPal.me / Stripe Payment Link / Gumroad URL) instead of the in-app checkout (`my-app.md` Catalog editor). That item's fan-facing card still says "Buy — $X" — the tap opens the external URL in a new tab.
+- Per-item, a creator may set **"Payment: External link"** (e.g., a direct PayPal.me / Stripe Payment Link / Gumroad URL) instead of the in-app checkout (`playground.md` Catalog editor). That item's fan-facing card still says "Buy — $X" — the tap opens the external URL in a new tab.
 - **Quarantine rule:** external-link items are **excluded from affiliate deals (`network.md` §7)** — the platform cannot see, verify, or split a transaction it doesn't process. The deal editor warns the creator when an item has an external link ("this item won't — payments happen off-platform"). No silent partial sums — a deal covers only in-app-processed items.
 
 ---

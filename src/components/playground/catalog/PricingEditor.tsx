@@ -1,6 +1,6 @@
 /**
  * PricingEditor — price/access/payment-handling block for a catalog item
- * (my-app.md Part 2c + monetization/creators.md Part 1c): free vs locked vs
+ * (playground.md Part 2c + monetization/creators.md Part 1c): free vs locked vs
  * paid, in-app (PayPal) vs external-link checkout (with the affiliate-quarantine
  * amber warning), price + currency. All changes emit `patch` — the parent saves.
  */

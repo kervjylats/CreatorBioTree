@@ -23,7 +23,7 @@
 | 03  | Onboarding (signup + Link Address)               | `/onboarding`                | ✅      |
 | 04  | The Frame — shell (sidebar / bottom bar / dock)  | `/dashboard`                 | ✅      |
 | 05  | Overview                                         | `/dashboard`                 | ⬜      |
-| 06  | My App (phone preview + deploy)                  | `/dashboard/my-app`          | ⬜      |
+| 06  | Playground (phone preview + deploy)                  | `/dashboard/playground`          | ⬜      |
 | 07  | Network hub (Discover + affiliate rail)          | `/dashboard/network`         | ⬜      |
 | 08  | Circle → Partners                                | `/dashboard/circle/partners` | ⬜      |
 | 09  | Circle → Fans                                    | `/dashboard/circle/fans`     | ⬜      |
@@ -145,7 +145,7 @@
 **Two naming laws** (decided 2026-10-01, after the wing-name confusion):
 
 > **🪽 Wings (the 4 big folders) = WHO** → `screens/creator` · `screens/fan` · `screens/admin` · `screens/public`
-> **🍃 Leaves (the folders inside) = the URL's own word** → `network`, `my-app`, `settings`, `circle`, `guest`, `home`…
+> **🍃 Leaves (the folders inside) = the URL's own word** → `network`, `playground`, `settings`, `circle`, `guest`, `home`…
 
 So `/dashboard/network` → screen folder `screens/creator/network` (leaf matches exactly; the wing says *whose* side you're on — search either word and you find it).
 
@@ -156,13 +156,13 @@ So `/dashboard/network` → screen folder `screens/creator/network` (leaf matche
 | `/onboarding` | `app/(public)/onboarding/page.tsx` | `screens/public/onboarding` | `components/auth/OnboardingForm` | `creator/check-username`, `creator/register` | `public/onboarding.md` |
 | `/forgot-password` | `app/(public)/forgot-password/page.tsx` | `screens/public/forgot-password` | `components/auth/ForgotPasswordForm` | `creator/forgot-password` | `public/login.md` Part 4 |
 | `/offline` | `app/(public)/offline/page.tsx` | `screens/public/offline` | — (static shell) | — | `public/offline.md` |
-| `/dashboard` | `app/(shell)/dashboard/page.tsx` | `screens/creator/overview` | `components/overview/` (5 cards) | `creator/my-app`, `creator/activity` | `creator-dashboard/overview/overview.md` |
-| `/dashboard/my-app` | `…/my-app/page.tsx` | `screens/creator/my-app` | `components/my-app/` (+ `catalog/`) | `creator/my-app` GET/PUT, `creator/upload` | `creator-dashboard/my-app/my-app.md` |
+| `/dashboard` | `app/(shell)/dashboard/page.tsx` | `screens/creator/overview` | `components/overview/` (5 cards) | `creator/playground`, `creator/activity` | `creator-dashboard/overview/overview.md` |
+| `/dashboard/playground` | `…/playground/page.tsx` | `screens/creator/playground` | `components/playground/` (+ `catalog/`) | `creator/playground` GET/PUT, `creator/upload` | `creator-dashboard/playground/playground.md` |
 | `/dashboard/network` | `…/network/page.tsx` | `screens/creator/network` | `components/network/` | `creator/billboard`, `discover/creators`, `creator/affiliates/*` | `creator-dashboard/network/network.md` |
 | `/dashboard/circle/partners` | `…/circle/partners/page.tsx` | `screens/creator/circle/partners` | `components/circle/partners/` (+ collab widgets in `network/`) | `creator/partners/*` | `features/partnership.md` |
 | `/dashboard/circle/fans` | `…/circle/fans/page.tsx` | `screens/creator/circle/fans` | `components/circle/fans/` | `creator/fans/*` | `features/relationships.md` |
 | `/dashboard/circle/staff` | `…/circle/staff/page.tsx` | `screens/creator/circle/staff` | `components/circle/staff/` | `creator/staff/*` | `features/staff.md` |
-| `/dashboard/settings` | `…/settings/page.tsx` | `screens/creator/settings` | `components/settings/` | `creator/my-app` | `creator-dashboard/settings/settings.md` |
+| `/dashboard/settings` | `…/settings/page.tsx` | `screens/creator/settings` | `components/settings/` | `creator/playground` | `creator-dashboard/settings/settings.md` |
 | `/admin` | `app/(shell)/admin/page.tsx` | `screens/admin` | `components/admin/` | `admin/*` | `screens/admin/admin.md` |
 | `/{username}` | `app/(fan)/[username]/page.tsx` | — *signpost* → `/guest` | — | — | — |
 | `/{username}/guest` | `…/guest/page.tsx` | `screens/fan/guest` | `components/fan-pwa/GuestPageContent` | `creator/pageview`, `fan/*` | `fan-shell.md` Part 3 |
@@ -178,7 +178,7 @@ So `/dashboard/network` → screen folder `screens/creator/network` (leaf matche
 |---|---|
 | `components/layout/` | The frame: sidebar + phone bottom bar, the My Peeps/💬 dock |
 | `components/messages/` | Messages engine (`MessagesShell` + inbox popover) — dashboard **and** fan shell |
-| `components/fan-pwa/` | The fan app's pixels — **also rendered inside the My App phone preview** (one copy, both surfaces) |
+| `components/fan-pwa/` | The fan app's pixels — **also rendered inside the Playground phone preview** (one copy, both surfaces) |
 | `components/analytics/` | `PageViewTracker` (fan pages) |
 | `components/shared/` · `components/ui/` | Reusable odds-and-ends · the shadcn kit |
 
@@ -316,10 +316,10 @@ landing when someone arrives with an invite link.
 | Layer      | File                                                      | Role |
 | ---------- | --------------------------------------------------------- | ---- |
 | 🚪 Door    | `src/app/(public)/onboarding/page.tsx`                    | 2 lines: re-exports `@/screens/public/onboarding` |
-| 🧠 Manager | `src/screens/public/onboarding/Screen.tsx` (46 lines)     | Server: sanitizes `?invite=`, bounces logged-in users to `/dashboard/my-app`, picks title ("Join your partner" vs "Create your account"), renders AuthCard |
+| 🧠 Manager | `src/screens/public/onboarding/Screen.tsx` (46 lines)     | Server: sanitizes `?invite=`, bounces logged-in users to `/dashboard/playground`, picks title ("Join your partner" vs "Create your account"), renders AuthCard |
 | 🎨 Pixels  | `src/components/auth/OnboardingForm.tsx` (254)            | The form — Link Address + live availability, display name, email, password, permanence dialog, signup + redirect |
 | 🔧 Kitchen | `POST /api/creator/register` (57)                         | Server-side truth: re-validates format + availability (excluding self, 409), writes `username` + `display_name` (upsert by user id) |
-|            | `GET /api/creator/check-username` (30)                    | Anonymous availability lookup, **20/min rate limit** — also used by My App's identity editor |
+|            | `GET /api/creator/check-username` (30)                    | Anonymous availability lookup, **20/min rate limit** — also used by Playground's identity editor |
 | 🧊 Fridge  | `@/lib/mocks/mockSupabaseClient.ts`                       | Mock signup auto-creates the creators row (email-prefix username); register then renames it |
 | 📐 Spec    | `src/wiredLater/screens/public/onboarding.md`             | The blueprint (wired 2026-08-10, Sheet 7) |
 
@@ -364,7 +364,7 @@ landing when someone arrives with an invite link.
 | Link Address rules (pattern/cleaner)   | `src/lib/username.ts` (shared by form + both routes)            |
 | Availability check speed / behavior    | `checkAvailability`, OnboardingForm line 50 (debounce 400 + `requestSeq`) |
 | "Available — URL" hint + permanence box| OnboardingForm lines ~170–194 + dialog lines ~235–251             |
-| Where signup lands you                 | `performSignUp`, OnboardingForm line 154 (`/dashboard/my-app`)    |
+| Where signup lands you                 | `performSignUp`, OnboardingForm line 154 (`/dashboard/playground`)    |
 | What gets written on register          | `api/creator/register/route.ts` (username + display_name upsert)  |
 | Checker rate limit                     | `api/creator/check-username` — `enforceRateLimit(...)` line 9      |
 
@@ -413,7 +413,7 @@ and the security gates — for **every** page under `/dashboard` *and* `/admin`.
   `startsWith("/dashboard")` would light "Overview" on *every* dashboard page,
   so the root compares **exactly** (`DashboardSidebar.tsx:38`).
 - **Nav items = ONE list feeding BOTH bars.** `lib/nav-config.ts` `DASHBOARD_NAV_ITEMS`
-  (Overview · Network · My App · Settings + **Admin Panel** only for admins) feeds
+  (Overview · Network · Playground · Settings + **Admin Panel** only for admins) feeds
   the desktop sidebar AND the phone bottom bar. Add or rename a link → edit
   nav-config, both bars update. No sign-out here by design — it lives in Settings.
 - **Sidebar ↔ bottom bar flips at 768px (`md:`).** `hidden md:flex` aside vs

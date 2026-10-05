@@ -1,7 +1,7 @@
 /**
- * PhonePreview — the fluid phone frame for the My App editor.
+ * PhonePreview — the fluid phone frame for the Playground editor.
  * True 390/844 phone ratio via unitless aspect-ratio tokens; parent
- * (MyAppForm) sizes the width to fit available space (never scrolls).
+ * (PlaygroundForm) sizes the width to fit available space (never scrolls).
  * Layout mirrors FanAppShell; frame is swipeable across the 5 tabs.
  * Marks itself @container so FanBottomNav labels can drop to 9px when
  * the frame itself is under 300px wide (keeps all 5 labels legible).
@@ -21,9 +21,9 @@ import { FanBottomNav } from "@/components/fan-pwa/FanBottomNav";
 
 interface PhonePreviewProps {
   data: FanShellData;
-  /** Which tab is currently active — managed by parent (MyAppForm). */
+  /** Which tab is currently active — managed by parent (PlaygroundForm). */
   activeTab: FanViewId;
-  /** Tab change handler — managed by parent (MyAppForm). */
+  /** Tab change handler — managed by parent (PlaygroundForm). */
   onTabChange: (tab: FanViewId) => void;
 }
 

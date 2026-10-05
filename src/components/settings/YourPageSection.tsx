@@ -19,7 +19,7 @@ export function YourPageSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchJson<{ creator?: { username?: string } }>("/api/creator/my-app")
+    fetchJson<{ creator?: { username?: string } }>("/api/creator/playground")
       .then((data) => {
         const u = data?.creator?.username;
         if (u) setUsername(u);

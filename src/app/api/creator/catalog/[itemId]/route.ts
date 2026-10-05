@@ -1,5 +1,5 @@
 /**
- * Catalog item route — GET/PATCH/DELETE one content_items row (my-app.md Part
+ * Catalog item route — GET/PATCH/DELETE one content_items row (playground.md Part
  * 2c, Stage A 2026-08-13: all 16 types). PATCH accepts the per-type fields
  * (variants, booking_slots, stock, live platform, scheduling, metadata) plus
  * the pricing/access block; ownership is scoped by creator_id.

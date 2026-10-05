@@ -1178,7 +1178,7 @@ export function createMockSupabaseClient(
     // Keep the server-side store consistent with what browser-side signUp
     // created: a cookie session implies a creators row. Without this, the
     // dashboard layout finds no creator and redirects /onboarding while the
-    // onboarding screen bounces back to /dashboard/my-app — an infinite loop.
+    // onboarding screen bounces back to /dashboard/playground — an infinite loop.
     const creators = getTable<Creator>("creators");
     if (!creators.some((c) => c.id === initialUser.id)) {
       creators.push(buildMockCreatorRow(initialUser.id, initialUser.email, ""));

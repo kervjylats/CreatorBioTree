@@ -23,7 +23,7 @@
 ## Part 1: The Rule
 
 1. **All features are free during development** — messaging, community, staff access, AI, catalog limits, funnels, auto-DM, everything. `USE_MOCKS=true` means no real payments anyway; no feature is gated behind money in mock.
-2. **No Free/Pro split for creators in v1** — no `is_pro` / `subscription_tier` check anywhere. Every catalog item limit, every AI query, every staff seat = free. The "Free vs Pro" table in `my-app.md` Part 5 is **tentative reference only** — it does NOT exist as a gate in code until the end-of-dev decision pass.
+2. **No Free/Pro split for creators in v1** — no `is_pro` / `subscription_tier` check anywhere. Every catalog item limit, every AI query, every staff seat = free. The "Free vs Pro" table in `playground.md` Part 5 is **tentative reference only** — it does NOT exist as a gate in code until the end-of-dev decision pass.
 3. **No platform take rate in v1** — PayPal handles payment routing; the creator keeps 100% of their sale (minus PayPal's own processing fees). Platform cut TBD at end of dev — and when it lands, it rides the **Deal Rules & Settlement Engine** (`creators.md` 2e2): the same settlement pass that routes owner + promoter cuts deducts the platform's cut. No new payment architecture needed.
 4. **No monetization decisions are locked before the end** — pricing, tiers, trials, IAPs, take rate are ALL deferred.
 5. **One decision pass at the end** — after Phase F wiring, the founder decides how the platform gets paid (subscriptions? per-creator plans? transaction fees? IAP?) and THIS FILE records it.
@@ -41,7 +41,7 @@ These are the known levers across the platform, collected now so the end decisio
 
 | Levers | Where it lives today | Notes |
 |---|---|---|
-| **Premium tiers** (Free vs Pro split) | `my-app.md` Part 5 — tentative table: catalog limits, funnels, Auto-DM, affiliates, remove branding, AI quota | Existing tentative split — NOT a gate in v1; re-reviewed at the end |
+| **Premium tiers** (Free vs Pro split) | `playground.md` Part 5 — tentative table: catalog limits, funnels, Auto-DM, affiliates, remove branding, AI quota | Existing tentative split — NOT a gate in v1; re-reviewed at the end |
 | **Staff seats** | `staff.md` Part 7 — paid seats deferred | Extra staff members as premium (Shopify/Stan pattern) |
 | **Creator IAP / in-app purchases** | — | e.g., "pay to unlock premium features" — nothing specced, option only |
 | **Trials / freemium** | — | Option only |

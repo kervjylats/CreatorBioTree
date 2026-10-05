@@ -10,7 +10,7 @@ Two states:
 - **Creator** → their own stats (revenue, views, installs, fans, content)
 - **Admin** → platform-wide totals (creators, fans, revenue) instead of personal stats
 
-**One page, zero navigation** — everything on it links deeper (My App, settings) or is actionable in place (share, QR, checklist buttons).
+**One page, zero navigation** — everything on it links deeper (Playground, settings) or is actionable in place (share, QR, checklist buttons).
 
 ---
 
@@ -68,8 +68,8 @@ Gumroad-style **dismissible** checklist — 5 steps, each with a done-state. Dis
 
 | # | Step | Done when | Action when not done |
 |---|---|---|---|
-| 1 | Custom App Branding | display_name + bio + avatar set | "Setup branding →" → `/dashboard/my-app` |
-| 2 | First Content | `content_count` > 0 | "Add content +" → `/dashboard/my-app` |
+| 1 | Custom App Branding | display_name + bio + avatar set | "Setup branding →" → `/dashboard/playground` |
+| 2 | First Content | `content_count` > 0 | "Add content +" → `/dashboard/playground` |
 | 3 | Bio Link Traffic | `view_count` > 0 | Share page button |
 | 4 | First Fan | `fan_count` > 0 | "Share your page" |
 | 5 | First Sale | `total_revenue` > 0 | "Share your page" |
@@ -106,14 +106,14 @@ One line summary style — not a full analytics page. Deep-dive lives elsewhere 
 |---|---|
 | Share page | Copy page link (custom domain if set, else `host/username`) |
 | QR code | QR card of the page link (for real-life promo) |
-| Edit My App | → `/dashboard/my-app` — the full-screen My App editor (guest-first, swipeable, tap-to-edit). **This replaces the old "View my fan page" quick action** — My App is now the one surface for both seeing and editing the fan shell (founder decision 2026-08-05; see `my-app.md` Part 1). Popping out to the real live `/{username}` still works via the "Deployed — view it live" link after a deploy, and via the share action |
+| Edit Playground | → `/dashboard/playground` — the full-screen Playground editor (guest-first, swipeable, tap-to-edit). **This replaces the old "View my fan page" quick action** — Playground is now the one surface for both seeing and editing the fan shell (founder decision 2026-08-05; see `playground.md` Part 1). Popping out to the real live `/{username}` still works via the "Deployed — view it live" link after a deploy, and via the share action |
 | Install my fan app | **Optional.** Same install flow as a fan (`/[username]/manifest.json`) → installs their branded fan-shell PWA next to the Dashboard PWA → **2 apps on their phone** (Dashboard = workbench, fan app = what fans get). This is how creators dogfood their own app. See `fan-shell.md` |
-| Add content | → `/dashboard/my-app` (opens the editor sheet with the Catalog tab — Part 1c mapping) |
+| Add content | → `/dashboard/playground` (opens the editor sheet with the Catalog tab — Part 1c mapping) |
 | Messages | → `/dashboard/circle/messages` — inbox for fan/guest conversations, replies happen here (see `messaging.md` Part 2) |
 
 ### Persistent sidebar actions
 
-**My App** is the sidebar entry itself (alongside Overview · Network · Settings) — no separate "View my fan page" action anymore; the full-screen editor IS the fan shell view (founder decision 2026-08-05). **Install my fan app** and **Messages** stay as persistent sidebar actions — a creator can install their own app or open their inbox from anywhere in the dashboard. (Facebook "view my profile"-style access, minus the duplicate.)
+**Playground** is the sidebar entry itself (alongside Overview · Network · Settings) — no separate "View my fan page" action anymore; the full-screen editor IS the fan shell view (founder decision 2026-08-05). **Install my fan app** and **Messages** stay as persistent sidebar actions — a creator can install their own app or open their inbox from anywhere in the dashboard. (Facebook "view my profile"-style access, minus the duplicate.)
 
 ---
 

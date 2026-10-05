@@ -15,8 +15,8 @@ The Admin system is the platform owner's control room. One surface, one set of d
 ### Where it lives
 
 - **Path:** `/admin` — a top-level route, separate from the creator dashboard shell (admins reach it via the sidebar 👇)
-- **Sidebar:** Admins see a 5th nav item — 🔐 "Admin Panel" (`SidebarContent.tsx`). Regular creators see only the 4 tabs (Overview, Network, My App, Settings + Admin only for admins)
-- **Overview page difference:** For admins, `/dashboard` shows **platform-wide stats** (all creators, all fans, all revenue) instead of personal stats. Personal stats remain available in My App.
+- **Sidebar:** Admins see a 5th nav item — 🔐 "Admin Panel" (`SidebarContent.tsx`). Regular creators see only the 4 tabs (Overview, Network, Playground, Settings + Admin only for admins)
+- **Overview page difference:** For admins, `/dashboard` shows **platform-wide stats** (all creators, all fans, all revenue) instead of personal stats. Personal stats remain available in Playground.
 
 ### Who gets in
 
@@ -124,7 +124,7 @@ A live feed on the Admin Overview showing ALL recent platform events:
 
 ### Dedicated admin signup (NOT creator onboarding — founder decision 2026-08-08, reconfirmed 2026-09-29)
 
-Admins are **helpers, not creators** — they must NOT go through the creator onboarding (no Link Address, no My App, no fan page). The invite link opens the shared **accept screen** `/accept?token=…` — a PUBLIC page (no session yet), living outside the auth-gated dashboard shell:
+Admins are **helpers, not creators** — they must NOT go through the creator onboarding (no Link Address, no Playground, no fan page). The invite link opens the shared **accept screen** `/accept?token=…` — a PUBLIC page (no session yet), living outside the auth-gated dashboard shell:
 
 - Fields: **email + password** only — the email is THEIRS (they type whatever they actually use; the invite's optional email field was only a pre-fill)
 - No Link Address / display name / onboarding steps — admins never pick a public fan URL

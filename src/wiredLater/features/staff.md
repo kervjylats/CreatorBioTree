@@ -29,7 +29,7 @@ No preset role ladder in v1 — **permission toggles only** (founder decision). 
 
 | Toggle | What it grants |
 |---|---|
-| Content | My App (formerly Playground): create/edit/publish catalog items, artist links, spotlight, media kit |
+| Content | Playground (formerly "My App", 2026-08-05→2026-10-01): create/edit/publish catalog items, artist links, spotlight, media kit |
 | Overview & stats | View dashboard stats, money section, activity feed (read-only) |
 | Relationships | View fan list + profile drawers, do-not-contact flag, export CSV |
 | Messages | Inbox: read + reply to fan/guest/collab conversations (acts as the creator) |

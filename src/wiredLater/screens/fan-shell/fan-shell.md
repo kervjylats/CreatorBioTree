@@ -9,7 +9,7 @@ The fan shell is everything fans experience at `/[username]`: the guest page, th
 
 **The 3-layer view lives in exactly TWO places: the guest page and the Content tab. The shell frame (FanAppShell) never renders it** — it's branding + bottom nav + account button only.
 
-Content shown here is created in My App and served from the shared database. See `my-app.md` Part 3 for the display layers (Spotlight, Catalog Feed) and per-item card types. Artist links are no longer a display layer — they live in the **Connect tab only** (Part 4c).
+Content shown here is created in Playground and served from the shared database. See `playground.md` Part 3 for the display layers (Spotlight, Catalog Feed) and per-item card types. Artist links are no longer a display layer — they live in the **Connect tab only** (Part 4c).
 
 ---
 
@@ -181,7 +181,7 @@ Signup/login lives on the guest page. Guest logs in → stays on the same page �
 
 - The 3-layer view (see Part 3): Spotlight → Catalog Feed (artist links live in the **Connect tab only** — see Part 4c)
 - Applies the Three Gates (Part 2)
-- Interactive cards per item type (see `my-app.md` Part 3)
+- Interactive cards per item type (see `playground.md` Part 3)
 
 ### 4c. Connect Tab — the connection hub (smart live stack, billboard + two columns)
 
@@ -214,8 +214,8 @@ Signup/login lives on the guest page. Guest logs in → stays on the same page �
 | 2 | **All Partners** (left column) | Creator has ≥1 active partner | **Compact mini-spotlight cards for EVERY partner** (affiliate deal or not) — avatar, display name, tagline. The complete partner roster in one scrollable column. Tapping a card → the partner modal |
 | 3 | **Followed** (right column) | Fan follows ≥1 partner | Partners this fan follows (e.g., Michel follows 2 of Alex's partners → both listed here). Per-fan — each fan's own list. Cards carry the **"Following ✓" badge**; the follow/unfollow toggle itself lives in the partner modal only (founder decision 2026-08-05 — simpler, one place to change it) |
 | 4 | **Community** (bottom) | Creator has set up a community | A **card** that deep-links to the Home tab community section (gateway, not a full view — the community itself lives on Home, `messaging.md` Part 3) |
-| 5 | **Artist Links** (bottom) | Creator has ≥1 social/external link (`my-app.md` Part 2d) | The creator's artist links as rich interactive cards — **this is the only home for artist links** (removed from Content tab + guest page; see Part 3) |
-| 6 | **Empty state** | ALL of the above are empty | ONE message — the creator's own `connect_empty_text` (`my-app.md` Part 2a); falls back to platform default "More to come — check back soon" when unset |
+| 5 | **Artist Links** (bottom) | Creator has ≥1 social/external link (`playground.md` Part 2d) | The creator's artist links as rich interactive cards — **this is the only home for artist links** (removed from Content tab + guest page; see Part 3) |
+| 6 | **Empty state** | ALL of the above are empty | ONE message — the creator's own `connect_empty_text` (`playground.md` Part 2a); falls back to platform default "More to come — check back soon" when unset |
 
 **Interactions:**
 - Tapping a partner's name (under the billboard) **or** any partner card (All Partners / Followed) → opens the **bottom modal** = the partner's content page (swipe up to ~3/4 of the screen, partner's branding; see `partner-page.md`)

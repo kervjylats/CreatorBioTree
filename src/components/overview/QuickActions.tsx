@@ -1,5 +1,5 @@
 /**
- * QuickActions — single shortcut to the My App editor.
+ * QuickActions — single shortcut to the Playground editor.
  */
 "use client";
 
@@ -15,10 +15,10 @@ export function QuickActions() {
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <Link href="/dashboard/my-app">
+        <Link href="/dashboard/playground">
           <Button variant="outline" className="w-full justify-start">
             <Pencil size={14} />
-            Edit My App
+            Edit Playground
           </Button>
         </Link>
       </CardContent>

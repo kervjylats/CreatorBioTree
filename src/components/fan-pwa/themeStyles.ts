@@ -1,7 +1,7 @@
 /**
  * themeStyles.ts — shared helpers that map a creator's branding (buttonStyle +
  * borderRadius + accentColor from branding.ts) onto inline styles + Tailwind
- * classes. Every branded button and card surface in the fan shell + My App
+ * classes. Every branded button and card surface in the fan shell + Playground
  * preview routes through these so theme edits (Design tab, tap-to-edit) show
  * up everywhere. buttonClass returns BOTH class and style — the style carries
  * the accent background + contrast-aware text color, so primary buttons are

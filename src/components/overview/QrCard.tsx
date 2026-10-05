@@ -25,7 +25,7 @@ export function QrCard() {
   const { copy } = useCopyToClipboard();
 
   useEffect(() => {
-    fetchJson<{ creator?: { username?: string } }>("/api/creator/my-app")
+    fetchJson<{ creator?: { username?: string } }>("/api/creator/playground")
       .then((data) => {
         const username = data?.creator?.username;
         if (username) setUrl(`${window.location.origin}/${username}`);

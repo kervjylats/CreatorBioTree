@@ -1,6 +1,6 @@
 /**
  * ProfileSection — display name edit for the creator profile.
- * Reads from GET /api/creator/my-app, saves via PUT /api/creator/my-app.
+ * Reads from GET /api/creator/playground, saves via PUT /api/creator/playground.
  * The tagline input that used to live here was removed (2026-10-01 audit): the
  * deploy route never selected or accepted `tagline`, so the field rendered blank
  * and its edits were silently discarded while a "Profile saved" toast fired. The
@@ -22,7 +22,7 @@ export function ProfileSection() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchJson<{ creator?: { display_name?: string | null } }>("/api/creator/my-app")
+    fetchJson<{ creator?: { display_name?: string | null } }>("/api/creator/playground")
       .then((data) => {
         const c = data?.creator;
         if (c) setDisplayName(c.display_name ?? "");
@@ -34,7 +34,7 @@ export function ProfileSection() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await fetchJson("/api/creator/my-app", {
+      await fetchJson("/api/creator/playground", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

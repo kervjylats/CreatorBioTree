@@ -3,7 +3,7 @@
 /* ─── Design tokens ──────────────────────────────────────────────────────────
    Single source of truth for the PLATFORM palette (dashboard, login, admin,
    landing, search, offline). Fan shells are NOT themed here — creators design
-   their own via branding.ts (resolveBranding → MyAppTheme) applied as inline
+   their own via branding.ts (resolveBranding → PlaygroundTheme) applied as inline
    styles on /[username].
    The @theme block maps abstract tokens (--color-*) to concrete stops
    (--background, --primary, ...) defined on :root below.                 */
@@ -32,7 +32,7 @@
   --phone-ratio-h:     844;
   --phone-max-w:       420px;
   --phone-min-w:       220px;
-  /* Space around the My App frame: py-6 top + Draft/Live bar (~68px) +
+  /* Space around the Playground frame: py-6 top + Draft/Live bar (~68px) +
      bottom padding (80px phone bottom-nav clearance / 24px at md+). */
   --preview-chrome:    172px;
 }

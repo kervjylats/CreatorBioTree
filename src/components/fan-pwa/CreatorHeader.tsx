@@ -147,7 +147,7 @@ export function CreatorHeader({ branding, bio, editMode, onEdit, actions }: Crea
 
         {/* Actions — inline next to avatar (Email/Follow/Contact for Guest tab).
             flex-wrap lets Contact drop to a second line when the frame is
-            narrower than a phone (My App preview at 229-300px); the row wraps
+            narrower than a phone (Playground preview at 229-300px); the row wraps
             the actions below the avatar when even the email row can't fit. */}
         {actions && (
           <div className="flex flex-wrap items-center gap-2 min-w-0 flex-auto">

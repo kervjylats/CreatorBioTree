@@ -1,4 +1,4 @@
-/** Mock AI Copilot responses for the My App editor */
+/** Mock AI Copilot responses for the Playground editor */
 /**
  * mockAI.ts
  *

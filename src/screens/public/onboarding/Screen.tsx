@@ -26,7 +26,7 @@ export default async function OnboardingScreen({
   const inviteCode = sanitizeInviteCode(invite);
 
   if (await hasCreatorSession()) {
-    redirect("/dashboard/my-app");
+    redirect("/dashboard/playground");
   }
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "creatorpwa.app";

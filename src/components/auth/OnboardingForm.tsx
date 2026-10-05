@@ -43,7 +43,7 @@ export function OnboardingForm({ inviteCode, rootDomain }: OnboardingFormProps) 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) router.replace("/dashboard/my-app");
+      if (user) router.replace("/dashboard/playground");
     });
   }, [router]);
 
@@ -151,7 +151,7 @@ export function OnboardingForm({ inviteCode, rootDomain }: OnboardingFormProps) 
       return;
     }
 
-    router.push("/dashboard/my-app");
+    router.push("/dashboard/playground");
     router.refresh();
   };
 

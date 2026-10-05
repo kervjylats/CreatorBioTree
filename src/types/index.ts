@@ -35,7 +35,7 @@ export type FanViewId = "guest" | "home" | "content" | "connect" | "settings";
  * a logo (upload, full-bleed), an emoji, or an initial. `source` says which
  * foreground was used, so the designer reopens with the same settings.
  */
-export interface MyAppIconDesign {
+export interface PlaygroundIconDesign {
   /** Which designer tool produced the icon. */
   source: "template" | "upload";
   /** Background colour (hex). */
@@ -54,19 +54,19 @@ export interface MyAppIconDesign {
  * Identity section of the fan-PWA theme, configured in the Playground.
  * These values drive what the installed app looks like on the fan's device.
  */
-export interface MyAppProfile {
+export interface PlaygroundProfile {
   /** PWA name shown on the fan's home-screen icon (optional — falls back to creators.display_name) */
   appName: string;
   /** Square app icon shown on the fan's phone (optional — falls back to creators.avatar_url) */
   appIconUrl: string;
-  /** PWA status-bar colour override (my-app.md Part 2a — defaults to the accent colour) */
+  /** PWA status-bar colour override (playground.md Part 2a — defaults to the accent colour) */
   statusBarColor?: string | null;
   /** Design choices from the mini icon designer (2026-08-13) — regenerates the PNG icon. */
-  iconDesign?: MyAppIconDesign | null;
+  iconDesign?: PlaygroundIconDesign | null;
 }
 
-/** Colour palette for the fan-PWA, configured in My App. */
-export interface MyAppColors {
+/** Colour palette for the fan-PWA, configured in Playground. */
+export interface PlaygroundColors {
   /** Main page background colour */
   background: string;
   /** Card / surface background colour */
@@ -92,14 +92,14 @@ export interface MyAppColors {
 }
 
 /** Complete fan-PWA theme, stored in `creators.custom_theme` as JSONB. */
-export interface MyAppTheme {
+export interface PlaygroundTheme {
   fontStyle:    FontStyle;
   buttonStyle:  ButtonStyle;
   /** Accent colour shortcut — mirrors `colors.accent` */
   accent:       string;
   borderRadius: BorderRadius;
-  colors:       MyAppColors;
-  profile:      MyAppProfile;
+  colors:       PlaygroundColors;
+  profile:      PlaygroundProfile;
 }
 
 // ─── Creator ──────────────────────────────────────────────────────────────────
@@ -148,7 +148,7 @@ export interface Creator {
 
   // ── Theme & Branding ─────────────────────────────────────────────────────
   theme_id:         string;
-  custom_theme:     MyAppTheme | null;
+  custom_theme:     PlaygroundTheme | null;
   remove_branding:  boolean;
   push_notifications_enabled: boolean;
   social_links:     Record<string, string> | null;
@@ -286,7 +286,7 @@ export interface ContentItem {
   /** Affiliate promotion enabled for this item (network.md §7). */
   affiliate_enabled: boolean;
   /**
-   * How payment for this item is handled (my-app.md Part 2c — founder decision
+   * How payment for this item is handled (playground.md Part 2c — founder decision
    * 2026-08-10): 'in_app' = PayPal checkout inside the fan app (default); 'external_link'
    * = "Buy" opens the creator's own URL (PayPal.me / Stripe Payment Link / Gumroad);
    * external-link items are EXCLUDED from affiliate deals (external-link quarantine).
@@ -294,9 +294,9 @@ export interface ContentItem {
   payment_handling: "in_app" | "external_link" | null;
   /** Creator's own checkout URL when payment_handling === "external_link". */
   external_payment_url: string | null;
-  /** ISO timestamp for scheduled publish (my-app.md — link scheduling). */
+  /** ISO timestamp for scheduled publish (playground.md — link scheduling). */
   scheduled_publish_at: string | null;
-  /** ISO timestamp for scheduled unpublish (my-app.md — link scheduling). */
+  /** ISO timestamp for scheduled unpublish (playground.md — link scheduling). */
   scheduled_unpublish_at: string | null;
   variants:       ProductVariant[] | null;
   booking_slots:  BookingSlot[] | null;

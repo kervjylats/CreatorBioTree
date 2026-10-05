@@ -1,7 +1,7 @@
 /**
  * PoweredByFooter — "Powered by CreatorBioTree" link (fan-shell.md Part 6).
  * Themed with the creator's branding so it blends into the fan shell;
- * auto-hidden in edit mode (My App preview) via the `hidden` prop.
+ * auto-hidden in edit mode (Playground preview) via the `hidden` prop.
  */
 import type { CreatorBranding } from "@/lib/branding";
 

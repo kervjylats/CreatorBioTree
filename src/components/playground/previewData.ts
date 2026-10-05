@@ -1,7 +1,7 @@
 /**
- * previewData.ts — builds a FanShellData from the My App DRAFT so the phone
+ * previewData.ts — builds a FanShellData from the Playground DRAFT so the phone
  * preview renders the fan components against un-deployed theme edits
- * (my-app.md Part 1: the page IS the editor). resolveBranding runs client-side
+ * (playground.md Part 1: the page IS the editor). resolveBranding runs client-side
  * here — it is a pure function over the creator row.
  */
 "use client";
@@ -9,10 +9,10 @@
 import { resolveBranding, socialLinksToArtistLinks, type CreatorBranding } from "@/lib/branding";
 import type { ContentItem, Creator } from "@/types";
 import type { FanIdentity, FanShellData } from "@/components/fan-pwa/fanData";
-import type { MyAppDraft } from "@/hooks/useMyAppForm";
+import type { PlaygroundDraft } from "@/hooks/usePlaygroundForm";
 
 /** Patch a creator row with draft values → branding resolves over the draft. */
-export function draftToCreator(draft: MyAppDraft, base: Creator): Creator {
+export function draftToCreator(draft: PlaygroundDraft, base: Creator): Creator {
   return {
     ...base,
     display_name: draft.display_name ?? base.username,
@@ -25,12 +25,12 @@ export function draftToCreator(draft: MyAppDraft, base: Creator): Creator {
   };
 }
 
-export function draftToBranding(draft: MyAppDraft, base: Creator): CreatorBranding {
+export function draftToBranding(draft: PlaygroundDraft, base: Creator): CreatorBranding {
   return resolveBranding(draftToCreator(draft, base));
 }
 
 /** Preview FanShellData: no identity (creator previews the visitor view), no purchases. */
-export function buildPreviewData(draft: MyAppDraft, base: Creator, items: ContentItem[]): FanShellData {
+export function buildPreviewData(draft: PlaygroundDraft, base: Creator, items: ContentItem[]): FanShellData {
   const branding = draftToBranding(draft, base);
   return {
     branding,

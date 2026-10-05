@@ -51,13 +51,13 @@
 | Order | Unit (sheet) | Steps |
 |---|---|---|
 | 1 | `api-utils.ts` + `api-error.ts` + `requireAuth.ts` → `src/lib/` | ADOPT (G6) 3 helper files |
-| 2 | `types/index.ts` — rename `Playground*`→`MyApp*` + add feature/column types | EXTEND |
+| 2 | `types/index.ts` — rename `Playground*`→`Playground*` + add feature/column types | EXTEND |
 | 3 | `lib/branding.ts` — 7 missing presets + Part 9 fields | EXTEND |
 | 4 | `mockDataStore.ts` + `mockSupabaseClient.ts` — 14 new tables + RPCs | EXTEND |
 | 5 | Delete dead files + add missing rate limits (G7) + `pageview` → singleton | housekeeping |
 | **6** | **Login** `/login` | screen — ✅ done 2026-08-10 |
 | **7** | **Onboarding** `/onboarding` | screen — ✅ done 2026-08-10 |
-| **19-V1** | **My-App** `/dashboard/my-app` — **V1 CORE** (reordered 2026-08-11) | screen — ✅ done 2026-08-11 (editor Option A; B/C/D deferred) · ✅ **ALL 16 CATALOG TYPES wired 2026-08-13 (Stage A of the Connected Loop Pass):** AddItemPicker + ItemEditor per-type sections (course lessons, session booking slots, membership benefits + billing cycle, physical/product variants + stock, bundle picker, live platform/stream, page body) + fan cards render every type with gates (memberships now check out; purchased-before-member gate fix) + PATCH schema gains `variants`/`booking_slots`. Verified end-to-end via curl (create → rich PATCH → fan-page render → delete). · **NOTE (2026-08-13):** real-mode must ENFORCE the 7-day lock server-side for App Name + App Icon + Display Name (specced in `features/branding.md` Part 9 — currently UI-note only, never enforced) |
+| **19-V1** | **My-App** `/dashboard/playground` — **V1 CORE** (reordered 2026-08-11) | screen — ✅ done 2026-08-11 (editor Option A; B/C/D deferred) · ✅ **ALL 16 CATALOG TYPES wired 2026-08-13 (Stage A of the Connected Loop Pass):** AddItemPicker + ItemEditor per-type sections (course lessons, session booking slots, membership benefits + billing cycle, physical/product variants + stock, bundle picker, live platform/stream, page body) + fan cards render every type with gates (memberships now check out; purchased-before-member gate fix) + PATCH schema gains `variants`/`booking_slots`. Verified end-to-end via curl (create → rich PATCH → fan-page render → delete). · **NOTE (2026-08-13):** real-mode must ENFORCE the 7-day lock server-side for App Name + App Icon + Display Name (specced in `features/branding.md` Part 9 — currently UI-note only, never enforced) |
 | **21-V1** | **Fan shell** — Guest · Home · Content · Connect · Settings — **FULLY WIRED** | screens — ✅ done 2026-08-11 (v1 core) · ✅ **Fan shell full spec pass 2026-08-31:** Home tab rebuilt as 7-section activity hub (Spotlight, New from creator, Updates from partners, Community section, Your activity, Upcoming, Announcements) · Community fan UI wired (Home section + guest "Join the community" card + Connect community card) · Connect tab completed (All Partners + Followed two-column layout, deal-weighted billboard rotation, Artist Links) · Partner bottom modal (PartnerModal) replacing full-page navigation, follow toggle persisted to `fan_follows` · Settings completed (Subscription card, 4 notification toggles, payment methods stub) · `fan_follows` table added to mock store |
 | **8** | **Admin** `/admin` | screen — ✅ done 2026-08-30 |
 | **9** | **Settings** `/dashboard/settings` | screen — ✅ done 2026-08-30 |
@@ -99,11 +99,11 @@ CHECK       typecheck + lint + check-docs green
 
 ## SHEET 2 — Types (foundation)
 
-> **Purpose:** the codebase's single source of truth. Fix the drift the specs flagged: the types were renamed `MyApp*` in the specs but the live code still says `Playground*`. Also sponsor all new feature types so later sheets can reference them.
+> **Purpose:** the codebase's single source of truth. Fix the drift the specs flagged: the types were renamed `Playground*` in the specs but the live code still says `Playground*`. Also sponsor all new feature types so later sheets can reference them.
 
 | Action | Change |
 |---|---|
-| ~~`RENAME`~~ ✅ | `PlaygroundTheme` → `MyAppTheme`; `PlaygroundColors` → `MyAppColors`; `PlaygroundProfile` → `MyAppProfile` — **done 2026-08-07** |
+| ~~`RENAME`~~ ✅ | `PlaygroundTheme` → `PlaygroundTheme`; `PlaygroundColors` → `PlaygroundColors`; `PlaygroundProfile` → `PlaygroundProfile` — **done 2026-08-07** |
 | ~~`ADD`~~ ✅ | messaging types: `Conversation`, `ConversationMember`, `Message`, `MessageAttachment`, `MessageRequest`, `BlockedUser`, `CommunityChannel` — **done 2026-08-07** |
 | ~~`ADD`~~ ✅ | staff types: `StaffMember`, `StaffInvite`, `StaffActivity` — **done 2026-08-07** |
 | ~~`ADD`~~ ✅ | affiliate types: `AffiliateDeal` (deal_type/scope/trigger/rate/status), `AffiliateAttribution`, `AffiliateConversion`, `AffiliateLink` — **done 2026-08-07** |
@@ -111,7 +111,7 @@ CHECK       typecheck + lint + check-docs green
 | ~~`EXTEND`~~ ✅ | `Creator` → `tagline`, `collab_style` (network.md); `connect_empty_text` (branding.md Part 9 #5) — **done 2026-08-07** |
 | ~~`EXTEND`~~ ✅ | `ContentItem` → `affiliate_enabled`, `scheduled_publish_at`, `scheduled_unpublish_at` (affiliate_rate already existed) — **done 2026-08-07** |
 | `ADD` | `theme_presets` type (if using standalone `themePresets.ts`) — decide at wiring |
-| SPEC | branding.md · network.md · relationships.md · staff.md · partnership.md · my-app.md · monetization/creators.md |
+| SPEC | branding.md · network.md · relationships.md · staff.md · partnership.md · playground.md · monetization/creators.md |
 | DEPENDS ON | none |
 
 ---
@@ -156,7 +156,7 @@ CHECK       typecheck + lint + check-docs green
 | ~~DELETE~~ ✅ | `api/fan/session/route.ts` (misnamed — dup of `creator/fans/export`) — **done 2026-08-07** |
 | ~~DELETE~~ ✅ | `src/components/library/index.ts` (empty barrel) — **done 2026-08-07** |
 | ~~DELETE~~ ✅ | `public/*.svg` (stock boilerplate: next, vercel, file, window, globe) — **done 2026-08-07** |
-| RENAME | localStorage key `playground_banner_dismissed` → `my-app_banner_dismissed` (G21) |
+| RENAME | localStorage key `playground_banner_dismissed` → `playground_banner_dismissed` (G21) |
 | ~~EXTEND~~ ✅ | missing rate limits (G7): `creator/check-username`, `fan/follow`, `fan/install`, `fan/forgot-password`, `push/subscribe` — **all added 2026-08-07** |
 | ~~MERGE~~ ✅ | `api/creator/pageview` throws its own Map → use the `rate-limiter` singleton — **done 2026-08-07** |
 
@@ -164,7 +164,7 @@ CHECK       typecheck + lint + check-docs green
 
 ## SHEET 6 — SCRECO: Login ✅ DONE 2026-08-10
 
-> **MOCK AUTO-LOGIN (2026-08-10):** mock mode now auto-provisions a session in `proxy.ts` — `/dashboard*` logs in as the seeded test creator (`test@creatorpwa.app`, Link Address `test`, id `mock-test-creator`), `/admin*` as the seeded admin (`admin@creatorpwa.app`, id `mock-admin`). `/login` + `/onboarding` are bypassed on purpose while inside-app sheets (8–23) are built. **⚠️ REMOVE the auto-provision block in `proxy.ts` during the final auth pass** (before real-mode migration), then re-test login/onboarding against a clean flow. The `seedMockTestCreator()` seed in `mockSupabaseClient.ts` can stay as sample data. Also fixed: cookie hydration now creates the server-side creators row (mock store split), killing the `/onboarding` ↔ `/dashboard/my-app` redirect loop.
+> **MOCK AUTO-LOGIN (2026-08-10):** mock mode now auto-provisions a session in `proxy.ts` — `/dashboard*` logs in as the seeded test creator (`test@creatorpwa.app`, Link Address `test`, id `mock-test-creator`), `/admin*` as the seeded admin (`admin@creatorpwa.app`, id `mock-admin`). `/login` + `/onboarding` are bypassed on purpose while inside-app sheets (8–23) are built. **⚠️ REMOVE the auto-provision block in `proxy.ts` during the final auth pass** (before real-mode migration), then re-test login/onboarding against a clean flow. The `seedMockTestCreator()` seed in `mockSupabaseClient.ts` can stay as sample data. Also fixed: cookie hydration now creates the server-side creators row (mock store split), killing the `/onboarding` ↔ `/dashboard/playground` redirect loop.
 > **Goal:** a creator logs in to `/login` with email/password (mock: any email+password works) and lands on the dashboard.
 > **Wired:** `src/screens/public/login/Screen.tsx` (server: `searchParams.next` validation + already-logged-in redirect) · `src/components/auth/LoginForm.tsx` (promoted + `?next=`, Gumroad-style error copy incl. creators lookup, mock auto-signup fallback, mock-only social buttons Google/TikTok/Instagram/Facebook with tooltips) · `src/components/auth/AuthCard.tsx` (promoted, now `bg-card`). **Review pass 2026-08-10:** forgot-password wired (link → `/forgot-password` page + `POST /api/creator/forgot-password` — no enumeration, mock console-logs reset link via mockResend, real = Supabase reset email). Open item: no /terms route exists anywhere (landing footer, Sheet 23). Checks green (typecheck/lint/check-docs).
 
@@ -193,7 +193,7 @@ NOTE        mock = any email+password signs in; real = Supabase auth
 
 ## SHEET 7 — Onboarding ✅ DONE 2026-08-10
 
-> **Wired:** `src/screens/public/onboarding/Screen.tsx` (server: sanitized `?invite=` passthrough — alphanumeric/`_-`, ≤100 chars; already-logged-in redirect to `/dashboard/my-app`) · `src/components/auth/OnboardingForm.tsx` (promoted + Link Address field with debounced live availability, permanence confirm dialog, `?invite=` title + metadata capture) · **NEW** `POST /api/creator/register` (auth-guarded upsert of username+display_name, format+availability validation) · `check-username` relaxed to **anonymous** (Link Address availability is checked pre-signup) + full `^[a-z0-9_]{3,20}$` server validation. Partnership auto-connect deferred to Sheet 13 (route stays 501 stub — spec Part 2). Gates green.
+> **Wired:** `src/screens/public/onboarding/Screen.tsx` (server: sanitized `?invite=` passthrough — alphanumeric/`_-`, ≤100 chars; already-logged-in redirect to `/dashboard/playground`) · `src/components/auth/OnboardingForm.tsx` (promoted + Link Address field with debounced live availability, permanence confirm dialog, `?invite=` title + metadata capture) · **NEW** `POST /api/creator/register` (auth-guarded upsert of username+display_name, format+availability validation) · `check-username` relaxed to **anonymous** (Link Address availability is checked pre-signup) + full `^[a-z0-9_]{3,20}$` server validation. Partnership auto-connect deferred to Sheet 13 (route stays 501 stub — spec Part 2). Gates green.
 
 ```
 SCREEN: Onboarding  ·  /onboarding  ·  spec: onboarding.md (DEFERRED signup)
@@ -204,7 +204,7 @@ COMPONENTS  OnboardingForm (PROMOTE old-code/OnboardingForm — add ?invite=, Li
             AuthCard (shared)
 ROUTES      POST /api/creator/register (mock cookie) → creates creator row
             ?invite=CODE param → partnership.md flow (built Sheet 13)
-            redirect success → /dashboard/my-app
+            redirect success → /dashboard/playground
 TABLES      creators (write) · partnerships (if invite)
 OLDCODE     OnboardingForm.tsx · AuthCard.tsx · onboarding/page-old.tsx
 DEPENDS ON  1, 2, 3  6 (AuthCard pattern) · partnership rebuild (13) optional to defer invite
@@ -428,11 +428,11 @@ DEPENDED     #2 3 4 12 (chat on creator cards) · wiring home = Network left/cen
 
 ## SHEET 17 — Branding display utilities (apply theme)
 
-> **Purpose:** all the "last mile" of the branding system that the fan shell + My App / dashboards consume. Build/apply after the resolver (#3) is extended but before the big screens.
+> **Purpose:** all the "last mile" of the branding system that the fan shell + Playground / dashboards consume. Build/apply after the resolver (#3) is extended but before the big screens.
 
 | Item | What |
 |---|---|
-| `PreviewStateToggle` | Draft/Live toggle component, shared between My App + owner's "View my app" (my-app.md Part 1b) |
+| `PreviewStateToggle` | Draft/Live toggle component, shared between Playground + owner's "View my app" (playground.md Part 1b) |
 | `ElementPopover` | Tap-to-edit floating editor (deferred: My Sheet 19 opens it) |
 | brand CSS hooks | `globals.css` stays platform; per-creator — via inline tail, `data-brand` — applied on fan shell pages, never on dashboard/login |
 | PWA strings | Manifest route already does this; keep, and start `start_url` → if Joel /app sheet |
@@ -476,30 +476,30 @@ ORDER     18/23 — the most shelf-heavy (Need Themes like).
 ## SHEET 19 — My-App (biggest screen)
 
 > **🔀 2026-08-11 — reordered to FIRST, V1-CORE scope (test-first):** wire Phases 1–2
-> of my-app.md Part 6 now; Phases 3–5 deferred. V1-CORE = full-screen phone shell + 5
+> of playground.md Part 6 now; Phases 3–5 deferred. V1-CORE = full-screen phone shell + 5
 > swipeable surfaces + PreviewStateToggle + Deploy · ElementPopover tap-to-edit (brand
 > layer) · editor sheet **Option A** (8-tab strip) with **Identity, Design, Catalog,
 > Artist Links LIVE** + Integrations/Email/Media-Kit/Spotlight "coming later" panels ·
 > catalog = **7 core types (link, image, video, product, tip_jar, newsletter, messaging)**
-> via CatalogManager+AddItemPicker+PricingEditor · auto-save (3s `my-app_draft_${id}`)
-> + Unsaved-Changes modal · NEW GET/PUT `/api/creator/my-app` (creator-row read + deploy).
+> via CatalogManager+AddItemPicker+PricingEditor · auto-save (3s `playground_draft_${id}`)
+> + Unsaved-Changes modal · NEW GET/PUT `/api/creator/playground` (creator-row read + deploy).
 > **DEFERRED (v1):** item types course/session/membership/physical/bundle/live/pdf/audio/page,
 > Spotlight tab, Funnels, Integrations/Auto-DM, Email campaigns, Media kit, AI Copilot,
 > editor options B/C/D (all remain spec'd — additive wiring later).
 
 ```
-SCREEN: My App ·  /dashboard/my-app  ·  spec: my-app.md
+SCREEN: Playground ·  /dashboard/playground  ·  spec: playground.md
 │──────────────────────────────────────────────────────────
-ENTRY    app/(creator)/dashboard/my-app/page.tsx → src/screens/creator/my-app/Screen.tsx
+ENTRY    app/(creator)/dashboard/playground/page.tsx → src/screens/creator/playground/Screen.tsx
 SUMMARY “THE editor”: full-screen phone preview (guest-first, swipeable 5 surfaces),
        tap-to-edit popovers, editor tab sheet (8 tabs, 16 content types), auto-save,
        Draft/Live state toggle, deploy button
 LAYOUT(8 tabs)     Identity · Design · Catalog · Artist-Links · Integrations · Email ·
-                    Media Kit · Settings weave (my-app list)
+                    Media Kit · Settings weave (playground list)
 COMPONENTS (mostly PROMOTE from old-code)
    PhonePreview  → full screen phone
    AppIdentityTar · GlobalSettings · BottomPanel|BottomEditor → tabs
-   MyAppForm (was usePlaygroundForm) → form+draft
+   PlaygroundForm (was usePlaygroundForm) → form+draft
    AutoSave (useAutoSave.tsx)
    17 editors (catalog/* → one per type) via CatalogManager + AddItemPicker + PricingEditor …
    CoverUploader · Customization
@@ -509,12 +509,12 @@ API
      PATCH/DEL Each /api/creator/catalog/[itemId]   LIVE
      modules/lessons CRUD (7 routes)              LIVE
      POST /api/creator/upload                      LIVE
-     POST /api/creator/my-app/ai  (LIVE)
+     POST /api/creator/playground/ai  (LIVE)
      GET /api/creator/ai-summary                   LIVE
      🆕 payment_handling ('in_app'|'external_link') per item — in-app = PayPal checkout
-        (default); external = opt-in with quarantine warning (my-app.md 2c + creators.md 1c)
-     🆕 GET/PUT /api/creator/my-app — creator row read + deploy write (auth-guarded)
-LOCALSTORAGE   my-app_draft_${creatorId} (G21 — done in A1.5 rename) · banner dismissed fixed in #5
+        (default); external = opt-in with quarantine warning (playground.md 2c + creators.md 1c)
+     🆕 GET/PUT /api/creator/playground — creator row read + deploy write (auth-guarded)
+LOCALSTORAGE   playground_draft_${creatorId} (G21 — done in A1.5 rename) · banner dismissed fixed in #5
 PWA (Sheet 17)   app install/deploy writes constants; manifest generated per f
 DEPENDED    #1–5, #12 (chat feature push/fan) → editor tab messaging #2 type items, #16 (item affiliate fields), #17
 ```
@@ -615,7 +615,7 @@ ENTRY    app/(public)/offline/page.tsx → src/screens/offline/offline/Screen.ts
 GOAL     the shared /offline fetched screen for all 3 PWAs; SW pre-iscaches already LIVE
 COMPON  PAGE offline app-shell (healthy: 3 shells use then) + tiny-pocket storage + queue-flush note
 SW      public/sw.js (live) — pre-cache builds caching on the devex; keep
-STORAGE  NEW small-pocket: localStorage for offline queue + draft auto-save (my-app
+STORAGE  NEW small-pocket: localStorage for offline queue + draft auto-save (playground
          draft key) · outbox for messaging if not left in part 5
 DEPENDED
 ```

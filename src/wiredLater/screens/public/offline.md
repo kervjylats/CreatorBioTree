@@ -29,7 +29,7 @@ Stored on the device automatically — **small by design**:
 |---|---|---|
 | **App Shell** (UI code, styles, icons, branding) | App skeleton — opens instantly, works offline | ~100KB–2MB (less than one photo) |
 | **Session cookie** | Login state (per-creator fan / creator) | ~1KB |
-| **Drafts** (My App autosave) | Unsaved work survives refresh/close | KBs |
+| **Drafts** (Playground autosave) | Unsaved work survives refresh/close | KBs |
 | **Saved items** (fan bookmarks) | Fan's saved list persists | KBs |
 | **Last-viewed content** (fan apps) | Offline = read what you already saw | small — only what was viewed |
 
@@ -59,11 +59,11 @@ Stored on the device automatically — **small by design**:
 
 | User | What syncs local ↔ server |
 |---|---|
-| **Creators** | Current My App draft, settings, **outbox messages** (pending sends queue and flush on reconnect — `messaging.md` Part 4) |
+| **Creators** | Current Playground draft, settings, **outbox messages** (pending sends queue and flush on reconnect — `messaging.md` Part 4) |
 | **Fans** | Saved items, preferences, **draft message text** (unsent message survives a lost connection); purchases (server is the truth) |
 | **Guests (no account)** | **Draft message text** only — a half-typed guest message survives; sending requires a connection + email capture |
 
-**Draft lifecycle (My App):**
+**Draft lifecycle (Playground):**
 - New draft → overwrites the current draft (one working copy, not version history) — local + server both hold the latest
 - **Deploy** → draft becomes the live version → draft is cleared automatically (local + server)
 - Redesign later → becomes a draft again → synced to server again
@@ -78,7 +78,7 @@ Stored on the device automatically — **small by design**:
 
 **Big data is stored only on deliberate user action.**
 
-- Creators offer downloadable items (any media: PDF, video, audio, image, course files — per `my-app.md` item types)
+- Creators offer downloadable items (any media: PDF, video, audio, image, course files — per `playground.md` item types)
 - Fan sees the item → buys/unlocks → presses **Download** → file saves to their phone
 - Once downloaded, it's **their file** — works forever, even offline
 - Downloads are tied to purchase records server-side → **re-downloadable** anytime (they own it)
@@ -124,7 +124,7 @@ Stored on the device automatically — **small by design**:
 |---|---|
 | #1 App Shell scope | ✅ Decided — all 3 apps (landing, dashboard, fan apps) get the shell treatment |
 | #2 Guest content cache | ✅ Decided — guests get shell + last-visit content (no account needed) |
-| #3 Downloads | ✅ Decided — any media type; user-pressed Download only; re-downloadable; design stays in my-app.md |
+| #3 Downloads | ✅ Decided — any media type; user-pressed Download only; re-downloadable; design stays in playground.md |
 | #4 Local-first sync | ✅ Decided — drafts + saved items sync local ↔ server; media never duplicated |
 | #5 Retention | ✅ Decided — keep forever (current state only, no version history); deploy clears draft |
 | #6 When to finalize sync details | ✅ Decided — principle now in this spec; implementation details at wiring/production |

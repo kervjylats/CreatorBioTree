@@ -41,7 +41,7 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 - [ ] `/onboarding` — Link Address field with debounced availability check.
 - [ ] Type a taken name → "Already taken" message.
 - [ ] Type an available name → "Available" + permanence note.
-- [ ] Submit → permanence confirm dialog → confirm → redirects to `/dashboard/my-app`.
+- [ ] Submit → permanence confirm dialog → confirm → redirects to `/dashboard/playground`.
 - [ ] Visit `/login` again while logged in → redirects to `/dashboard`.
 - [ ] `/forgot-password` → enter email → "If an account exists, a reset link has been sent" (mock: logs to console).
 - [ ] Logout → session cleared → visit `/dashboard` → redirects to `/login`.
@@ -70,12 +70,12 @@ Everything runs in mock mode (`USE_MOCKS=true`). No real services. All data is i
 
 - [ ] `/dashboard` — 4 stat cards (Sales, Fans, Views, Subscribers). (`/dashboard/overview` redirects here.)
 - [ ] Activity timeline — shows recent events (follows, purchases, messages).
-- [ ] Setup checklist — "Set up profile" → link to settings, "Create first item" → link to my-app.
-- [ ] Quick actions — "Edit My App" → `/dashboard/my-app`, "View my page" → opens `/{username}`.
+- [ ] Setup checklist — "Set up profile" → link to settings, "Create first item" → link to playground.
+- [ ] Quick actions — "Edit Playground" → `/dashboard/playground`, "View my page" → opens `/{username}`.
 - [ ] QR card — shows QR code for fan page URL + copy/download buttons.
 - [ ] Fan export button — downloads CSV of fan list.
 
-## 5. My App Editor (Persona 6)
+## 5. Playground Editor (Persona 6)
 
 ### 5a. Identity tab
 - [ ] Link Address read-only, shows permanence note.

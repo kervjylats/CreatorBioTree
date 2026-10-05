@@ -6,7 +6,7 @@ Each screen is documented here as we walk through it. The specs from `src/wiredL
 
 | Category | What it is | Screens |
 |---|---|---|
-| **Creator Dashboard** | The 4 major sidebar screens | Overview, Network, My App, Settings |
+| **Creator Dashboard** | The 4 major sidebar screens | Overview, Network, Playground, Settings |
 | **Admin** | Platform owner + staff control room | Admin (separate from the creator dashboard) |
 | **Fan Shell** | What fans experience at `/[username]` | Guest page + 4-tab app (Home, Content, Connect, Settings) |
 | **Public** | Outside the app, no sidebar | Landing, Login, Onboarding, Offline |
@@ -55,9 +55,9 @@ Parts archive (old code) available for the discovery directory:
 
 ---
 
-## My App (formerly "Playground") `/dashboard/my-app`
+## Playground `/dashboard/playground`
 
-**The one place where a creator sees + edits their entire fan shell** (replaces both the old Playground editor and the old "View my fan page" action — founder decision 2026-08-05). Full spec at `screens/creator-dashboard/my-app/my-app.md` (file was renamed from `playground.md` 2026-08-05; "My App" is the user-facing name).
+**The one place where a creator sees + edits their entire fan shell** (replaces both the old Playground editor and the old "View my fan page" action — founder decision 2026-08-05). Full spec at `screens/creator-dashboard/playground/playground.md` (name history: **Playground** → "My App" 2026-08-05 → **Playground** again 2026-10-01, founder decision).
 
 - Opens **full-screen** phone view, **guest page first**, swipe Guest → Home → Content → Connect → Settings
 - **Tap-to-edit popovers** = the brand layer (background / text / font / button / card / link — universal across all surfaces; Part 1a)
@@ -67,13 +67,13 @@ Parts archive (old code) available for the discovery directory:
 
 **Cross-cutting: Branding** — the Design tab is the editor; the full theme system (2-layer model, 9 presets, resolver, 4 safety rules, 7 v1 extensions, 5 later extensions, 7-day lock) lives in `features/branding.md` (single home for the entire rebrand system).
 
-My App editor-tab stub specs (merged, reference only — in `features/`): [catalog-roadmap.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\catalog-roadmap.md), [funnel.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\funnel.md), [integrations.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\integrations.md), [email-campaigns.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\email-campaigns.md), [media-kit.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\media-kit.md)
+Playground editor-tab stub specs (merged, reference only — in `features/`): [catalog-roadmap.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\catalog-roadmap.md), [funnel.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\funnel.md), [integrations.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\integrations.md), [email-campaigns.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\email-campaigns.md), [media-kit.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\features\media-kit.md)
 
 ---
 
 ## Dashboard Settings `/dashboard/settings`
 
-Money, identity, and permissions — never page design (branding/content live in My App; analytics in Overview).
+Money, identity, and permissions — never page design (branding/content live in Playground; analytics in Overview).
 
 **Full spec: `screens/creator-dashboard/settings/settings.md`** (account/security, payments/payouts, billing, notifications, messaging & privacy, your page, integrations stub, danger zone)
 

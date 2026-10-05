@@ -124,7 +124,7 @@ Creator controls (community admin): add/remove members, assign/revoke roles, cre
 
 ### Guest CTA (decision #9)
 
-Guest page gets a "Join the community" card. Tap → existing fan-auth modal (signup/login) → on success, fan lands on the Home tab community section and can join the open community immediately. The card is creator-configurable (show/hide in My App? — no, it's always-on in v1; the community itself is optional).
+Guest page gets a "Join the community" card. Tap → existing fan-auth modal (signup/login) → on success, fan lands on the Home tab community section and can join the open community immediately. The card is creator-configurable (show/hide in Playground? — no, it's always-on in v1; the community itself is optional).
 
 ### Build note
 

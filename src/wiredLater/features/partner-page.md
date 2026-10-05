@@ -31,7 +31,7 @@ It is **fan-only**: guests never see it. It's reached exclusively from the **Con
 | Close | Swipe down / tap backdrop / back button |
 | Header | Partner's branding: name, avatar, "← Back to @{link-address}" (creator's accent color) — partner renders their own theme via `resolveBranding(partner)`; the host creator's accent is used for the back link. See `features/branding.md` for the theme system |
 
-The sheet contains the partner's full content page — the 3-layer view (see `fan-shell.md` Part 3 + `my-app.md` Part 3).
+The sheet contains the partner's full content page — the 3-layer view (see `fan-shell.md` Part 3 + `playground.md` Part 3).
 
 ---
 
@@ -40,11 +40,11 @@ The sheet contains the partner's full content page — the 3-layer view (see `fa
 | Layer | Source |
 |---|---|
 | **Header** | Partner's branding (display name, avatar, bio, social icons — `resolveBranding` on the partner; full theme system in `features/branding.md`) |
-| **Spotlight** | Partner's curated spotlight (from their own My App — same carousel component, normal speed) |
+| **Spotlight** | Partner's curated spotlight (from their own Playground — same carousel component, normal speed) |
 | **Artist Links** | Partner's artist links as rich cards |
 | **Catalog Feed** | Partner's catalog items with the Three Gates applied (`fan-shell.md` Part 2) |
 
-The partner's items use **their own** content — "logically, the partner also designed their My App" (per founder). Purchases/checkout behave exactly like the creator's (email model, receipt = access).
+The partner's items use **their own** content — "logically, the partner also designed their Playground" (per founder). Purchases/checkout behave exactly like the creator's (email model, receipt = access).
 
 ---
 
@@ -83,7 +83,7 @@ Follow and Subscribe are **independent** — following does not subscribe; subsc
 | Fan follows 0 partners | **Followed section is hidden** — no empty state |
 | Creator has no community | **Community card is hidden** — no empty state |
 | Creator has no artist links | **Artist Links section is hidden** — no empty state |
-| Connect tab entirely empty (all 4 above) | Shows the creator's `connect_empty_text` message (`my-app.md` Part 2a); falls back to "More to come — check back soon" when unset |
+| Connect tab entirely empty (all 4 above) | Shows the creator's `connect_empty_text` message (`playground.md` Part 2a); falls back to "More to come — check back soon" when unset |
 | Partnership ended while modal open | Modal closes gracefully; partner stays in Followed |
 | Guest hits direct URL | Redirect to `/{username}` guest page |
 

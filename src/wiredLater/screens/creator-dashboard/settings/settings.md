@@ -2,11 +2,11 @@
 
 ## Concept
 
-Settings (`/dashboard/settings`) is where creators manage **money, identity, and permissions** — never page design. Branding, content, and appearance live in My App; analytics live in the Overview. Settings answers: *"who am I, how do I get paid, and what is my account allowed to do?"*
+Settings (`/dashboard/settings`) is where creators manage **money, identity, and permissions** — never page design. Branding, content, and appearance live in Playground; analytics live in the Overview. Settings answers: *"who am I, how do I get paid, and what is my account allowed to do?"*
 
 Designed from competitor research (Stan Store Settings, Gumroad Settings, Beacons Account Settings, Patreon Billing & payouts): account/security → payments → billing → notifications → advanced/danger is the universal order.
 
-**Deliberately NOT here:** branding/appearance (My App owns it), content (My App), analytics (Overview), Link Address (permanent — set once at signup, never editable, see `my-app.md` Part 2a).
+**Deliberately NOT here:** branding/appearance (Playground owns it), content (Playground), analytics (Overview), Link Address (permanent — set once at signup, never editable, see `playground.md` Part 2a).
 
 ---
 
@@ -91,7 +91,7 @@ Who can start a conversation with this creator (see `messaging.md` Part 2 for th
 | Custom domain | Input for `custom_domain` (stored on creator row) — used in page URL resolution |
 | Page link | Read-only display of the canonical URL + copy button (custom domain if set, else `host/username`) |
 
-**Username editing deliberately NOT here** — the Link Address is **permanent by founder decision**: set once at onboarding, read-only everywhere, never editable (shown as a display row in My App → Identity tab too, `my-app.md` Part 2a).
+**Username editing deliberately NOT here** — the Link Address is **permanent by founder decision**: set once at onboarding, read-only everywhere, never editable (shown as a display row in Playground → Identity tab too, `playground.md` Part 2a).
 
 ---
 
@@ -151,7 +151,7 @@ No UI beyond a placeholder card: "Integrations — pixels, email tools, and more
 | #3 Billing & Plan | ✅ Decided — UI shell, no-op in mock |
 | #4 Notifications (5 toggles) | ✅ Decided |
 | #5 Messaging & Privacy (allow-anyone toggle, partner toggle, requests folder) | ✅ Decided — messaging is free for everyone (`messaging.md`) |
-| #6 Your Page (custom domain + link, NO Link Address editing) | ✅ Decided — Link Address permanent at signup; link shown read-only, display name/app name/icon editable in My App Identity |
+| #6 Your Page (custom domain + link, NO Link Address editing) | ✅ Decided — Link Address permanent at signup; link shown read-only, display name/app name/icon editable in Playground Identity |
 | #7 Integrations stub | ✅ Decided — points to `integrations.md`, nothing wired |
 | #8 Danger Zone (delete account) | ✅ Decided |
 

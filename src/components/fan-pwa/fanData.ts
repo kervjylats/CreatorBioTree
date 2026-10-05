@@ -2,7 +2,7 @@
  * fanData.ts — shared data shapes + gate computation for the fan shell (fan-shell.md
  * Parts 1–3). One FanShellData object per request, resolved server-side in the
  * screens and passed to every presentation component. The Three Gates (Part 2)
- * are computed here so guest page + Content tab + My App preview all agree.
+ * are computed here so guest page + Content tab + Playground preview all agree.
  */
 import type { CreatorBranding } from "@/lib/branding";
 import { money } from "@/lib/format";
@@ -72,7 +72,7 @@ export interface ItemGate {
   externalUrl: string | null;
 }
 
-/** True when the item passes the link-scheduling window (my-app.md Part 2c). */
+/** True when the item passes the link-scheduling window (playground.md Part 2c). */
 export function isScheduledVisible(item: ContentItem, now = new Date()): boolean {
   const t = now.getTime();
   if (item.scheduled_publish_at && new Date(item.scheduled_publish_at).getTime() > t) return false;

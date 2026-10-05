@@ -1,6 +1,6 @@
 /**
  * ItemCards.tsx — per-type catalog cards + the Three Gates (fan-shell.md Part 2,
- * my-app.md Part 3). One `ItemCard` per catalog item, gate-aware. Also hosts
+ * playground.md Part 3). One `ItemCard` per catalog item, gate-aware. Also hosts
  * CheckoutModal (email-only PayPal-style mock checkout) + NewsletterInline.
  */
 "use client";

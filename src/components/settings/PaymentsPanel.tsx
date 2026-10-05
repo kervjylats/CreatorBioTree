@@ -6,7 +6,7 @@
 
 // Honest state (2026-10-01 audit): the real `paypal/connect` OAuth route does not
 // exist yet, so this panel no longer fakes a connection. It used to read
-// `creator.paypal_email` — a field the my-app route never selected — and its
+// `creator.paypal_email` — a field the playground route never selected — and its
 // button toasted "PayPal account connected" while persisting nothing, so the
 // status silently reverted on reload. Until Sheet 9's connect route ships, the
 // panel says so.
