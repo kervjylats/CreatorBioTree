@@ -24,7 +24,7 @@
 | 04  | The Frame — shell (sidebar / bottom bar / dock)  | `/dashboard`                 | ✅      |
 | 05  | Overview                                         | `/dashboard`                 | ✅      |
 | 06  | Playground (phone preview + deploy)                  | `/dashboard/playground`          | ⬜      |
-| 07  | Network hub (Discover + affiliate rail)          | `/dashboard/network`         | ⬜      |
+| 07  | Network hub (Discover + affiliate rail)          | `/dashboard/network`         | ✅      |
 | 08  | Circle → Partners                                | `/dashboard/circle/partners` | ⬜      |
 | 09  | Circle → Fans                                    | `/dashboard/circle/fans`     | ⬜      |
 | 10  | Circle → Staff                                   | `/dashboard/circle/staff`    | ⬜      |
@@ -538,4 +538,89 @@ the layout (Stop 04) draws the walls around it.
 
 ---
 
-*(Stops 06–15 get appended here as we walk.)*
+## 🌐 Stop 07 — Network `/dashboard/network`
+
+**🎯 What it is:** the collab HQ — find other creators (Discover), pitch yourself
+(your billboard), and run affiliate deals from the left rail. Two columns at `md+`
+(rail left, Discover right); one column on phones with Discover first. **My Peeps
+does not live here** — its dock buttons open `/dashboard/circle/*` (2026-09-27).
+
+**🗂️ The chain:**
+
+| Layer      | File                                                     | Role                                                                                                                                                                                          |
+| ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🚪 Door    | `src/app/(shell)/dashboard/network/page.tsx` (2 lines)   | Address-book entry → `src/screens/creator/network/`. Old sub-pages `/dashboard/network/{partners,fans,staff}` **307 to `/dashboard/circle/*`** via `proxy.ts` `LEGACY_ROUTES`                |
+| 🧠 Screen  | `src/screens/creator/network/Screen.tsx` (15)            | Server component: tab title + thin `<main>` wrapper around the hub (the pattern from Stop 00)                                                                                                 |
+| 🎨 Hub     | `components/network/NetworkPage.tsx` (321, `use client`)  | The whole screen. Holds ALL state: `billboard` (rail data), `dealsKey` (affiliate refresh bell), `connectState` (per-creator button states). Grid `md:grid-cols-[220px_1fr] lg:grid-cols-[250px_1fr]`, rail `order-2 md:order-1`, center `order-1 md:order-2` |
+| 🔍 Search trio | `components/shared/SearchBox.tsx` (39)                | The visible box (shared body — also worn by admin CreatorsTable)                                                                                                                              |
+|            | `hooks/useCreatorSearch.ts` (68)                          | The brain: 300ms debounce → `GET /api/discover/creators?q=…`. Worn by NetworkPage + AffiliateDealForm                                                                                       |
+|            | `GET /api/discover/creators/route.ts` (120)               | Speed bump (60/min, anonymous) → `show_in_search` filter (**NULL = visible**) → score/rank: exact @handle (1000) → handle-prefix (500) → name-prefix (400) → contains → featured boost (+100) → newest |
+| 🪞 Rail    | `components/network/BillboardPreview.tsx` (105)           | The mirror: how you look to others (avatar, name, @handle, tagline, tags, collab style) + visibility pill                                                                                     |
+|            | `components/network/BillboardEditor.tsx` (213)            | The form behind it: collapsible — instant switches (Show me in search / Accept collab requests) + tagline (60-char counter) + tags (3) + collab style + Media Kit (sponsor bio, rate card, message) + Save button |
+| 💼 Affiliate | `components/network/AffiliateDealForm.tsx` (283)        | Opens on `+ New deal` (cancels too). Collaborator = @username, resolved through the same search engine on submit; item scope = your catalog (external-link items quarantined)                 |
+|            | `YourDealsCard` (152) · `EarningsSummary` (114) · `AffiliateDiscover` (120) · `AffiliateLinks` (157) | The four widgets below the form — all refetch together when `dealsKey` bumps                                                            |
+| 🔧 Kitchen | `GET+PUT /api/creator/partners/billboard`                 | Reads + saves the billboard (bio 600 / rate card / media-kit 300) — one PUT serves both the Save button and the instant switches                                                              |
+|            | `POST /api/creator/partners/request`                      | The Connect button (403 when the other creator's `open_to_collab` is OFF)                                                                                                                     |
+|            | `POST+GET /api/creator/affiliates/{deals,earnings,discover,links}` | The deal maker + the four widgets' data                                                                                                                                                |
+| 📐 Spec    | `screens/creator-dashboard/network/network.md`            | Blueprint — **note:** its "right rail = My Peeps" is the old Layout B plan; My Peeps moved to the dock + `/dashboard/circle/*` (see gotchas)                                                   |
+
+**🧠 Gotchas:** _the traps we already stepped on while building/fixing this screen — read them first, spare yourself the same sting._
+
+- **Search and Discover are ONE thing.** "Search" = the box you type into;
+  "Discover" = the section where results land (same words as the API
+  `/api/discover/creators`). Empty query = browse everyone discoverable
+  (featured first, newest) — the section is never blank.
+- **The tablet column-inversion trap (fixed 2026-09-26).** The grid appears at
+  `md:` but the order swap used to fire at `lg:` — grid placement uses
+  *order-modified* document order, so every tablet (768–1023px) had the rail
+  and Discover **flipped**. Law: the `order-*` swap must fire at the **same**
+  breakpoint as the grid it serves (`order-2 md:order-1` for a `md:` grid).
+- **`show_in_search` NULL means visible.** A strict `eq(true)` filter hid
+  creators whose own switch reads ON (2026-10-01 audit) — the route (and the
+  landing marquee) match `true OR null`.
+- **The toggle is mutual by design:** if YOU turn off "Show me in search",
+  your own searches return nothing too. You opted out both ways.
+- **The Connect button is a 4-word state machine** — `Connect → … → Requested →
+  Connected`, tracked per creator id, disabled once sent. Server answers are
+  mapped honestly: "Request already pending"/"Already connected" land on
+  friendly states; pre-audit, *any* failure showed a fake "Connected" (fixed
+  2026-10-01).
+- **Two save styles on the billboard, on purpose.** Switches save **instantly**
+  (optimistic flip → server; on failure it flips BACK + toasts — no silent
+  disagreement with Discover). Text fields batch into one **Save** button —
+  otherwise every keystroke would hit the server. A save that silently failed
+  used to read as success (fixed 2026-10-01: error toast).
+- **`dealsKey` is one shared refresh bell.** Creating a deal bumps a single
+  number → all four affiliate widgets refetch together. Pre-fix they could
+  disagree ("Your Deals" showed the new deal while earnings showed stale data)
+  until a full reload.
+- **The result card is INLINE in NetworkPage — that's the extraction rule
+  working.** One card, one screen → stays inside the body. Avatar, Badge,
+  Button, EmptyState, Spinner come from `shared/` because many screens wear
+  them. Extract on the *second* use, never before.
+- **The spec's third column never shipped.** `network.md` describes Layout B
+  (left rail / center / right rail = My Peeps); the 2026-09-26 rebuild dropped
+  the right rail and the 2026-09-27 rename moved My Peeps to the global dock →
+  `/dashboard/circle/*`. The dock is shell chrome (Stop 04), not part of this
+  screen.
+- **Discover cards go 2-up only at `lg`.** Viewport breakpoints (`sm:grid-cols-2`)
+  can't see the container; at tablet widths the center column is ~252px and
+  cards squeezed to ~104px cells (fixed: `grid-cols-1 lg:grid-cols-2`).
+
+**🛠️ Common edits:**
+
+| You want to change...                | Touch                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Search ranking, fields, "who's findable" | `GET /api/discover/creators/route.ts` (the scorer — plus the landing marquee for the same flag) |
+| How fast search reacts               | `useCreatorSearch(debounceMs)` (default 300)                                                |
+| The search box's look                | `components/shared/SearchBox.tsx` (worn by 3 screens — check the others)                    |
+| Add a billboard field                | `BillboardEditor.tsx` + `BillboardSettings` type + PUT body in NetworkPage + the PUT route |
+| Instant-switch behavior              | `handleInstantToggle` in `NetworkPage.tsx` (keep the rollback on failure)                   |
+| Add/fix an affiliate widget          | `components/network/*` — refresh through `dealsKey`, don't fetch on mount-only              |
+| The Connect flow                     | `handleConnect` in NetworkPage + `POST /api/creator/partners/request`                       |
+| Old network sub-page URLs            | `proxy.ts` `LEGACY_ROUTES` (add a row — never re-create signpost files)                     |
+| Which folder a widget lives in       | `components/network/` = network-domain only; collab widgets (CollabList/Detail/InboxRequests) deliberately sit here too and are worn by `/dashboard/circle/partners` |
+
+---
+
+*(Remaining stops (06, 08–15) get appended here as we walk.)*
