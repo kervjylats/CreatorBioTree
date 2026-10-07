@@ -39,7 +39,7 @@ type CreatorRow = {
 const SHOWCASE_LIMIT = 12;
 const YOUR_CREATORS_LIMIT = 12;
 
-/** Discoverable creators for the showcase marquee (featured first, newest, capped). Never throws. */
+/** Discoverable creators for the showcase marquee (Featured pinned, rest shuffled per load, capped). Never throws. */
 async function getShowcaseCreators(): Promise<ShowcaseCreator[]> {
   try {
     const supabase = await createClient();
@@ -52,13 +52,24 @@ async function getShowcaseCreators(): Promise<ShowcaseCreator[]> {
       // (2026-10-01 audit).
       .or("show_in_search.eq.true,show_in_search.is.null");
     if (error || !data) return [];
-    return (data as CreatorRow[])
+    const sorted = (data as CreatorRow[])
       .filter((c) => c.username)
       .sort(
         (a, b) =>
           Number(!!b.is_featured) - Number(!!a.is_featured) ||
           String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")),
-      )
+      );
+    // Lineup rules (landing.md, founder decision 2026-10-07): Featured pinned
+    // first (the admin's staff-pick lever), everyone else shuffled randomly so
+    // established creators aren't buried under newest-first forever. Reshuffles
+    // on every page load (Fisher–Yates over the non-featured tail).
+    const featured = sorted.filter((c) => c.is_featured);
+    const rest = sorted.filter((c) => !c.is_featured);
+    for (let i = rest.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rest[i], rest[j]] = [rest[j], rest[i]];
+    }
+    return [...featured, ...rest]
       .slice(0, SHOWCASE_LIMIT)
       .map((c) => ({ username: c.username as string, display_name: c.display_name, avatar_url: c.avatar_url }));
   } catch {

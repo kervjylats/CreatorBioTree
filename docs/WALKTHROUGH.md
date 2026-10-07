@@ -217,7 +217,7 @@ So `/dashboard/network` → screen folder `screens/creator/network` (leaf matche
 **🧠 Gotchas:** _the traps we already stepped on while building/fixing this screen — read them first, spare yourself the same sting._
 
 - **Phase 4 (2026-09-29) added data + components** — it's no longer "100% static":
-  - Two **never-throwing loaders** (lines 39, 62): `getShowcaseCreators` (creators with `show_in_search`, featured-first, max 12) and `getYourCreators` (`fan_session` cookie → email → `fan_accounts` → creators). Both `.catch → []` so the page can never 500.
+  - Two **never-throwing loaders** (lines 39, 62): `getShowcaseCreators` (creators with `show_in_search` — Featured pinned + the rest shuffled per load, max 12, `landing.md` lineup rules) and `getYourCreators` (`fan_session` cookie → email → `fan_accounts` → creators). Both `.catch → []` so the page can never 500.
   - **Privacy rule:** `YourCreatorsRow` renders **only** when the visitor has a recognized fan cookie — never for anonymous visitors.
   - **Showcase hides below 2 creators** (marquee needs a full loop).
 - **Marquee CSS** lives in `src/styles/globals.css` (`.showcase-*` + `@keyframes showcase-marquee`, hover-pause + `prefers-reduced-motion`) — not in Screen.tsx.
