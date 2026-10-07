@@ -1,8 +1,10 @@
 /**
  * GET /api/discover/creators — public creator discovery (search.md). Filters
- * by show_in_search, matches on display_name/username via case-insensitive
- * partial match, ranks by exact-username → featured → partial → newest.
- * Accepts ?q= query param; empty = show all discoverable (featured first).
+ * by show_in_search, drops username-less rows (invited-admin helpers — not
+ * creators, and a null would crash the scorer), matches on display_name/username
+ * via case-insensitive partial match, ranks by exact-username → featured →
+ * partial → newest. Accepts ?q= query param; empty = show all discoverable
+ * (featured first).
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -56,7 +58,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Search failed" }, { status: 500 });
     }
 
-    let results = (creators ?? []) as CreatorRow[];
+    // Username-less rows (invited-admin helper accounts, `username: null`) are
+    // not creators — exclude them: the scorer's c.username.toLowerCase() would
+    // throw on null and 500 EVERY search (found 2026-10-07 during the Stop 07
+    // tour; the landing marquee already filters these, the deal form uses ?.).
+    let results = (creators ?? []).filter((c) => c.username) as CreatorRow[];
 
     if (q) {
       const lowerQ = q.toLowerCase();

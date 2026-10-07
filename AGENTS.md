@@ -78,6 +78,14 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 
 ## Impromptu Fix Log
 
+### 2026-10-07 — Discover-route null-username guard + Walkthrough Stop 07 (Network)
+
+**Written during the Stop 07 tour session (founder teaching pass). Gates green: typecheck 0 · lint 0 · check-docs PASS (398) · smoke (`q=test` → Test Creator, garbage → `[]`).**
+
+- **🪲 The sleeping bug:** `GET /api/discover/creators`' scorer called `c.username.toLowerCase()` on every row the moment a query was typed — the future **invited-admin accept flow** (spec'd, unwired) creates a `creators` row with `username: null`, and ONE such row would throw → caught by the outer try → **500 "Search failed" for every search** (the empty-query path never touches `toLowerCase` — that's why it hid). Fixed by filtering username-less rows right after fetch: they're helper accounts, not creators, and don't belong in a creator directory. Landing's `getShowcaseCreators` already filtered them and `AffiliateDealForm` was already `?.`-safe — the route was the one hole.
+- **Walkthrough Stop 07 (Network) written** — chain table (door → Screen → hub → search trio → billboard rail → affiliate widgets → APIs), 10 gotchas (the md/lg column-inversion trap, NULL=visible, mutual toggle, Connect state machine, two save styles, the `dealsKey` refresh bell, inline-card extraction rule, the spec's missing third column, lg-only 2-up), common-edits table; route row 07 ticked ✅.
+- **Gotcha re-hit (documented fix worked again):** corrupt stale `.next/dev/types/routes.d.ts` after the running dev server was killed → typecheck failed ONLY inside generated files (zero `src/` errors). Fix: kill the 4 creatorpwa node processes (leave other apps' node alone) + delete `.next` + restart dev detached → fresh types → typecheck 0.
+
 ### 2026-10-01 — My App → Playground full rename (founder reversal) + one central redirect table + Walkthrough Stop 05
 
 **Founder: "I prefer the words playground" — full sweep (UI + URL + API + folders + symbols + docs), reversing the 2026-08-05 "My App Full Rename" decision. 3-phase plan, gates green after EVERY phase: typecheck 0 · lint 0 · check-docs PASS · smoke matrices green. Museum untouched (docs/archive, src/old-code, AGENTS history lines all still say "My App" — this entry is the reversal record, same precedent as chat→messages).**
