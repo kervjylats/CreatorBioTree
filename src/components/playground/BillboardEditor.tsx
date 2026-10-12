@@ -1,8 +1,10 @@
 /**
- * BillboardEditor — controlled form for editing billboard settings (tagline,
- * tags, collab style, visibility switches) and Media Kit fields (bio, rate card,
- * custom message). State is lifted to the parent (NetworkPage) so the preview
- * card updates live. No internal data fetching.
+ * BillboardEditor — controlled form for the billboard DESIGN fields (tagline,
+ * tags, collab style) + Media Kit fields (bio, rate card, custom message) in
+ * Playground's Billboard view (playground.md Part 1d — moved from the Network
+ * rail 2026-10-09). Visibility switches stay in Network (`components/network/
+ * NetworkSettings.tsx`). State is lifted to the parent (BillboardView) so the
+ * result-preview updates live. No internal data fetching.
  */
 "use client";
 
@@ -11,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { BILLBOARD_LIMITS } from "@/lib/limits";
 import { Spinner } from "@/components/shared/Spinner";
@@ -20,11 +21,10 @@ export interface BillboardSettings {
   display_name: string;
   username: string;
   avatar_url: string | null;
+  is_featured: boolean;
   tagline: string;
   tags: string[];
   collab_style: string;
-  show_in_search: boolean;
-  open_to_collab: boolean;
   // Media Kit
   bio: string;
   rate_card: { post: string; story: string; video: string };
@@ -36,8 +36,6 @@ interface BillboardEditorProps {
   onFieldChange: (partial: Partial<BillboardSettings>) => void;
   onSave: () => Promise<void>;
   saving: boolean;
-  /** Instant-save visibility switches (independent of the Save button). */
-  onInstantToggle: (field: "show_in_search" | "open_to_collab") => void;
 }
 
 function Section({ title, badge, defaultOpen = false, children }: {
@@ -69,35 +67,9 @@ function Section({ title, badge, defaultOpen = false, children }: {
   );
 }
 
-export function BillboardEditor({ settings, onFieldChange, onSave, saving, onInstantToggle }: BillboardEditorProps) {
+export function BillboardEditor({ settings, onFieldChange, onSave, saving }: BillboardEditorProps) {
   return (
     <div className="space-y-4">
-      {/* Visibility (network.md — instant save) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className="min-w-0">
-            <span className="block text-sm font-medium text-foreground">Show me in search</span>
-            <span className="block text-xs text-muted-foreground">Other creators can find you in Discover.</span>
-          </span>
-          <Switch
-            checked={settings.show_in_search}
-            onCheckedChange={() => onInstantToggle("show_in_search")}
-            aria-label="Show me in search"
-          />
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          <span className="min-w-0">
-            <span className="block text-sm font-medium text-foreground">Accept collab requests</span>
-            <span className="block text-xs text-muted-foreground">Let creators send you Connect requests.</span>
-          </span>
-          <Switch
-            checked={settings.open_to_collab}
-            onCheckedChange={() => onInstantToggle("open_to_collab")}
-            aria-label="Accept collab requests"
-          />
-        </div>
-      </div>
-
       {/* Billboard fields */}
       <div>
         <label className="text-xs font-medium text-muted-foreground">Tagline</label>

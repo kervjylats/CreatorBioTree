@@ -317,7 +317,7 @@ Every extension to the brand system MUST lock these 4 rules. Plain-English expla
 
 ## Part 12: The 7-Day Lock Rule
 
-Per the identity model decision (`playground.md` 2a):
+Per the identity model decision (`playground.md` 2a; the Display Name **editor + cooldown** moved to `settings.md` Part 13 on 2026-10-09 — the rule below still applies):
 
 | Field | Change frequency | Lock | Notes |
 |---|---|---|---|

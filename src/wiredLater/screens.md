@@ -6,7 +6,7 @@ Each screen is documented here as we walk through it. The specs from `src/wiredL
 
 | Category | What it is | Screens |
 |---|---|---|
-| **Creator Dashboard** | The 4 major sidebar screens | Overview, Network, Playground, Settings |
+| **Creator Dashboard** | The 5 major sidebar screens | Overview, Network, Playground, Earnings, Settings |
 | **Admin** | Platform owner + staff control room | Admin (separate from the creator dashboard) |
 | **Fan Shell** | What fans experience at `/[username]` | Guest page + 4-tab app (Home, Content, Connect, Settings) |
 | **Public** | Outside the app, no sidebar | Landing, Login, Onboarding, Offline |
@@ -16,7 +16,7 @@ Each screen is documented here as we walk through it. The specs from `src/wiredL
 
 ---
 
-# Creator Dashboard (4 major screens)
+# Creator Dashboard (5 major screens)
 
 ## Dashboard Overview `/dashboard`
 
@@ -36,7 +36,7 @@ Parts archive (old code) available:
 
 **WIRED 2026-09-26 → hub + dock + 3 dock pages** (built per `docs/archive/NETWORK_REDESIGN_PLAN.md`, overriding the earlier 3-section layout; spec `network.md` is the feature vision). **2026-09-27: the dock's pages moved to `/dashboard/circle/*`** (global chrome → global segment; Network keeps the hub only):
 
-- **Hub (`/dashboard/network`)** — 2 columns at `md+`: LEFT rail (Billboard preview + editor + Affiliates: `＋ New deal` form → Your deals card → EarningsSummary/AffiliateDiscover/AffiliateLinks) · CENTER = **Discover grid** (search box + result cards with Visit + Connect buttons). Mobile (<`md`) order: Discover → Billboard → Affiliates; at `md+` the rail is `order-1` (left track), Discover `order-2` (center), result cards go 2-up from `lg`.
+- **Hub (`/dashboard/network`)** — 2 columns at `md+`: LEFT rail (**billboard mirror only** — the whole affiliate block `＋ New deal` → Your deals → AffiliateDiscover/AffiliateLinks **moved to the Earnings screen §2b 2026-10-12**; earnings itself moved there 2026-10-10; the billboard **design editor moved to Playground → Billboard view** 2026-10-09, `playground.md` Part 1d) · CENTER = **Discover grid** (**the collab switch** — Accept collab requests — lives inside this section under the heading since 2026-10-09, the day the second switch was removed; then search box (always on, FB-style) + result cards with Visit + Connect buttons). Mobile (<`md`) order: Discover → Billboard; at `md+` the rail is `order-1` (left track), Discover `order-2` (center), result cards go 2-up from `lg`.
 - **3 dock pages** (entered via the My Peeps dock) — `/dashboard/circle/partners` (collab Requests inbox with Accept/Decline + outgoing Pending + active Collabs list/detail + "Invite a partner" card), `/dashboard/circle/fans` (full-width `FanListTable` + `FanProfileDrawer`), `/dashboard/circle/staff` (pending staff invites + members + `PermissionsToggles`).
 - **My Peeps = unified dock stack** (ONE component, `src/components/layout/MyPeeps.tsx`) — the single floating stack at bottom-right on every `/dashboard/*` page: **Partners · Fans · Staff · 💬 Messages** (top→bottom) as uniform round icon buttons. Active page highlights; each chip carries ONE combined red badge (Partners = pending requests + unread, Fans = unread, Staff = pending invites + unread). Counts from `GET /api/creator/peeps` (30s poll). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement.
 - **💬 MessageIcon** on collab detail + fan drawer + staff rows (creator↔creator / creator↔fan threads).
@@ -59,6 +59,7 @@ Parts archive (old code) available for the discovery directory:
 
 **The one place where a creator sees + edits their entire fan shell** (replaces both the old Playground editor and the old "View my fan page" action — founder decision 2026-08-05). Full spec at `screens/creator-dashboard/playground/playground.md` (name history: **Playground** → "My App" 2026-08-05 → **Playground** again 2026-10-01, founder decision).
 
+- **Top-level switch `Fans | Billboard` (founder decision 2026-10-09 — Part 1d):** **Fans** = today's phone preview (Draft/Live/Deploy stays here) · **Billboard** = your card as Discover renders it + the billboard editors (moved from the Network rail — Network keeps the mirror + the one collab switch). Deep link: `/dashboard/playground?view=billboard`
 - Opens **full-screen** phone view, **guest page first**, swipe Guest → Home → Content → Connect → Settings
 - **Tap-to-edit popovers** = the brand layer (background / text / font / button / card / link — universal across all surfaces; Part 1a)
 - **Editor sheet** with the 8 tabs: Identity, Design, Catalog (16 item types + funnels + link scheduling), Artist Links (rich social embeds), Integrations (Auto-DM + Commerce), Email (campaigns), Media Kit (brand kit), Spotlight — 4 editor options (A sheet default / B replace / C drawer / D in-place) all specced for A/B test at wiring (Part 1c)
@@ -71,11 +72,19 @@ Playground editor-tab stub specs (merged, reference only — in `features/`): [c
 
 ---
 
+## Dashboard Earnings `/dashboard/earnings` *(WIRED 2026-10-10 → §2b added 2026-10-12)*
+
+The one money screen: **§1 Sales** (what fans paid you) · **§2 Affiliate earnings** (earned vs owed + receipt rows: Mark paid → Confirm/Dispute + the **Red Card** 🟥 + 14-day prompt ladder) · **§2b Affiliate deals & links** (`＋ New deal` form → Your deals → Discover → Links — **the whole block moved out of the Network rail 2026-10-12**, founder "A1": Network = social, Earnings = money; relocation only, no deal-logic changes) · **§3 Payments** (PayPal.me handle + honest Connect-PayPal card). Report-only, 0% platform cut. `EarningsSummary` (from the Network rail), `PaymentsPanel` (from Settings), and the 4 affiliate widgets (from the Network rail) all live here.
+
+**Full spec: `screens/creator-dashboard/earnings/earnings.md`**
+
+---
+
 ## Dashboard Settings `/dashboard/settings`
 
-Money, identity, and permissions — never page design (branding/content live in Playground; analytics in Overview).
+Money, identity, and permissions — never page design (branding/content live in Playground; analytics in Overview). **Payments/payouts moved to the Earnings screen 2026-10-10** (`settings.md` Part 2 = pointer stub).
 
-**Full spec: `screens/creator-dashboard/settings/settings.md`** (account/security, payments/payouts, billing, notifications, messaging & privacy, your page, integrations stub, danger zone)
+**Full spec: `screens/creator-dashboard/settings/settings.md`** (account/security, billing, notifications, messaging & privacy, your page, integrations stub, danger zone)
 
 Parts archive (old code) available:
 - [StripeConnectPanel.tsx](vscode://file/C:\DEV\Projects\creatorpwa\src\old-code\StripeConnectPanel.tsx)

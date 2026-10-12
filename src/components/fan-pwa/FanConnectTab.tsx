@@ -15,6 +15,7 @@ import { PartnerModal } from "./PartnerModal";
 import { cardRadius } from "./themeStyles";
 import { SectionTitle } from "./SectionTitle";
 import { getInitials } from "@/lib/fan-helpers";
+import { firePartnerHop } from "@/lib/hopAttribution";
 
 interface Partner {
   id: string;
@@ -67,7 +68,10 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
 
   const openPartner = useCallback((username: string) => {
     setSelectedPartner(username);
-  }, []);
+    // Silent hop (earnings.md Part 8) — tags the fan for the host↔partner deal,
+    // fire-and-forget: modal opens regardless.
+    firePartnerHop(branding.creatorUsername, username);
+  }, [branding.creatorUsername]);
 
   const closePartner = useCallback(() => {
     setSelectedPartner(null);

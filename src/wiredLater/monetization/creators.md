@@ -39,7 +39,8 @@ Two money flows belong to creators. The platform takes **0% of either in v1** (m
 ### 1c. External-link quarantine (NEW 2026-08-10)
 
 - Per-item, a creator may set **"Payment: External link"** (e.g., a direct PayPal.me / Stripe Payment Link / Gumroad URL) instead of the in-app checkout (`playground.md` Catalog editor). That item's fan-facing card still says "Buy — $X" — the tap opens the external URL in a new tab.
-- **Quarantine rule:** external-link items are **excluded from affiliate deals (`network.md` §7)** — the platform cannot see, verify, or split a transaction it doesn't process. The deal editor warns the creator when an item has an external link ("this item won't — payments happen off-platform"). No silent partial sums — a deal covers only in-app-processed items.
+- **Quarantine rule:** external-link items are **excluded from affiliate deals (`network.md` §7)** — the platform cannot see, verify, or split a transaction it doesn't process. No silent partial sums — a deal covers only in-app-processed items.
+- **Simplified 2026-10-10 (creator-only scope, 2b):** the exclusion is now **automatic** — an external-link item never produces an in-app `fan_purchases` row, so the engine never sees it. The old item-editor warning ("Pays off-platform — excluded from deals") died with the item picker.
 
 ---
 
@@ -61,16 +62,16 @@ When two creators are collabed (in-app or via partnership), either side can offe
 
 **Creator choice is total.** No defaults forced. No "platform recommends 10%". **No minimums or maximums** — no validation on rates or amounts. If two creators want to agree to "you pay me $1,000 if I send you 100 fans," that's a valid deal.
 
-### 2b. Scope — what the deal covers (NEW 2026-08-05)
+### 2b. Scope — creator-only (founder decision 2026-10-10)
 
-A deal can target a specific item **or** a creator's whole catalog:
+**A deal covers the owner's ENTIRE catalog** — *"5% on everything I sell."* The old per-item scope is **REMOVED** (pre-migration = free — column dropped, API `scope` enum + item picker + "more specific wins" rule all die with it):
 
-| Scope | What it covers | UI |
-|---|---|---|
-| **Per-item** | One specific catalog item ("10% on Alex's Launch Course") | Deal created from the item's editor (Affiliate section) |
-| **Per-creator** | The creator's entire catalog ("5% on everything") | Deal created from the Network/My Peeps collab view |
-
-A creator can hold per-item deals on several items AND a per-creator deal — the more specific scope wins on a sale (per-item beats per-creator). Both are allowed to coexist.
+| Piece | Rule |
+|---|---|
+| Coverage | Every in-app purchase on the owner's catalog — all 16 item types, any pricing state |
+| External-link items | Automatic non-conversion (Part 1c) — no in-app purchase row → the engine never sees them |
+| Multiple active deals | Each active deal writes its own conversion per sale (idempotent per sale+deal) — asymmetric per 2d. Keep one active deal per collab unless you intend both to pay |
+| UI | One field fewer in the deal form (type + trigger + terms only — `network.md` §7) |
 
 ### 2c. Triggers — what counts as a conversion (NEW 2026-08-05)
 
@@ -102,7 +103,7 @@ Even though the platform doesn't take a cut, **the platform is the trust and dis
 | Mechanism | What it does |
 |---|---|
 | **Immutable audit log** | Every affiliate deal = a row in `affiliate_deals` with both creator IDs, deal terms (type/scope/trigger), timestamp. Neither party can retroactively edit or delete. The platform owns this ledger |
-| **Automatic attribution** | When a fan clicks an affiliate link, the `ref` param is captured server-side (not just cookie — server-side is the source of truth). Attribution survives ad-blockers, cookie clearing, private browsing |
+| **Automatic attribution (two doors — founder 2026-10-10)** | **Door 1 — external link:** the promoter shares `/ref/[code]` anywhere outside the app. **Door 2 — in-app hop:** a fan opening a partner surface (Connect-tab partner modal or the full `/{host}/partner/{partnerUsername}` page) silently tags the trip. Both write the same `affiliate_attributions` row + a 30-day `aff_attr` cookie, **server-side** (the source of truth — survives ad-blockers, cookie clearing, private browsing). The hop fires on modal/page **OPEN** (purchases can complete inside the modal) and resolves the active owner↔promoter deal — no deal = plain navigation, no tagging (deals are optional). **Live in mock since 2026-10-09 (Door 1):** `/ref/[code]` counts the click + redirects to the deal **owner's** page; the `?ref=` cookie-clearing passthrough + Door 2's writer = build items (see 2e2) |
 | **Deal Rules + Settlement Engine** | See **2e2 below** — the platform's headed distribution: every in-app sale pays the owner's PayPal balance; per-deal cuts are settled via PayPal splits automatically, or via manual settlement (PayPal.me link) when the parties opt out. Either way the platform logs the settlement immutably |
 | **Dispute resolution** | If one party claims the other manipulated the deal, scammed, or under-reported, the platform's admins (see `admin.md`) can pull the audit log + the attribution chain + the settlement records. Evidence-based resolution |
 | **Transparency for both sides** | Each creator sees their own dashboard (clicks, conversions, revenue earned/owed) but NOT the other side's view. Each side can download their own transaction log as CSV. Privacy is preserved; trust is via platform |
@@ -124,10 +125,17 @@ Even though the platform doesn't take a cut, **the platform is the trust and dis
 | **Settlement record** | Every conversion writes a `affiliate_conversions` row: deal_id, sale_id, owner_cut, promoter_cut, computed per the rules at sale time — logged before any money moves (immutable, matches the audit ledger) |
 | **Auto-split (default, where possible)** | PayPal **splits** the captured payment (owner receives the funds; `promoter_cut` pushed to the promoter's PayPal) — via the PayPal Orders API in production, mocked in dev |
 | **Manual settlement (creator opt-out)** | If the owner prefers (e.g., PayPal splits unavailable in the promoter's region, or the deal is "free cross-promo"), the platform records the owed cut as a **pending balance** and issues a one-click **"Settle via PayPal.me"** action. The platform marks it `settled_manually` on confirmation. No silent skips — a conversion stays `pending` until settled either way |
-| **Pending dashboard** | Both sides see their own settlement status per conversion (settled / pending / disputed). The promoter's "My Earnings" shows settled vs pending exactly like PayPal's own payout ledger |
+| **Pending dashboard** | Both sides see their own settlement status per conversion on the **Earnings screen** (`earnings.md` §2 — earned/owed cards + receipt rows + status chips; the promoter's view shows settled vs pending exactly like PayPal's own payout ledger) |
 | **Never auto-creates money** | The engine never creates a payment out of thin air — it only records computed cuts + splits real captured funds. A "custom terms" deal that says "$1,000 if you send 100 fans" is still honored: the engine sums the conversions and the owner settles the agreed amount manually per the ledger |
 
-**External-link quarantine (Part 1c) applies here:** the engine only sees in-app processed payments. Items selling via external links are excluded from deals — the rule builder warns, and conversions never reference off-platform sales.
+> **Live in mock since 2026-10-09:** `GET /ref/[code]` (click counted → `affiliate_attributions` row + 30-day `aff_attr` cookie → redirect to the deal **owner's** fan page) and `POST /api/fan/purchases/complete` → `lib/affiliateAttribution.ts` (rules evaluated: status / validity window / creator-only scope / trigger → `computeDealCuts` → immutable `affiliate_conversions` row, `pending`). Idempotent per sale + deal — a replayed purchase heals a missed row; no attribution → no conversion. **The settlement *marking* action is now SPEC'D (2026-10-10)** — the receipt protocol + prompt ladder + Red Card live in `earnings.md` Parts 3–5 (wiring = Sheet 23). Still open: the in-app hop's attribution writer (Door 2), the `?ref=` param passthrough, follow/subscribe/signup trigger writers, and the real PayPal webhook (route is mock-only today).
+
+**v1 = pressure, production = automatic (founder decision 2026-10-10):**
+
+- **v1 (today):** **zero PayPal code** ($0, no licence, no permissioned integration). The debt is real (immutable ledger), both sides are told (prompt ladder + activity feed + email — `earnings.md` Part 5), and enforcement is the **Red Card + admin verdict** (`earnings.md` Part 4). Not paying costs more than paying.
+- **At migration:** **PayPal multiparty split at capture** (approved-partner application — free, not guaranteed; send-only countries fall back to the manual receipt path; disbursement can lag up to 28 days) turns the same ledger into an automatic split. **Build-vs-buy (settled):** we buy **only PayPal's licence** — this single spec line is re-checked at the migration pass; no SaaS affiliate platform (whop / LemonSqueezy / Tapfiliate-style) is ever adopted.
+
+**External-link quarantine (Part 1c) applies here:** the engine only sees in-app processed payments — external-link items never produce purchase rows, so they never convert (the old rule-builder warning died with the item picker, 2026-10-10).
 
 **Fan experience is unchanged and INVISIBLE** — fans never see affiliate labels, deal terms, or that a deal exists at all. Attribution is a silent `ref` param. (Founder decision 2026-08-05.)
 
@@ -137,39 +145,50 @@ Even though the platform doesn't take a cut, **the platform is the trust and dis
 affiliate_deals (immutable ledger — owner side configures, see network.md §7 for UI):
   id,
   owner_id (Creator A — the one paying), promoter_id (Creator B — the one promoting),
-  scope: 'item' | 'creator',
-  item_id?,              // required when scope = 'item'
   deal_type: 'percentage' | 'fixed' | 'free' | 'tiered' | 'custom',
   trigger: 'purchase' | 'follow' | 'subscribe' | 'tip' | 'signup' | 'any',
   rate?,                 // percentage: 0-100; fixed: amount in cents
   custom_terms?,         // free text for 'custom' or 'tiered'
   valid_from?, valid_until?,
   created_at, status: 'active' | 'paused' | 'expired' | 'revoked'
+  // scope + item_id REMOVED 2026-10-10 (creator-only — 2b): column dropped, every
+  // in-app purchase on the owner's catalog is covered
 
 affiliate_attributions (server-side, survives cookie clearing):
-  id, ref_code, fan_id?, item_id, deal_id, attributed_at
+  id, ref_code, fan_id?, item_id, deal_id, attributed_at,
+  source: 'ref_link' | 'hop',      // Door 1 external link vs Door 2 in-app hop (2e)
 
 affiliate_conversions:
   id, deal_id, sale_id, owner_cut, promoter_cut,
   settle_method: 'auto_split' | 'manual' | null,
-  settlement_status: 'pending' | 'settled' | 'disputed',
+  settlement_status: 'pending' | 'awaiting_confirm' | 'settled' | 'disputed',
   settled_at?, settled_manually?,        // manual settlement confirmation
   distributed_at?, paypal_transfer_id?,   // auto-split reference (production)
+  // receipt protocol (earnings.md Parts 3–6, 2026-10-10):
+  due_at,                     // created_at + SETTLEMENT_DUE_DAYS (14) — holds shift it
+  owner_paid_at?,              // debtor clicked "Mark as paid"
+  confirmed_at?,               // promoter confirmed receipt (→ settled)
+  disputed_at?, dispute_reason?,
+  reminders_sent: number, last_reminder_at?   // prompt-ladder idempotence
+
+creators:
+  paypal_handle?,              // PayPal.me username — debtor's [Pay now] target (earnings.md §3)
 ```
 
-> Settlement fields (`settle_method`, `settlement_status`, `settled_at`) are the Settlement Engine's state machine (2e2). `paypal_transfer_id` replaces the old draft's `stripe_transfer_id` — PayPal-first rails. External-link items never produce conversions (quarantined, Part 1c).
+> Settlement fields (`settle_method`, `settlement_status`, `settled_at`) are the Settlement Engine's state machine (2e2); the receipt-protocol fields extend it (2026-10-10). `paypal_transfer_id` replaces the old draft's `stripe_transfer_id` — PayPal-first rails. External-link items never produce conversions (quarantined, Part 1c).
 
 ### 2g. What this means for v1 wiring
 
 - **No platform take rate code** — don't add a `platform_fee` field to the conversion table
 - **Settlement Engine, not a fixed rail** — the platform computes both cuts per the deal rules and settles via PayPal split OR manual settlement (`settle_method`/`settlement_status` on `affiliate_conversions`); mocked for now, real PayPal in production. Never hard-code a single rail (Payoneer/other rails are replacements at the engine boundary, per 2e2)
 - **Audit log = the trust** — every deal, attribution, conversion, settlement logged immutably; admin can read
-- **No "minimum deal amount" / "maximum rate" validation** — the spec allows any deal the two creators agree to (scope/trigger/type/amount all creator-chosen)
+- **No "minimum deal amount" / "maximum rate" validation** — the spec allows any deal the two creators agree to (trigger/type/amount all creator-chosen)
 - **Asymmetric** — each side's deals are their own rows; no pairing/echoing on the other side
-- **External-link quarantine** — external-link items never enter the engine; deal editor warns the creator (Part 1c + `network.md` §7)
-- **Fan experience unchanged** — affiliate attribution is invisible (`ref` param only); payment rail (PayPal) is invisible to fans too
+- **Creator-only scope** — no item picker, no per-item warnings; external-link items never enter the engine automatically (Part 1c + `network.md` §7)
+- **Fan experience unchanged** — both attribution doors are invisible (silent `ref`/hop, no labels anywhere); the payment rail (PayPal) is invisible to fans too
+- **Settlement UX lives on ONE screen** — the receipt protocol, prompt ladder, and Red Card are spec'd in `earnings.md` (Parts 3–5), not here
 
-**The affiliate UI (deal editors, Discover, My Links, earnings) is spec'd in `network.md` §7 — this file owns the economics; that file owns the screens.**
+**The affiliate UI (deal editors, Discover, My Links) is spec'd in `network.md` §7 and the money screen (earnings, receipts, Red Card) in `screens/creator-dashboard/earnings/earnings.md` — this file owns the economics; those files own the screens.**
 
 ---
 
@@ -186,12 +205,16 @@ The platform's money is `owner.md`, not this file. In one line: **locked at 0% u
 | #1 Free until end-of-dev | ✅ Decided — no money gates in v1 |
 | #2 Creator↔Fan sales | ✅ Decided — creator sets prices per item; **PayPal routes** (PayPal-first, 2026-08-10); creator keeps 100% minus PayPal fees |
 | #3 Affiliate deal freedom | ✅ Decided 2026-08-05 — ANY deal structure: 5 deal types, no min/max validation, custom terms allowed |
-| #4 Deal scope | ✅ Decided 2026-08-05 — per-item AND per-creator deals; more specific scope wins on a sale |
+| #4 Deal scope | ✅ Decided 2026-08-05 → **superseded 2026-10-10: creator-only** (per-item scope removed — 2b; "more specific wins" rule dead) |
 | #5 Conversion triggers | ✅ Decided 2026-08-05 — purchase / follow / subscribe / tip / signup / any, declared per deal |
 | #6 Asymmetric deals | ✅ Decided 2026-08-05 — each side configures their own deals independently; no forced symmetry |
 | #7 Platform trust layer | ✅ Decided 2026-08-05 — immutable audit log + server-side attribution + **Deal Rules & Settlement Engine (2026-08-10)** + dispute resolution |
-| #8 Fan invisibility | ✅ Decided 2026-08-05 — fans never see any affiliate UI/labels; silent `ref` attribution only |
-| #9 Economics vs UI homes | ✅ Decided 2026-08-05 — economics here (Part 2); UI in `network.md` §7 |
+| #8 Fan invisibility | ✅ Decided 2026-08-05 — fans never see any affiliate UI/labels; silent attribution only (both doors) |
+| #9 Economics vs UI homes | ✅ Decided 2026-08-05 — economics here (Part 2); deal UI in `network.md` §7; **money screen in `earnings.md`** |
 | #10 PayPal-first payout rail | ✅ Decided 2026-08-10 — fans pay via PayPal (cards accepted, no account needed); creator's PayPal is the payout rail; Stripe deferred (the Atlas path, 1b) |
 | #11 Deal Rules & Settlement Engine | ✅ Decided 2026-08-10 — cuts computed per deal rules; settled via PayPal split or manual settlement; `settle_method`/`settlement_status` state machine; the future take-rate hook (2e2) |
-| #12 External-link quarantine | ✅ Decided 2026-08-10 — per-item "External link" payment opt-in; quarantined from affiliate deals; the rule builder warns (1c + `network.md` §7) |
+| #12 External-link quarantine | ✅ Decided 2026-08-10 — external-link items quarantined; **simplified 2026-10-10** = automatic (no purchase row ever written; item-picker warning removed with scope) |
+| #13 Creator-only scope | ✅ Decided 2026-10-10 — deals cover the owner's whole catalog; per-item scope, item picker, `scope` column/enum removed (pre-migration = free) |
+| #14 Receipt protocol + Red Card + 14-day ladder | ✅ Decided 2026-10-10 — settlement marking spec'd: `earnings.md` Parts 3–5 (mark paid → confirm/dispute → admin verdict; Option A T0/3/7/14 prompts; 4 locks + grace-cure) |
+| #15 Two attribution doors | ✅ Decided 2026-10-10 — in-app hop (partner modal/page open) added; external `/ref` link kept as the bonus door; both write the same server-side attribution |
+| #16 Guarantee layering | ✅ Decided 2026-10-10 — v1 = pressure (ledger + ladder + Red Card, zero PayPal code); migration = PayPal multiparty split; build-vs-buy = only PayPal's licence, re-checked at migration |

@@ -39,18 +39,15 @@ type CreatorRow = {
 const SHOWCASE_LIMIT = 12;
 const YOUR_CREATORS_LIMIT = 12;
 
-/** Discoverable creators for the showcase marquee (Featured pinned, rest shuffled per load, capped). Never throws. */
+/** All creators for the showcase marquee (Featured pinned, rest shuffled per load, capped). Never throws. */
 async function getShowcaseCreators(): Promise<ShowcaseCreator[]> {
   try {
     const supabase = await createClient();
+    // No visibility filter since 2026-10-09 (founder: show everyone — the
+    // marquee is the platform's storefront; show_in_search is parked).
     const { data, error } = await supabase
       .from("creators")
-      .select("id, username, display_name, avatar_url, is_featured, created_at")
-      // Same rule as /api/discover/creators and the settings toggle: an unset
-      // (NULL) flag means "visible" everywhere else, so it must be visible here
-      // too — otherwise a creator's toggle reads ON while the marquee skips them
-      // (2026-10-01 audit).
-      .or("show_in_search.eq.true,show_in_search.is.null");
+      .select("id, username, display_name, avatar_url, is_featured, created_at");
     if (error || !data) return [];
     const sorted = (data as CreatorRow[])
       .filter((c) => c.username)

@@ -17,7 +17,6 @@ import { EmptyState } from "@/components/shared/EmptyState";
 
 interface Deal {
   id: string;
-  scope: "item" | "creator";
   deal_type: string;
   trigger: string;
   rate: number | null;
@@ -117,7 +116,6 @@ export function YourDealsCard({ refreshKey = 0 }: { refreshKey?: number }) {
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                {deal.scope === "item" ? "Per-item" : "Per-creator"} ·{" "}
                 {formatDate(deal.created_at)}
                 {!deal.is_owner && " · you promote this"}
               </p>

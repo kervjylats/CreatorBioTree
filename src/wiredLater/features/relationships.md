@@ -50,6 +50,7 @@ The competitor floor (the table everyone ships) + escape hatch (CSV export).
 | Status | derived | `follower` (email-only, no password) / `new` (no purchase) / `paid` (has purchase) / `subscriber` (active subscription) — Patreon-style status chip. A Follower = `fan_accounts` row with `password_hash = null`, no new table |
 | Lifetime value | derived from `fan_purchases` | Sum of completed purchases (Patreon's Lifetime column) |
 | Last purchase | derived | Date of most recent completed purchase — blank for `new` |
+| **Message** (icon cell, added 2026-10-12) | `MessageIcon` (`messaging.md` Part 2) | Quick mini-thread straight from the row (click stops at the icon — the row click still opens the profile drawer). Matches the partner/staff list rows, which already had it |
 
 ### Filters
 

@@ -9,7 +9,7 @@ export async function GET() {
 
     const { data: me } = await supabase
       .from("creators")
-      .select("display_name, username, avatar_url, tagline, tags, collab_style, show_in_search, open_to_collab, bio, rate_card, media_kit_message")
+      .select("display_name, username, avatar_url, is_featured, tagline, tags, collab_style, open_to_collab, bio, rate_card, media_kit_message")
       .eq("id", user.id)
       .maybeSingle();
     if (!me) {
@@ -20,10 +20,10 @@ export async function GET() {
       display_name: me.display_name ?? "",
       username: me.username ?? "",
       avatar_url: me.avatar_url ?? null,
+      is_featured: me.is_featured ?? false,
       tagline: me.tagline ?? "",
       tags: me.tags ?? [],
       collab_style: me.collab_style ?? "",
-      show_in_search: me.show_in_search ?? true,
       open_to_collab: me.open_to_collab ?? true,
       bio: me.bio ?? "",
       rate_card: me.rate_card ?? { post: "", story: "", video: "" },
@@ -50,9 +50,8 @@ export async function PUT(req: NextRequest) {
     if (typeof body.collab_style === "string") {
       updates.collab_style = body.collab_style || null;
     }
-    if (typeof body.show_in_search === "boolean") {
-      updates.show_in_search = body.show_in_search;
-    }
+    // show_in_search is intentionally NOT accepted (switch removed 2026-10-09 —
+    // the column is parked; only open_to_collab round-trips now).
     if (typeof body.open_to_collab === "boolean") {
       updates.open_to_collab = body.open_to_collab;
     }
@@ -75,14 +74,13 @@ export async function PUT(req: NextRequest) {
       .from("creators")
       .update(updates)
       .eq("id", user.id)
-      .select("tagline, tags, collab_style, show_in_search, open_to_collab, bio, rate_card, media_kit_message")
+      .select("tagline, tags, collab_style, open_to_collab, bio, rate_card, media_kit_message")
       .single();
 
     return NextResponse.json({
       tagline: updated?.tagline ?? "",
       tags: updated?.tags ?? [],
       collab_style: updated?.collab_style ?? "",
-      show_in_search: updated?.show_in_search ?? true,
       open_to_collab: updated?.open_to_collab ?? true,
       bio: updated?.bio ?? "",
       rate_card: updated?.rate_card ?? { post: "", story: "", video: "" },

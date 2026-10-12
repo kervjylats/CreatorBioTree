@@ -223,6 +223,7 @@ Signup/login lives on the guest page. Guest logs in → stays on the same page �
 - **Follows survive collab endings** — Alex ends a collab, Michel still sees the partner under Followed. Collab (network.md) ≠ fan follows (independent)
 - **New partners appear silently** — no notification. Fans discover them in the Billboard/All Partners on their next visit (founder decision 2026-08-05). The Billboard is a discovery surface, not an alert
 - **Affiliate deals are invisible to fans** — the Billboard rotates deal partners more often, but no affiliate label, no "sponsored" tag, no deal terms anywhere on the fan shell (founder decision 2026-08-05, see `monetization/creators.md` Part 2e)
+- **The in-app affiliate hop (silent — founder 2026-10-10):** opening ANY partner surface (billboard name / partner card → modal, or the full `/{host}/partner/{partnerUsername}` page) writes an `affiliate_attributions` row + the 30-day `aff_attr` cookie **when an active deal exists between host and partner** — the in-app twin of the external `/ref` door. Fires on OPEN (purchases can complete inside the modal); no deal = plain navigation, zero tagging; no UI, no labels (`monetization/creators.md` 2e Door 2)
 - **Instant render** — sections appear/disappear immediately with data changes; no entry animations in v1
 
 ### 4d. Settings Tab — the account hub

@@ -1,9 +1,10 @@
 /**
- * Playground screen — /dashboard/playground (playground.md Part 1): preview-first for now.
- * Server component shell; the client PlaygroundForm loads the creator + catalog via
- * GET /api/creator/playground and renders the phone frame (Draft/Live bar + the
- * real fan surfaces). Editor/catalog UI is deferred to a later design pass.
- * Accepts ?tab= to deep-link to a fan view (guest/home/content/connect/settings).
+ * Playground screen — /dashboard/playground (playground.md Parts 1 + 1d).
+ * Server component shell; the client PlaygroundForm loads the creator +
+ * catalog via GET /api/creator/playground. Top-level switch: Fans (phone
+ * frame + Draft/Live/Deploy) | Billboard (result-preview + billboard editors
+ * — /dashboard/playground?view=billboard). ?tab= deep-links a fan surface
+ * inside Fans view (guest/home/content/connect/settings).
  */
 import type { Metadata } from "next";
 import { PlaygroundForm } from "@/components/playground/PlaygroundForm";
@@ -13,10 +14,10 @@ export const metadata: Metadata = {
 };
 
 interface PlaygroundPageProps {
-  searchParams?: Promise<{ tab?: string }>;
+  searchParams?: Promise<{ tab?: string; view?: string }>;
 }
 
 export default async function PlaygroundScreen({ searchParams }: PlaygroundPageProps) {
   const params = await searchParams;
-  return <PlaygroundForm initialTab={params?.tab} />;
+  return <PlaygroundForm initialTab={params?.tab} initialView={params?.view} />;
 }

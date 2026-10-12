@@ -4,6 +4,8 @@
  * buffer auto-saved to localStorage (`playground_draft_${creatorId}`, 3s debounce,
  * survives browser close), and deploys via PUT. Catalog items save
  * immediately through the catalog API — only theme/profile/link edits draft.
+ * The draft holds ONLY deployable fields — identity (display_name/avatar_url)
+ * lives in Settings → Profile (settings.md Part 13) and never travels here.
  */
 "use client";
 
@@ -15,9 +17,7 @@ import { DEFAULT_ACCENT } from "@/lib/branding";
 
 export interface PlaygroundDraft {
   custom_theme: PlaygroundTheme;
-  display_name: string | null;
   bio: string | null;
-  avatar_url: string | null;
   banner_url: string | null;
   connect_empty_text: string | null;
   social_links: Record<string, string>;
@@ -44,6 +44,9 @@ interface UsePlaygroundFormResult {
   reset: () => void;
   deploy: () => Promise<void>;
   deploying: boolean;
+  /** Merge a bio saved on the Billboard view (playground.md Part 1d) — bio
+   *  renders on both surfaces, so the fan preview must agree after a save. */
+  syncBio: (bio: string) => void;
 }
 
 /** Deep-compare the draft against the last server snapshot (JSON — both sides plain). */
@@ -60,9 +63,7 @@ export function usePlaygroundForm(): UsePlaygroundFormResult {
   const [serverDraft, setServerDraft] = useState<PlaygroundDraft | null>(null);
   const [draft, setDraft] = useState<PlaygroundDraft>({
     custom_theme: EMPTY_THEME,
-    display_name: null,
     bio: null,
-    avatar_url: null,
     banner_url: null,
     connect_empty_text: null,
     social_links: {},
@@ -73,9 +74,7 @@ export function usePlaygroundForm(): UsePlaygroundFormResult {
   const fromCreator = useCallback((creator: Creator): PlaygroundDraft => {
     return {
       custom_theme: creator.custom_theme ?? EMPTY_THEME,
-      display_name: creator.display_name ?? creator.username,
       bio: creator.bio,
-      avatar_url: creator.avatar_url,
       banner_url: creator.banner_url,
       connect_empty_text: creator.connect_empty_text,
       social_links: (creator.social_links ?? {}) as Record<string, string>,
@@ -89,7 +88,19 @@ export function usePlaygroundForm(): UsePlaygroundFormResult {
       if (!restored || typeof restored !== "object") return;
       // Merge the restored draft over the server snapshot — hasChanges turns
       // true, and the orange Draft dot + Unsaved modal reappear on reload.
-      setDraft((prev) => ({ ...prev, ...(restored as Partial<PlaygroundDraft>) }));
+      // Pick ONLY current draft keys: old localStorage drafts may still carry
+      // removed identity fields (display_name/avatar_url) — never restore those
+      // (they'd poison hasChanges and the preview with a stale identity).
+      setDraft((prev) => {
+        const r = restored as Partial<PlaygroundDraft>;
+        return {
+          custom_theme: r.custom_theme ?? prev.custom_theme,
+          bio: r.bio !== undefined ? r.bio : prev.bio,
+          banner_url: r.banner_url !== undefined ? r.banner_url : prev.banner_url,
+          connect_empty_text: r.connect_empty_text !== undefined ? r.connect_empty_text : prev.connect_empty_text,
+          social_links: r.social_links ?? prev.social_links,
+        };
+      });
     },
   });
 
@@ -132,13 +143,36 @@ export function usePlaygroundForm(): UsePlaygroundFormResult {
     }
   }, [serverDraft, clear]);
 
+  const syncBio = useCallback(
+    (bio: string) => {
+      // Server truth updates unconditionally; the draft only follows when the
+      // user hasn't diverged on bio here (an unsaved Fans-view bio edit wins).
+      setDraft((d) => (serverDraft && d.bio === serverDraft.bio ? { ...d, bio } : d));
+      setServerDraft((s) => (s ? { ...s, bio } : s));
+      setBaseCreator((c) => (c ? { ...c, bio } : c));
+    },
+    [serverDraft]
+  );
+
   const deploy = useCallback(async () => {
     setDeploying(true);
     try {
+      // Deploy sends an explicit allow-list: display_name + avatar_url are NOT
+      // deployable — Settings → Profile owns them and their 7-day cooldown
+      // (settings.md Part 13, founder decision 2026-10-09). Without this strip a
+      // stale localStorage draft could revert (or falsely trip the cooldown on)
+      // an identity field during an unrelated theme deploy.
+      const deployable = {
+        custom_theme: draft.custom_theme,
+        bio: draft.bio,
+        banner_url: draft.banner_url,
+        connect_empty_text: draft.connect_empty_text,
+        social_links: draft.social_links,
+      };
       const res = await fetch("/api/creator/playground", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draft),
+        body: JSON.stringify(deployable),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "Deploy failed");
@@ -155,5 +189,5 @@ export function usePlaygroundForm(): UsePlaygroundFormResult {
 
   const hasChanges = useMemo(() => !draftEquals(draft, serverDraft), [draft, serverDraft]);
 
-  return { loading, creatorId, baseCreator, serverItems, draft, serverDraft, hasChanges, patch, reset, deploy, deploying };
+  return { loading, creatorId, baseCreator, serverItems, draft, serverDraft, hasChanges, patch, reset, deploy, deploying, syncBio };
 }

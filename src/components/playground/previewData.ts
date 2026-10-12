@@ -11,13 +11,14 @@ import type { ContentItem, Creator } from "@/types";
 import type { FanIdentity, FanShellData } from "@/components/fan-pwa/fanData";
 import type { PlaygroundDraft } from "@/hooks/usePlaygroundForm";
 
-/** Patch a creator row with draft values → branding resolves over the draft. */
+/** Patch a creator row with draft values → branding resolves over the draft.
+ * Identity (display_name/avatar_url) is NOT draftable — it comes from base
+ * (Settings → Profile owns it; settings.md Part 13). */
 export function draftToCreator(draft: PlaygroundDraft, base: Creator): Creator {
   return {
     ...base,
-    display_name: draft.display_name ?? base.username,
+    display_name: base.display_name ?? base.username,
     bio: draft.bio,
-    avatar_url: draft.avatar_url,
     banner_url: draft.banner_url,
     connect_empty_text: draft.connect_empty_text,
     social_links: draft.social_links,

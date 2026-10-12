@@ -29,7 +29,6 @@ interface AffiliateLink {
     deal_type: string;
     trigger: string;
     rate: number | null;
-    scope: string;
   } | null;
 }
 
@@ -136,7 +135,6 @@ export function AffiliateLinks({ refreshKey = 0 }: { refreshKey?: number }) {
                         and no rate at all (2026-10-01 audit). */}
                     <span>{formatDealRate(link.deal)}</span>
                     <span>• {link.deal.trigger}</span>
-                    <span>• {link.deal.scope}</span>
                   </>
                 )}
                 <span>• {link.click_count} clicks</span>

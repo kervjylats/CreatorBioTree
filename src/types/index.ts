@@ -121,12 +121,18 @@ export interface Creator {
   display_name: string | null;
   bio:          string | null;
   avatar_url:   string | null;
+  /** When display_name last actually CHANGED — starts its 7-day cooldown (settings.md Part 13). */
+  display_name_changed_at: string | null;
+  /** When avatar_url last actually CHANGED — its own independent 7-day cooldown (settings.md Part 13). */
+  avatar_changed_at: string | null;
   banner_url:   string | null;
   email:        string | null;
   role:         "creator" | "admin";
   country:      string | null;
 
   // ── Discovery & Categorisation ───────────────────────────────────────────
+  /** PARKED 2026-10-09 (FB model, network.md §3): search is always on; no UI or
+   *  logic reads this anymore. Kept for a future Settings "private mode". */
   show_in_search: boolean;
   /** Accept collab Connect-requests from other creators (default true; partners/request 403s when false). */
   open_to_collab: boolean;
@@ -173,6 +179,8 @@ export interface Creator {
   payout_email:      string | null;
   payoneer_id:       string | null;
   paypal_email:      string | null;
+  /** PayPal.me username (earnings.md §3) — what debtors' [Pay now] opens. Edited on the Earnings screen. */
+  paypal_handle:     string | null;
 
   // ── Timestamps ────────────────────────────────────────────────────────────
   created_at: string;
@@ -502,7 +510,7 @@ export interface AdminAccount {
 
 /** Permission tiers mapped to roles — used by the permission-check helper. */
 export const ADMIN_PERMISSIONS: Record<AdminRole, string[]> = {
-  super_admin:   ["manage_admins", "view_all", "delete_platform_data", "manage_content", "manage_support", "api_access", "manage_service_access"],
+  super_admin:   ["manage_admins", "view_all", "delete_platform_data", "manage_content", "manage_support", "api_access", "manage_service_access", "manage_disputes"],
   support_admin: ["view_creators", "view_fans", "impersonate", "manage_disputes"],
   content_admin: ["moderate_content", "flag_content", "approve_content", "reject_content"],
   agent:         ["api_access"],
@@ -614,51 +622,72 @@ export interface StaffActivity {
 // ─── Affiliates (network.md §7 + monetization/creators.md Part 2) ────────────
 
 export type AffiliateDealType = "percentage" | "fixed" | "free" | "tiered" | "custom";
-export type AffiliateScope = "item" | "creator";
 export type AffiliateTrigger = "purchase" | "follow" | "subscribe" | "tip" | "signup" | "any";
 
 /**
  * Column names and enum values match what the routes actually read and write
- * (2026-10-01 audit): `owner_id` / `promoter_id` / `item_id` / `custom_terms`,
- * deal_type "percentage", status active|paused|expired|revoked. The previous
- * shape (owner_creator_id, terms, "percent", "ended") matched no query and was
- * shadowed by local component interfaces, so nothing caught the drift.
+ * (2026-10-01 audit): `owner_id` / `promoter_id` / `custom_terms`,
+ * deal_type "percentage", status active|paused|expired|revoked. Per-item scope
+ * was REMOVED 2026-10-10 (creator-only deals, earnings.md §1 — zero ALTER since
+ * the column never shipped to a real DB); `paused_reason` marks engine pauses.
  */
 export interface AffiliateDeal {
   id: string;
-  /** Creator who OWNS the item/catalog being promoted. */
+  /** Creator who OWNS the catalog being promoted. */
   owner_id: string;
-  /** Creator who PROMOTES the owner's items (the promoter). */
+  /** Creator who PROMOTES the owner's catalog (the promoter). */
   promoter_id: string;
-  scope: AffiliateScope;
   trigger: AffiliateTrigger;
   deal_type: AffiliateDealType;
   /** Rate for percent deals (0-100), amount for fixed deals. No min/max validation per spec. */
   rate: number;
-  item_id: string | null;
   custom_terms: string | null;
   status: "active" | "paused" | "expired" | "revoked";
+  /** Engine-set when a Red Card pause flips this row (auto-restored when red clears). */
+  paused_reason?: "owner_red" | null;
+  /** Optional validity window accepted on deal create (deals/route.ts). */
+  valid_from?: string | null;
+  valid_until?: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface AffiliateAttribution {
   id: string;
+  /** The /ref/<code> token this click arrived on. */
+  ref_code: string;
   deal_id: string;
+  /** Backfilled at purchase time — anonymous at click (Part 2f). */
   fan_id: string | null;
-  content_item_id: string | null;
-  converted_at: string;
+  /** Set at purchase — the clicked item is unknown until then. */
+  item_id: string | null;
+  attributed_at: string;
 }
 
+/** Immutable settlement record (monetization/creators.md Part 2f). */
 export interface AffiliateConversion {
   id: string;
-  attribution_id: string;
   deal_id: string;
-  amount: number;
-  commission: number;
-  status: "pending" | "paid";
-  paid_at: string | null;
-  created_at: string;
+  /** fan_purchases.id — one conversion per sale per deal. */
+  sale_id: string;
+  owner_cut: number;
+  promoter_cut: number;
+  settle_method: "auto_split" | "manual" | null;
+  settlement_status: "pending" | "awaiting_confirm" | "settled" | "disputed";
+  /** 14-day window (earnings.md Part 4) — re-dated when the debtor marks paid. */
+  due_at?: string | null;
+  /** Receipt step 1 — debtor marked paid; promoter gets a 14-day confirm window. */
+  owner_paid_at?: string | null;
+  /** Receipt step 2 — promoter confirmed (or admin verdict set settled). */
+  confirmed_at?: string | null;
+  disputed_at?: string | null;
+  dispute_reason?: string | null;
+  /** Ladder bitmask — one bit per fired notice (lib/settlement.ts). */
+  reminders_sent?: number | null;
+  settled_at?: string | null;
+  settled_manually?: boolean | null;
+  distributed_at?: string | null;
+  paypal_transfer_id?: string | null;
 }
 
 export interface AffiliateLink {

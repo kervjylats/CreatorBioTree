@@ -14,6 +14,9 @@ export interface CreatorSearchResult {
   tagline: string | null;
   avatar_url: string | null;
   is_featured: boolean | null;
+  /** Willingness (creators.open_to_collab) — drives the collab-list pool filter
+   *  and the disabled "Not open to collabs" button (network.md §1, 2026-10-07). */
+  open_to_collab?: boolean | null;
 }
 
 /** One-shot discover fetch for `q` — returns [] on failure. No React state. */

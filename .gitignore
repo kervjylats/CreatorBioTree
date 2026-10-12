@@ -57,3 +57,7 @@ cleanup.py
 # Mock mode artefacts (do not commit local upload/email logs)
 /temp_emails.log
 /public/mock-uploads/
+
+# Dev-server output (local only)
+/.next-dev.log
+/.next-dev.err

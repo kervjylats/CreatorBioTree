@@ -1,10 +1,11 @@
 /**
- * GET /api/discover/creators — public creator discovery (search.md). Filters
- * by show_in_search, drops username-less rows (invited-admin helpers — not
- * creators, and a null would crash the scorer), matches on display_name/username
- * via case-insensitive partial match, ranks by exact-username → featured →
- * partial → newest. Accepts ?q= query param; empty = show all discoverable
- * (featured first).
+ * GET /api/discover/creators — public creator discovery (search.md). Search is
+ * ALWAYS on (FB model 2026-10-09): no visibility filter, no mutual rule; the
+ * searcher's own card is excluded (self-Connect = guaranteed 400). Drops
+ * username-less helper rows (null would crash the scorer), matches on
+ * display_name/username, ranks exact → featured → partial → newest. ?q= empty
+ * = all creators featured-first (hub renders the shuffled willing-only collab
+ * list from this); rows carry `open_to_collab` (feed pool + disabled Connect).
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -16,7 +17,7 @@ interface CreatorRow {
   display_name: string;
   tagline: string | null;
   avatar_url: string | null;
-  show_in_search: boolean | null;
+  open_to_collab: boolean | null;
   is_featured: boolean | null;
   created_at: string;
 }
@@ -31,27 +32,14 @@ export async function GET(req: NextRequest) {
     const supabase = await createClient();
     const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
 
-    // Mutual toggle: if the searching creator has collab search OFF, return nothing.
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: me } = await supabase
-        .from("creators")
-        .select("show_in_search")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (me && me.show_in_search === false) {
-        return NextResponse.json({ results: [], query: q });
-      }
-    }
 
-    // A NULL show_in_search means "never set", which the settings UI treats as ON
-    // (`?? true`), so a strict `eq(true)` filter hid creators whose own toggle
-    // reads as enabled — the creator vanished from Discover and from the landing
-    // marquee (2026-10-01 audit). Match both states.
+    // No visibility filter since 2026-10-09 (FB model — search is a full
+    // directory; `show_in_search` is parked, network.md §3). The willingness
+    // pool for the default collab feed is filtered client-side.
     const { data: creators, error } = await supabase
       .from("creators")
-      .select("id, username, display_name, tagline, avatar_url, show_in_search, is_featured, created_at")
-      .or("show_in_search.eq.true,show_in_search.is.null");
+      .select("id, username, display_name, tagline, avatar_url, open_to_collab, is_featured, created_at");
 
     if (error) {
       console.error("[discover/creators] query error:", error);
@@ -63,6 +51,11 @@ export async function GET(req: NextRequest) {
     // throw on null and 500 EVERY search (found 2026-10-07 during the Stop 07
     // tour; the landing marquee already filters these, the deal form uses ?.).
     let results = (creators ?? []).filter((c) => c.username) as CreatorRow[];
+
+    // Never show the searcher their own card — the Connect button on it is a
+    // guaranteed 400 ("Cannot send request to yourself") and no social app
+    // lists you to yourself (founder 2026-10-09).
+    if (user) results = results.filter((c) => c.id !== user.id);
 
     if (q) {
       const lowerQ = q.toLowerCase();
@@ -116,6 +109,7 @@ export async function GET(req: NextRequest) {
         tagline: c.tagline,
         avatar_url: c.avatar_url,
         is_featured: c.is_featured,
+        open_to_collab: c.open_to_collab !== false,
       })),
       query: q,
     });

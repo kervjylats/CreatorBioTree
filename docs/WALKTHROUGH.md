@@ -33,6 +33,7 @@
 | 13  | Admin                                            | `/admin`                     | ⬜      |
 | 14  | Fan side — guest page → fan shell → partner page | `/{username}...`             | ⬜      |
 | 15  | Offline + the 3 PWAs                             | `/offline`                   | ⬜      |
+| 16  | Earnings (the money screen — wired 2026-10-10) | `/dashboard/earnings` | ✅  |
 
 ---
 
@@ -163,6 +164,7 @@ So `/dashboard/network` → screen folder `screens/creator/network` (leaf matche
 | `/dashboard/circle/fans` | `…/circle/fans/page.tsx` | `screens/creator/circle/fans` | `components/circle/fans/` | `creator/fans/*` | `features/relationships.md` |
 | `/dashboard/circle/staff` | `…/circle/staff/page.tsx` | `screens/creator/circle/staff` | `components/circle/staff/` | `creator/staff/*` | `features/staff.md` |
 | `/dashboard/settings` | `…/settings/page.tsx` | `screens/creator/settings` | `components/settings/` | `creator/playground` | `creator-dashboard/settings/settings.md` |
+| `/dashboard/earnings` | `…/earnings/page.tsx` | `screens/creator/earnings` | `components/earnings/` (EarningsPage + §1/§2/§2b/§3; EarningsSummary + PaymentsPanel moved in 2026-10-10 — **plus `AffiliateDealForm` + `YourDealsCard` + `AffiliateDiscover` + `AffiliateLinks` + the new `AffiliateDealsSection`, moved in from `components/network/` 2026-10-12 (A1)**) | `creator/earnings/sales`, `creator/earnings/paypal`, `creator/affiliates/earnings` (+`?badge=1`), `creator/affiliates/conversions/[id]/settle`, `creator/affiliates/{deals,discover,links}`, `admin/disputes*`, `fan/hop` | `creator-dashboard/earnings/earnings.md` |
 | `/admin` | `app/(shell)/admin/page.tsx` | `screens/admin` | `components/admin/` | `admin/*` | `screens/admin/admin.md` |
 | `/{username}` | `app/(fan)/[username]/page.tsx` | — *signpost* → `/guest` | — | — | — |
 | `/{username}/guest` | `…/guest/page.tsx` | `screens/fan/guest` | `components/fan-pwa/GuestPageContent` | `creator/pageview`, `fan/*` | `fan-shell.md` Part 3 |
@@ -217,7 +219,7 @@ So `/dashboard/network` → screen folder `screens/creator/network` (leaf matche
 **🧠 Gotchas:** _the traps we already stepped on while building/fixing this screen — read them first, spare yourself the same sting._
 
 - **Phase 4 (2026-09-29) added data + components** — it's no longer "100% static":
-  - Two **never-throwing loaders** (lines 39, 62): `getShowcaseCreators` (creators with `show_in_search` — Featured pinned + the rest shuffled per load, max 12, `landing.md` lineup rules) and `getYourCreators` (`fan_session` cookie → email → `fan_accounts` → creators). Both `.catch → []` so the page can never 500.
+  - Two **never-throwing loaders** (lines 39, 62): `getShowcaseCreators` (all creators with a username — Featured pinned + the rest shuffled per load, max 12, `landing.md` lineup rules; pool de-gated 2026-10-09) and `getYourCreators` (`fan_session` cookie → email → `fan_accounts` → creators). Both `.catch → []` so the page can never 500.
   - **Privacy rule:** `YourCreatorsRow` renders **only** when the visitor has a recognized fan cookie — never for anonymous visitors.
   - **Showcase hides below 2 creators** (marquee needs a full loop).
 - **Marquee CSS** lives in `src/styles/globals.css` (`.showcase-*` + `@keyframes showcase-marquee`, hover-pause + `prefers-reduced-motion`) — not in Screen.tsx.
@@ -232,7 +234,7 @@ So `/dashboard/network` → screen folder `screens/creator/network` (leaf matche
 | ----------------------------------- | -------------------------------------------------------------------------------- |
 | Hero headline / subtext / CTAs      | `Screen.tsx` hero `<section>` (lines ~120–145)                                   |
 | Demo link target                    | line 133 (or set `NEXT_PUBLIC_DEMO_USERNAME`)                                    |
-| Which creators show in the showcase | loader `getShowcaseCreators` (line 39) + each creator's "Show me in search" flag |
+| Which creators show in the showcase | loader `getShowcaseCreators` (line 39) — all creators with a username (pool de-gated 2026-10-09: the "Show me in search" flag no longer exists) |
 | The fan "Your creators" row         | `components/landing/YourCreatorsRow.tsx`                                         |
 | Sign-in dialog                      | `components/landing/LandingAuthModal.tsx`                                        |
 | Marquee speed / pause behavior      | `src/styles/globals.css` (`.showcase-track`)                                     |
@@ -382,7 +384,7 @@ and the security gates — for **every** page under `/dashboard` *and* `/admin`.
 | ---------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🚪 Door    | `src/app/(shell)/dashboard/page.tsx` (2 lines)              | The Overview screen itself — a 2-line address-book entry to `src/screens/creator/overview/`. Old `/dashboard/overview` links **307 back here** via the `LEGACY_ROUTES` table in `proxy.ts` |
 | 🧠 Frame   | `src/app/(shell)/layout.tsx` (67 lines)                     | THE FRAME — auth gate → `/login`, onboarding gate → `/onboarding`, admin gate → `/dashboard`; renders sidebar + main + the dock stack              |
-| 🎨 Pixels  | `components/layout/DashboardSidebar.tsx` (127)              | Desktop left rail (`w-60`, `md:flex`) + phone bottom bar (`md:hidden`) — same nav items in both                                                     |
+| 🎨 Pixels  | `components/layout/DashboardSidebar.tsx` (149)            | Desktop left rail (`w-60`, `md:flex`) + phone bottom bar (`md:hidden`) — same nav items in both. The identity block = **Avatar photo** + name/@handle + **✏️** → `ProfileEditDialog` → Settings → Profile (2026-10-09 — phones have no identity block, so their gateway is the billboard's) |
 |            | `components/layout/MyPeeps.tsx` (94)                        | The 3 dock buttons (Partners · Fans · Staff) + red count badges — position-less, no placement of their own                                         |
 |            | `MessageInboxPopover` (`components/messages/MessagesShell.tsx`) | The 💬 bubble at the bottom of the dock stack                                                                            |
 | 🔧 Kitchen | none of its own                                              | But the layout calls `supabase.auth.getUser()` + the creators lookup **server-side per request**; MyPeeps polls `GET /api/creator/peeps` every 30s |
@@ -414,13 +416,13 @@ and the security gates — for **every** page under `/dashboard` *and* `/admin`.
   `startsWith("/dashboard")` would light "Overview" on *every* dashboard page,
   so the root compares **exactly** (`DashboardSidebar.tsx:38`).
 - **Nav items = ONE list feeding BOTH bars.** `lib/nav-config.ts` `DASHBOARD_NAV_ITEMS`
-  (Overview · Network · Playground · Settings + **Admin Panel** only for admins) feeds
+  (Overview · Network · Playground · **Earnings** · Settings + **Admin Panel** only for admins — Earnings added 2026-10-10, Sheet 23) feeds
   the desktop sidebar AND the phone bottom bar. Add or rename a link → edit
   nav-config, both bars update. No sign-out here by design — it lives in Settings.
 - **Sidebar ↔ bottom bar flips at 768px (`md:`).** `hidden md:flex` aside vs
   `md:hidden` fixed bar; `<main>` reserves `pb-20` on phones so content never
-  hides under the bar. Admins get a **5th cell** ("Admin Panel") on the phone
-  bar too — deliberate, not an oversight.
+  hides under the bar. Creators get a **5th cell** ("Earnings"), admins a
+  **6th** ("Admin Panel") on the phone bar too — deliberate, not an oversight.
 - **The dock = ONE stack, mounted ONCE** (`layout.tsx:61`):
   `fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-50 md:bottom-6 md:right-6`.
   Children (MyPeeps + 💬) are **position-less** — neither may carry its own
@@ -540,10 +542,12 @@ the layout (Stop 04) draws the walls around it.
 
 ## 🌐 Stop 07 — Network `/dashboard/network`
 
-**🎯 What it is:** the collab HQ — find other creators (Discover), pitch yourself
-(your billboard), and run affiliate deals from the left rail. Two columns at `md+`
+**🎯 What it is:** the collab HQ — find other creators (Discover) and pitch
+yourself (your billboard). Two columns at `md+`
 (rail left, Discover right); one column on phones with Discover first. **My Peeps
 does not live here** — its dock buttons open `/dashboard/circle/*` (2026-09-27).
+**The affiliate block left for the Earnings screen §2b on 2026-10-12** (A1 — the
+rail is the billboard mirror only; Network = social).
 
 **🗂️ The chain:**
 
@@ -551,35 +555,75 @@ does not live here** — its dock buttons open `/dashboard/circle/*` (2026-09-27
 | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🚪 Door    | `src/app/(shell)/dashboard/network/page.tsx` (2 lines)   | Address-book entry → `src/screens/creator/network/`. Old sub-pages `/dashboard/network/{partners,fans,staff}` **307 to `/dashboard/circle/*`** via `proxy.ts` `LEGACY_ROUTES`                |
 | 🧠 Screen  | `src/screens/creator/network/Screen.tsx` (15)            | Server component: tab title + thin `<main>` wrapper around the hub (the pattern from Stop 00)                                                                                                 |
-| 🎨 Hub     | `components/network/NetworkPage.tsx` (321, `use client`)  | The whole screen. Holds ALL state: `billboard` (rail data), `dealsKey` (affiliate refresh bell), `connectState` (per-creator button states). Grid `md:grid-cols-[220px_1fr] lg:grid-cols-[250px_1fr]`, rail `order-2 md:order-1`, center `order-1 md:order-2` |
-| 🔍 Search trio | `components/shared/SearchBox.tsx` (39)                | The visible box (shared body — also worn by admin CreatorsTable)                                                                                                                              |
-|            | `hooks/useCreatorSearch.ts` (68)                          | The brain: 300ms debounce → `GET /api/discover/creators?q=…`. Worn by NetworkPage + AffiliateDealForm                                                                                       |
-|            | `GET /api/discover/creators/route.ts` (120)               | Speed bump (60/min, anonymous) → `show_in_search` filter (**NULL = visible**) → score/rank: exact @handle (1000) → handle-prefix (500) → name-prefix (400) → contains → featured boost (+100) → newest |
-| 🪞 Rail    | `components/network/BillboardPreview.tsx` (105)           | The mirror: how you look to others (avatar, name, @handle, tagline, tags, collab style) + visibility pill                                                                                     |
-|            | `components/network/BillboardEditor.tsx` (213)            | The form behind it: collapsible — instant switches (Show me in search / Accept collab requests) + tagline (60-char counter) + tags (3) + collab style + Media Kit (sponsor bio, rate card, message) + Save button |
-| 💼 Affiliate | `components/network/AffiliateDealForm.tsx` (283)        | Opens on `+ New deal` (cancels too). Collaborator = @username, resolved through the same search engine on submit; item scope = your catalog (external-link items quarantined)                 |
-|            | `YourDealsCard` (152) · `EarningsSummary` (114) · `AffiliateDiscover` (120) · `AffiliateLinks` (157) | The four widgets below the form — all refetch together when `dealsKey` bumps                                                            |
-| 🔧 Kitchen | `GET+PUT /api/creator/partners/billboard`                 | Reads + saves the billboard (bio 600 / rate card / media-kit 300) — one PUT serves both the Save button and the instant switches                                                              |
+| 🎨 Hub     | `components/network/NetworkPage.tsx` (`use client`)        | The whole screen. Holds ALL state: `billboard` (rail mirror + switch data), `connectState` (per-creator button states), `defaultList` (shuffled collab list), `visibleCount` (24-card batches + Show more, both views), `modalCreator`/`nudgeOpen` (Modal A + first-time nudge). **The affiliate state (`showDealForm`/`dealsKey`/`handleDealSubmit`) moved to `AffiliateDealsSection` on 2026-10-12** (Earnings §2b). **⇄ Shuffle button** — right-aligned directly above the card list (below the switch card; founder placement fix 2026-10-09), feed only, rerolls `defaultList` in place — grid `md:grid-cols-[220px_1fr] lg:grid-cols-[250px_1fr]`, rail `order-2 md:order-1`, center `order-1 md:order-2` |
+| 🔍 Search trio | `components/shared/SearchBox.tsx` (43)                | The visible box (shared body — also worn by admin CreatorsTable). **Never greys since 2026-10-09** — the `disabled` prop had one caller (the old `show_in_search` OFF rule) and is now unused                                                     |
+|            | `hooks/useCreatorSearch.ts` (71)                          | The brain: 300ms debounce → `GET /api/discover/creators?q=…`. Worn by NetworkPage + AffiliateDealForm (results now carry `open_to_collab`)                                                      |
+|            | `GET /api/discover/creators/route.ts` (130)               | Speed bump (60/min, anonymous) → **no visibility filter since 2026-10-09** (search = full directory) → **the searcher is excluded from their own results** (self-Connect is a guaranteed 400) → score/rank: exact @handle (1000) → handle-prefix (500) → name-prefix (400) → contains → featured boost (+100) → newest. Rows carry `open_to_collab` (collab-feed pool filter + the card's disabled "Not open to collabs" state) |
+| 🪟 Modal A  | `components/network/CreatorBillboardModal.tsx` (172)     | Click any Discover card → this overlay paints the seed instantly, then `GET /api/discover/creators/[id]` for tagline/tags/collab style/bio/rate card/media kit + Connect/Visit (2026-10-07)       |
+|            | `GET /api/discover/creators/[id]/route.ts` (63)           | Billboard-modal detail: same rate limit — answers for **any creator with a username** (404 only unknown/username-less ids; the hidden-creator 404 died with the switch, 2026-10-09)                                                                                  |
+| 🔍 Switch  | `components/network/NetworkSettings.tsx`                | The ONE instant-save switch (**Accept collab requests**) in its own card **inside the Discover section**, under the heading (moved from the rail 2026-10-09; second switch removed same day — FB model). When OFF, a subtle muted line appears above the feed: *"You're not in this list…"* — informational only, list stays visible (NetworkPage) |
+| 🪞 Rail    | `components/network/BillboardPreview.tsx` (131)           | The mirror: how you look to others (avatar, name, @handle, tagline, tags, collab style) + the **status-only** badge — relabelled **Open/Closed to collabs** 2026-10-09 (mirrors the one switch; toggle = the switch card in Discover). **Two pencils, two rows:** header ✏️ (beside the title) = design → Playground → Billboard view · name-row ✏️ = identity gateway #2 → `ProfileEditDialog` → Settings                                                              |
+| 💼 Affiliate | ~~the rail's affiliate block~~ → **moved to the Earnings screen §2b, 2026-10-12 (`components/earnings/`)** | `AffiliateDealForm` (283) · `YourDealsCard` (152) · `AffiliateDiscover` (120) · `AffiliateLinks` (157) all `git mv`'d to `components/earnings/` and composed by the new `AffiliateDealsSection` — **see Stop 16 (Earnings)**. The rail is billboard-only now                 |
+| 🔧 Kitchen | `GET+PUT /api/creator/partners/billboard`                 | Reads + saves the billboard (bio 600 / rate card / media-kit 300 + `is_featured` for the preview badge) — one PUT serves the Playground Save button (`BillboardView`) and the Network instant switches                                                              |
 |            | `POST /api/creator/partners/request`                      | The Connect button (403 when the other creator's `open_to_collab` is OFF)                                                                                                                     |
-|            | `POST+GET /api/creator/affiliates/{deals,earnings,discover,links}` | The deal maker + the four widgets' data                                                                                                                                                |
+|            | `POST+GET /api/creator/affiliates/{deals,earnings,discover,links}` + `GET /ref/[code]` | The deal maker + the affiliate widgets' data (**UI home = the Earnings screen §2b since 2026-10-12**; `/affiliates/earnings` also feeds **§2** — Sheet 23, incl. the cheap `?badge=1` sidebar-dot branch). `/ref/<code>` = Door 1: counts the click, writes attribution, redirects to the **deal owner's** page — **Door 2 = the in-app hop** (`POST /api/fan/hop` + `lib/hopAttribution.ts`, wired 2026-10-10: partner surface open → attribution row + `aff_attr` cookie, no deal = plain navigation)                                                                                                        |
+|            | `src/lib/affiliateAttribution.ts` (151)                  | The Deal Rules engine (2026-10-09): `/ref` click → `affiliate_attributions` + 30-day `aff_attr` cookie; `POST /fan/purchases/complete` → `computeDealCuts` (percentage/fixed; free/tiered/custom → 0) → one `affiliate_conversions` row per sale per deal (`pending`) — idempotent, replays heal, no cookie = no conversion          |
 | 📐 Spec    | `screens/creator-dashboard/network/network.md`            | Blueprint — **note:** its "right rail = My Peeps" is the old Layout B plan; My Peeps moved to the dock + `/dashboard/circle/*` (see gotchas)                                                   |
 
 **🧠 Gotchas:** _the traps we already stepped on while building/fixing this screen — read them first, spare yourself the same sting._
 
 - **Search and Discover are ONE thing.** "Search" = the box you type into;
   "Discover" = the section where results land (same words as the API
-  `/api/discover/creators`). Empty query = browse everyone discoverable
-  (featured first, newest) — the section is never blank.
+  `/api/discover/creators`). **Two views since 2026-10-07, pools revised
+  2026-10-09:** empty query = the **collab list** (willing creators only —
+  `open_to_collab` — shuffled each load, Featured pinned, never blank);
+  typed query = search across **ALL creators** (FB-style directory — a closed
+  creator is still findable, their card just shows the disabled button).
+  Clearing the box returns to the list.
+- **Search NEVER greys (FB model, 2026-10-09).** The old `show_in_search`
+  switch + its mutual blind rule (box disabled, list replaced by a banner with
+  [Turn on]) were **removed entirely** — no disabled box, no banner, no
+  self-blanking, ever. The one switch left (**Accept collab requests**, in its
+  card under the DISCOVER heading) only decides: (a) do I appear in the
+  default collab feed, (b) can people Connect with me. Typed search ignores
+  it — everyone stays findable by name. `creators.show_in_search` is parked
+  (column kept, zero reads).
+- **The billboard nudge fires once, on first sight — not on a toggle.**
+  (Trigger retargeted 2026-10-09 with the switch removal.) When you land on
+  Network with an **undesigned** billboard, a modal *"🎉 Design your billboard
+  … (~2 min)"* offers [Design my billboard] (jumps to
+  `/dashboard/playground?view=billboard`) / [Maybe later]; the flag lives in
+  localStorage `billboard_nudge_seen_<username>`. No repeat — the permanent
+  edit door is the **✏️ pencil in the My Billboard card header** (always
+  visible since 2026-10-09; the Discover-header button + its flag gating were
+  removed). The design editing itself lives in Playground (founder rule
+  2026-10-09: *Network = see + toggle · Playground = design*).
+- **Modal A = card click.** Both card types open `CreatorBillboardModal`
+  (popup over the dimmed hub — your OWN billboard is edited in Playground →
+  Billboard view, never in a modal; a second "your own billboard" modal was
+  rejected). Connect/Visit
+  live in a `stopPropagation` wrapper — without it, clicking Connect would
+  ALSO open the modal.
+- **"Not open to collabs" is a disabled button, not an error-after-click.**
+  Search cards whose target closed their `open_to_collab` show the closed
+  sign up front (the old flow only answered 403 *after* you pressed Connect).
+- **The private-collab path is the invite link — and it now works logged-in.**
+  Two collabs-OFF creators (out of the default feed — typed search still
+  finds them since 2026-10-09) connect via `partnership.md`'s `?invite=`
+  link; the `/onboarding` Screen consumes the code for an already-logged-in
+  creator (shared `lib/partnerInvites.ts` with `POST /partners/onboarding`)
+  and lands on `/dashboard/circle/partners` with a `?joined=` toast (or
+  `?invite_error=1` → "Invite invalid or expired"). Pre-2026-10-07 it dropped
+  the code, forcing a logout first.
 - **The tablet column-inversion trap (fixed 2026-09-26).** The grid appears at
   `md:` but the order swap used to fire at `lg:` — grid placement uses
   *order-modified* document order, so every tablet (768–1023px) had the rail
   and Discover **flipped**. Law: the `order-*` swap must fire at the **same**
   breakpoint as the grid it serves (`order-2 md:order-1` for a `md:` grid).
-- **`show_in_search` NULL means visible.** A strict `eq(true)` filter hid
-  creators whose own switch reads ON (2026-10-01 audit) — the route (and the
-  landing marquee) match `true OR null`.
-- **The toggle is mutual by design:** if YOU turn off "Show me in search",
-  your own searches return nothing too. You opted out both ways.
+- **`show_in_search` is a parked column (2026-10-09).** NULL-equals-visible
+  logic mattered when the switch existed (2026-10-01 audit fixed a strict
+  `eq(true)` that hid ON-by-default creators) — the switch + filter are now
+  gone; nothing reads the column anymore (network.md §3).
 - **The Connect button is a 4-word state machine** — `Connect → … → Requested →
   Connected`, tracked per creator id, disabled once sent. Server answers are
   mapped honestly: "Request already pending"/"Already connected" land on
@@ -591,9 +635,32 @@ does not live here** — its dock buttons open `/dashboard/circle/*` (2026-09-27
   otherwise every keystroke would hit the server. A save that silently failed
   used to read as success (fixed 2026-10-01: error toast).
 - **`dealsKey` is one shared refresh bell.** Creating a deal bumps a single
-  number → all four affiliate widgets refetch together. Pre-fix they could
-  disagree ("Your Deals" showed the new deal while earnings showed stale data)
-  until a full reload.
+  number → all the affiliate widgets refetch together. Pre-fix they could
+  disagree ("Your Deals" showed the new deal while links/discover showed stale
+  data) until a full reload. (Earnings used to be a fourth — it moved to
+  `/dashboard/earnings`, 2026-10-10; **the bell itself moved with the widgets
+  to `AffiliateDealsSection` on 2026-10-12**.)
+- **A conversion needs an attribution COOKIE — Door 1 is /ref, Door 2 is the
+  in-app hop (mock).** `GET /ref/<code>` counts the click, writes an
+  `affiliate_attributions` row + a 30-day `aff_attr` cookie, and redirects to
+  the **deal owner's** storefront — NOT the promoter who created the link (the
+  product lives with the owner; pre-fix the redirect used `link.creator_id`).
+  Door 2 (**wired 2026-10-10**): opening a partner modal/page calls
+  `firePartnerHop` (`lib/hopAttribution.ts` — module-level dedupe so each
+  pair tags once) → `POST /api/fan/hop` writes the same cookie when an
+  active owner↔host deal exists — purchases can complete inside the modal,
+  so tagging fires on OPEN; no deal = `{tagged:false}` = plain navigation.
+  `POST /fan/purchases/complete` reads the cookie → validates the
+  deal (active, validity window, **creator-only**, trigger) → writes ONE
+  `affiliate_conversions` row per sale per deal (`pending`, `due_at` = +14d).
+  Replaying the purchase heals a missed row (idempotent); buying with **no
+  cookie** writes nothing — the conservative side. Math lives in
+  `lib/affiliateAttribution.ts`. Settlement *marking* (receipt protocol:
+  Mark paid → Confirm/Dispute + 14-day ladder + Red Card) **shipped with the
+  Earnings screen 2026-10-10** (`lib/settlement.ts` + `…/conversions/[id]/settle`
+  + the earnings GET). Still open: `?ref=`
+  passthrough, follow/subscribe/signup trigger writers, real PayPal webhook
+  (route is mock-only).
 - **The result card is INLINE in NetworkPage — that's the extraction rule
   working.** One card, one screen → stays inside the body. Avatar, Badge,
   Button, EmptyState, Spinner come from `shared/` because many screens wear
@@ -611,15 +678,22 @@ does not live here** — its dock buttons open `/dashboard/circle/*` (2026-09-27
 
 | You want to change...                | Touch                                                                                       |
 | ------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Search ranking, fields, "who's findable" | `GET /api/discover/creators/route.ts` (the scorer — plus the landing marquee for the same flag) |
+| Search ranking, fields, "who's findable" | `GET /api/discover/creators/route.ts` (the scorer + self-exclusion; pools: feed = client-side willingness, typed = everyone — landing marquee rides the same all-creators pool) |
 | How fast search reacts               | `useCreatorSearch(debounceMs)` (default 300)                                                |
-| The search box's look                | `components/shared/SearchBox.tsx` (worn by 3 screens — check the others)                    |
-| Add a billboard field                | `BillboardEditor.tsx` + `BillboardSettings` type + PUT body in NetworkPage + the PUT route |
-| Instant-switch behavior              | `handleInstantToggle` in `NetworkPage.tsx` (keep the rollback on failure)                   |
-| Add/fix an affiliate widget          | `components/network/*` — refresh through `dealsKey`, don't fetch on mount-only              |
+| The search box's look                | `components/shared/SearchBox.tsx` (worn by 2 screens — Network + admin CreatorsTable)   |
+| Billboard popup contents             | `CreatorBillboardModal.tsx` (the seed paint + the `[id]` fetch mapping)                 |
+| The billboard nudge (copy / flag)    | `dismissNudge` in `NetworkPage.tsx` + the localStorage key `billboard_nudge_seen_<username>` |
+| Add a billboard field                | `components/playground/BillboardEditor.tsx` + `BillboardSettings` type + PUT body in `BillboardView.tsx` + the PUT route (the collab switch is NOT here — it lives in `NetworkSettings`) |
+| Instant-switch behavior              | `handleInstantToggle` in `NetworkPage.tsx` (keep the rollback on failure); the card is `components/network/NetworkSettings.tsx` (the billboard nudge is a separate effect — first undesigned visit, not a toggle flip) |
+| Add/fix an affiliate widget          | `components/earnings/*` (the 4 widgets + `AffiliateDealsSection` — refresh through its `dealsKey`, don't fetch on mount-only; **moved from `components/network/` 2026-10-12**) |
+| Affiliate math / conversion rules    | `lib/affiliateAttribution.ts` (`computeDealCuts`, `dealCoversPurchase` — `scopeMatches` died with creator-only deals, 2026-10-10) + the writer calls in `purchases/complete` |
+| Receipts / Red Card / the ladder    | **Earnings screen** — `screens/creator-dashboard/earnings/earnings.md` + `components/earnings/` + `POST /api/creator/affiliates/conversions/[id]/settle` + `computeRedCard` (one impl: deals POST 403 · engine pause · banner) |
+| Money screen contents (sales, PayPal handle) | `components/earnings/EarningsPage.tsx` + `GET /api/creator/earnings/sales` + `PUT /api/creator/earnings/paypal` (Sheet 23)        |
+| Create/manage affiliate deals (UI) | **Earnings §2b** — `components/earnings/AffiliateDealsSection.tsx` (+ the 4 widgets it composes — moved from `components/network/` 2026-10-12; `EarningsPage` order = Sales → Affiliate → **Deals** → Payments) |
 | The Connect flow                     | `handleConnect` in NetworkPage + `POST /api/creator/partners/request`                       |
+| Partner invite accept logic          | `lib/partnerInvites.ts` (`consumePartnerInvite` — ONE copy: API route + `/onboarding` Screen) |
 | Old network sub-page URLs            | `proxy.ts` `LEGACY_ROUTES` (add a row — never re-create signpost files)                     |
-| Which folder a widget lives in       | `components/network/` = network-domain only; collab widgets (CollabList/Detail/InboxRequests) deliberately sit here too and are worn by `/dashboard/circle/partners` |
+| Which folder a widget lives in       | `components/network/` = network-domain only (billboard + Discover chrome); collab widgets (CollabList/Detail/InboxRequests) deliberately sit here too and are worn by `/dashboard/circle/partners`; **the affiliate widgets left for `components/earnings/` on 2026-10-12** |
 
 ---
 

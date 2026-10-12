@@ -15,8 +15,6 @@ interface Deal {
   id: string;
   owner_id: string;
   promoter_id: string;
-  scope: string;
-  item_id: string | null;
   deal_type: string;
   trigger: string;
   rate: number | null;
@@ -98,8 +96,7 @@ export function AffiliateDiscover({ refreshKey = 0 }: { refreshKey?: number }) {
           <CardContent>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0 text-sm text-muted-foreground break-all">
-                <span>Scope: {deal.scope}</span>
-                {deal.item_id && <span className="ml-2">• Item: {deal.item_id}</span>}
+                <span>Covers their whole catalog</span>
               </div>
               <Button
                 size="sm"

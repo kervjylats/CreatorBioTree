@@ -52,9 +52,17 @@ Old code (`PartnerInviteCard-old.tsx`) had a ready-made share card: invite code 
 **Single-use:** one invite code = one partner. Expired (7 days) → the inviter re-generates.
 
 **Edge cases:**
-- Already-logged-in creator clicks an invite link → redirect to dashboard (no double signup)
+- Already-logged-in creator clicks an invite link → consumes the invite and lands on `/dashboard/circle/partners` with a toast (no double signup) — see "THE private-collab path" below (fixed per 2026-10-07; pre-fix behavior was a bare `/dashboard` redirect that dropped the code)
 - Invite link clicked by someone who's already a creator → accept flow converts to auto-partnership (creates the row; no new account)
 - Invalid/expired/used code → generic "invite invalid or expired" message, not an error page
+
+### ⚠️ THE private-collab path (founder decision 2026-10-07)
+
+Two creators who already know each other and **both have their collab switch OFF** (so neither sits in the default collab feed — they don't want to be *matched*, though typed search still finds them since 2026-10-09) collab **only** through this invite link. The link IS the door — no feed presence, no request/accept dance; one click connects them.
+
+- **Backend already supports it:** `POST /api/creator/partners/onboarding` accepts **any logged-in creator** (validates code → marks used → inserts `partnerships` row, `source: "invited"`)
+- **Logged-in accept WIRED 2026-10-07:** `/onboarding?invite=CODE` consumes the invite for an already-logged-in creator (shared `lib/partnerInvites.ts`) → redirect `/dashboard/circle/partners` + success toast ("You're now partnered with {name}"). Invalid/expired → the same generic message, then normal dashboard
+- Cross-reference: this is the low-friction escape hatch for `network.md` §3 — two collabs-OFF creators skip the feed + request dance entirely; being out of the feed never means being unreachable
 
 ---
 

@@ -4,17 +4,17 @@
  * and create new deals (network.md §7, monetization/creators.md Part 2).
  * `owner_id` is optional on create and defaults to the session user.
  * Deals are immutable after creation; status updates go through PATCH
- * /deals/[id].
+ * /deals/[id]. Creator-only since 2026-10-10 (earnings.md §1 — no per-item
+ * scope); POST 403s while the creator holds the Red Card (earnings.md Part 4).
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, handleAuthError } from "@/lib/requireAuth";
+import { computeRedCard } from "@/lib/settlement";
 
 const createDealSchema = z.object({
   owner_id: z.string().min(1).optional(),
   promoter_id: z.string().min(1),
-  scope: z.enum(["item", "creator"]),
-  item_id: z.string().min(1).optional(),
   deal_type: z.enum(["percentage", "fixed", "free", "tiered", "custom"]),
   trigger: z.enum(["purchase", "follow", "subscribe", "tip", "signup", "any"]),
   rate: z.number().min(0).optional(),
@@ -61,11 +61,18 @@ export async function POST(req: Request) {
 
     const data = validation.data;
     const ownerId = data.owner_id || user.id;
-    if (data.scope === "item" && !data.item_id) {
-      return NextResponse.json({ error: "item_id is required for per-item deals" }, { status: 400 });
-    }
     if (ownerId !== user.id) {
       return NextResponse.json({ error: "You can only create deals where you are the owner" }, { status: 403 });
+    }
+
+    // Lock ① (earnings.md Part 4): a Red Card holder can't sign new deals —
+    // settle what you already owe first.
+    const redCard = await computeRedCard(supabase, user.id);
+    if (redCard.red) {
+      return NextResponse.json(
+        { error: "You have overdue affiliate payments. Settle them in Earnings to create new deals." },
+        { status: 403 },
+      );
     }
 
     const now = new Date().toISOString();

@@ -81,6 +81,7 @@ interface Filter {
     | "gte"
     | "gt"
     | "or"
+    | "and"
     | "is"
     | "not";
   val: unknown;
@@ -315,6 +316,11 @@ function matchFilter(row: Record<string, unknown>, f: Filter): boolean {
       const subs = f.val as Filter[];
       return subs.some((s) => matchFilter(row, s));
     }
+    case "and": {
+      // Group inside an `.or()` string — e.g. `and(col.a.eq.1,col.b.eq.2)`.
+      const subs = f.val as Filter[];
+      return subs.every((s) => matchFilter(row, s));
+    }
     case "not": {
       // f.val is { col, op, val } — negate the inner filter
       const inner = f.val as Filter;
@@ -326,6 +332,50 @@ function matchFilter(row: Record<string, unknown>, f: Filter): boolean {
 function matchRow(row: unknown, filters: Filter[]): boolean {
   const r = row as Record<string, unknown>;
   return filters.every((f) => matchFilter(r, f));
+}
+
+// ─── PostgREST `.or()` string parsing (paren-aware, nested groups) ────────────
+//
+// Supabase lets `.or()` take nested groups: `and(a.eq.1,b.eq.2),or(c.eq.3,d.eq.4)`.
+// A naive comma split breaks those (each `and(...)` fragment becomes garbage and
+// the filter silently matches NOTHING — which let duplicate `partnerships` rows
+// through the dedupe check, hit 2026-10-07). Split on top-level commas only.
+
+function splitTopLevel(s: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let cur = "";
+  for (const ch of s) {
+    if (ch === "(") depth++;
+    else if (ch === ")") depth--;
+    if (ch === "," && depth === 0) {
+      parts.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur) parts.push(cur);
+  return parts;
+}
+
+function parseOrClause(c: string): Filter {
+  const [col, op, ...valParts] = c.split(".");
+  return {
+    col: col.trim(),
+    op: op.trim() as Filter["op"],
+    val: _coerceValue(valParts.join(".").trim()),
+  };
+}
+
+function parseOrGroup(s: string): Filter[] {
+  return splitTopLevel(s).map((part) => {
+    const m = /^(and|or)\((.*)\)$/.exec(part.trim());
+    if (m) {
+      return { col: "", op: m[1] as "and" | "or", val: parseOrGroup(m[2]) };
+    }
+    return parseOrClause(part);
+  });
 }
 
 // ─── Query builder ───────────────────────────────────────────────────────────
@@ -433,17 +483,9 @@ class MockQueryBuilder implements PromiseLike<MockResult> {
   }
 
   or(clauses: string): this {
-    // "col.op.val,col.op.val" — comma-separated, OR-combined.
-    const subs: Filter[] = clauses.split(",").map((c) => {
-      const [col, op, ...valParts] = c.split(".");
-      const val = valParts.join(".");
-      return {
-        col: col.trim(),
-        op: op.trim() as Filter["op"],
-        val: _coerceValue(val.trim()),
-      };
-    });
-    this.filters.push({ col: "", op: "or", val: subs });
+    // Comma-separated OR list — supports nested `and(...)`/`or(...)` groups
+    // (paren-aware parser above; real Supabase supports the same syntax).
+    this.filters.push({ col: "", op: "or", val: parseOrGroup(clauses) });
     return this;
   }
 
@@ -753,7 +795,9 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
     }
 
     case "get_creator_activity": {
-      // Lightweight activity feed: most-recent fans + purchases for this creator.
+      // Lightweight activity feed: most-recent fans + purchases for this creator,
+      // plus settlement events SYNTHESIZED from the immutable affiliate ledger
+      // (earnings.md Part 7 — no event table; history can't drift from the rows).
       const creatorId = args.p_creator_id as string;
       const fans = getTable("fan_accounts")
         .filter((f) => (f as Record<string, unknown>).creator_id === creatorId)
@@ -769,7 +813,46 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
           amount: (p as Record<string, unknown>).amount_paid,
           created_at: (p as Record<string, unknown>).purchased_at,
         }));
-      return { data: [...fans, ...purchases], error: null };
+
+      const myDeals = getTable("affiliate_deals").filter((d) => {
+        const deal = d as Record<string, unknown>;
+        return deal.owner_id === creatorId || deal.promoter_id === creatorId;
+      });
+      const ownedDealIds = new Set(
+        myDeals.filter((d) => (d as Record<string, unknown>).owner_id === creatorId)
+          .map((d) => (d as Record<string, unknown>).id as string),
+      );
+      const affiliate: Array<Record<string, unknown>> = [];
+      const DAY_MS = 24 * 60 * 60 * 1000;
+      for (const conv of getTable("affiliate_conversions")) {
+        const c = conv as Record<string, unknown>;
+        const dealId = String(c.deal_id ?? "");
+        if (!myDeals.some((d) => (d as Record<string, unknown>).id === dealId)) continue;
+        const amount = Number(c.promoter_cut ?? 0);
+        const isOwner = ownedDealIds.has(dealId);
+        const base = String(c.created_at ?? c.due_at ?? new Date().toISOString());
+        if (amount > 0) {
+          affiliate.push({ type: isOwner ? "payment_due" : "affiliate_earned", amount, created_at: base });
+        }
+        if (c.owner_paid_at) affiliate.push({ type: "payment_marked", amount, created_at: c.owner_paid_at });
+        if (c.confirmed_at) affiliate.push({ type: "payment_confirmed", amount, created_at: c.confirmed_at });
+        if (c.disputed_at) affiliate.push({ type: "dispute_opened", amount, created_at: c.disputed_at });
+        // Overdue signal — only for genuinely late, non-held debtor rows.
+        const dueAt = c.due_at
+          ? Date.parse(String(c.due_at))
+          : Date.parse(base) + 14 * DAY_MS;
+        if (
+          isOwner &&
+          amount > 0 &&
+          !c.held_since &&
+          c.settlement_status === "pending" &&
+          dueAt < Date.now()
+        ) {
+          affiliate.push({ type: "payment_overdue", amount, created_at: new Date(dueAt).toISOString() });
+        }
+      }
+
+      return { data: [...fans, ...purchases, ...affiliate], error: null };
     }
 
     case "get_creator_partnership_stats": {
@@ -848,6 +931,8 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
         social_screenshots: {},
         ai_summary: null,
         avatar_url: null,
+        display_name_changed_at: null,
+        avatar_changed_at: null,
         banner_url: null,
         custom_domain: null,
         preferred_subdomain: null,
@@ -859,6 +944,7 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
         payout_email: null,
         payoneer_id: null,
         paypal_email: null,
+        paypal_handle: null,
         created_at: existing?.created_at ?? now,
         updated_at: now,
       };
@@ -1002,6 +1088,8 @@ function buildMockCreatorRow(id: string, email: string, displayName: string): Cr
     display_name: displayName,
     bio: null,
     avatar_url: null,
+    display_name_changed_at: null,
+    avatar_changed_at: null,
     banner_url: null,
     email,
     role: "creator",
@@ -1033,6 +1121,7 @@ function buildMockCreatorRow(id: string, email: string, displayName: string): Cr
     payout_email: null,
     payoneer_id: null,
     paypal_email: null,
+    paypal_handle: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   } satisfies Creator;
@@ -1233,7 +1322,13 @@ export function seedMockAdmin(): void {
   if (!creators.some((c) => c.id === MOCK_ADMIN_ID)) {
     creators.push({
       id: MOCK_ADMIN_ID,
-      username: "admin",
+      // Username-less on purpose (2026-09-29 staff law: admin accounts get a
+      // minimal creators row with NO Link Address). The old "admin" username
+      // leaked the staff account into creator search / collab feed / landing
+      // marquee once show_in_search was parked (founder 2026-10-09). Cast:
+      // Creator.username is still typed `string` (honest type = string|null —
+      // runtime already handles nulls; separate sweep).
+      username: null as unknown as string,
       display_name: "Platform Owner",
       bio: null,
       email: MOCK_ADMIN_EMAIL,
@@ -1257,6 +1352,8 @@ export function seedMockAdmin(): void {
       social_screenshots: {},
       ai_summary: null,
       avatar_url: null,
+      display_name_changed_at: null,
+      avatar_changed_at: null,
       banner_url: null,
       custom_domain: null,
       preferred_subdomain: null,
@@ -1268,6 +1365,7 @@ export function seedMockAdmin(): void {
       payout_email: null,
       payoneer_id: null,
       paypal_email: null,
+    paypal_handle: null,
       created_at: now,
       updated_at: now,
     } satisfies Creator);

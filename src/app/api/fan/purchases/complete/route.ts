@@ -2,11 +2,11 @@
  * Fan purchases complete — mock PayPal webhook (fan-shell.md Part 7). After the
  * mock PayPal bounce-back, the guest screen POSTs here: find-or-create the buyer's
  * fan_accounts row (no password — guest buyers are Followers, never auto-followed),
- * record the completed purchase, and always set the fan_session cookie so the buyer
- * is recognized on this device (G1, 2026-09-23). The "Also send me updates?" opt-in
- * (fan-shell.md decision #12) is persisted as `marketing_opt_in` — the only bridge
- * to email updates. Real mode: PayPal webhook verifier (WIRING_PLAN Sheet 21).
- * Idempotent: a completed purchase for the same item + email is not duplicated.
+ * record the completed purchase, write the affiliate conversion (creators.md Part
+ * 2e2), and always set the fan_session cookie so the buyer is recognized on this
+ * device (G1, 2026-09-23). The "Also send me updates?" opt-in (fan-shell.md
+ * decision #12) is persisted as `marketing_opt_in` — the only bridge to email
+ * updates. Real mode: PayPal webhook verifier (WIRING_PLAN Sheet 21). Idempotent.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/admin";
@@ -14,6 +14,7 @@ import { enforceRateLimit } from "@/lib/rate-limiter";
 import { idSchema } from "@/lib/zod-helpers";
 import { contentService } from "@/services/contentService";
 import { setFanSession } from "@/lib/fanSession";
+import { recordAffiliateConversion } from "@/lib/affiliateAttribution";
 import { z } from "zod";
 import { USE_MOCKS } from "@/lib/mocks/useMocks";
 
@@ -101,7 +102,21 @@ export async function POST(request: NextRequest) {
       .eq("status", "completed")
       .maybeSingle();
 
+    const purchaseCtx = {
+      creatorId: creator_id,
+      itemId: content_item_id,
+      itemType: item.type,
+      amount: item.price ?? 0,
+      fanId,
+    };
+
     if (dupes) {
+      // Idempotent second chance — the conversion writer dedupes per sale + deal,
+      // so a replayed purchase heals a ledger row whose first write failed.
+      await recordAffiliateConversion(supabase, request.cookies, {
+        saleId: dupes.id,
+        ...purchaseCtx,
+      });
       return NextResponse.json({ ok: true, purchase_id: dupes.id, duplicate: true });
     }
 
@@ -123,6 +138,14 @@ export async function POST(request: NextRequest) {
       console.error("[fan/purchases/complete] insert failed:", purchaseError);
       return NextResponse.json({ error: "Couldn't record the purchase — contact the creator." }, { status: 500 });
     }
+
+    // Affiliate conversion (creators.md Part 2e2) — validates the /ref attribution
+    // cookie against this deal's rules, computes both cuts and writes the pending
+    // settlement row. Best-effort: a ledger failure logs, never fails the receipt.
+    await recordAffiliateConversion(supabase, request.cookies, {
+      saleId: purchase.id,
+      ...purchaseCtx,
+    });
 
     // Receipt — mock mode logs it (real: Resend/Supabase email, WIRING_PLAN Sheet 21).
     console.info(`[mock-receipt] ${normalizedEmail} purchased "${item.title}" for ${item.price} ${item.currency} — thanks!`);

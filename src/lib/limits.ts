@@ -35,6 +35,19 @@ export function inviteExpiry(from: Date = new Date()): string {
   return new Date(from.getTime() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
 }
 
+/**
+ * Identity cooldown (settings.md Part 13, founder decision 2026-10-09): display
+ * name + avatar each lock for this many days after a REAL change (identical-value
+ * saves never lock). One constant — the server's 409 retry_at and the client's
+ * lock-state math both derive from it.
+ */
+export const IDENTITY_COOLDOWN_DAYS = 7;
+
+/** The matching unlock timestamp for an identity change made at `from`. */
+export function identityUnlock(from: Date): string {
+  return new Date(from.getTime() + IDENTITY_COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString();
+}
+
 /** Billboard text caps — client maxLength AND server `.slice()` both read these. */
 export const BILLBOARD_LIMITS = {
   tagline: 60,
@@ -42,3 +55,16 @@ export const BILLBOARD_LIMITS = {
   mediaKit: 300,
   tags: 3,
 } as const;
+
+/**
+ * Settlement window (earnings.md Parts 4-5, founder decision 2026-10-10): a
+ * creator-to-creator affiliate payment is due 14 days after the conversion is
+ * written — the same number drives the Red Card threshold, the reminder ladder
+ * (T0/T+3/T+7/T+14), and the mark-paid → promoter-confirm window.
+ */
+export const SETTLEMENT_DUE_DAYS = 14;
+
+/** The matching due timestamp for a conversion created (or re-dated) at `from`. */
+export function settlementDue(from: Date = new Date()): string {
+  return new Date(from.getTime() + SETTLEMENT_DUE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+}

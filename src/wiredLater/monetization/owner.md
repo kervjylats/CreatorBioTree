@@ -50,6 +50,7 @@ These are the known levers across the platform, collected now so the end decisio
 | **Transaction fees / take rate** | — | Platform takes % per sale (Stan/Gumroad model) — v1 = 0%, TBD at end. **Mechanism pre-built:** the Settlement Engine's settlement pass (`creators.md` 2e2) will hold the platform's cut — no new architecture needed at decision time |
 | **Platform subscription** | — | Monthly creator plan (Linktree Pro model) — v1 = 0, TBD at end |
 | **Payout rails flexibility** | — | PayPal-first for v1 (`creators.md` 1a); Payoneer or another rail can replace PayPal at the engine boundary (2e2) without redesigning attribution/ledger |
+| **Platform-held creator funds (scoped)** | `earnings.md` Part 4 (Red Card "receivables held") | Holding/escrow of real creator money = **Bank of Mauritius NPS Act 2018 §9 scoped-B licence** — v1 holds are **protocol-level only** (ledger + prompt ladder + Red Card + admin verdict; zero real funds held, $0, no licence). Licence check + product decision before ANY real holding — end-of-dev lever, recorded 2026-10-10 |
 
 **Not a lever:** fan-side messaging, community, guest features, follows — these are FREE FOREVER by spec (`messaging.md` Part 11, Community decisions). That's a product decision, not a pricing one — fans never pay.
 
@@ -86,3 +87,4 @@ These are the known levers across the platform, collected now so the end decisio
 | #7 File split (owner vs creators) | ✅ Decided 2026-08-05 — Flow 3 (platform money) here; Flows 1+2 (creator money) in `creators.md` |
 | #8 Paddle = Flow 3 processor | ✅ Decided 2026-08-10 — Paddle (merchant of record, VAT included, verified in Mauritius); Stripe deferred (Atlas path) |
 | #9 Settlement Engine = the take-rate mechanism | ✅ Decided 2026-08-10 — the engine (`creators.md` 2e2) is the future home of the platform's cut; 0% wired in v1 |
+| #10 Scoped-holding recorded as a lever | ✅ Recorded 2026-10-10 — real fund-holding/escrow sits in Part 2 as an end-of-dev lever (NPS Act §9 licence check); v1 settlement enforcement is protocol-level only (`earnings.md` Part 4) |

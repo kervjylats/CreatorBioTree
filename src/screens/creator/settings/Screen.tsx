@@ -6,7 +6,6 @@
 import type { Metadata } from "next";
 import { YourPageSection } from "@/components/settings/YourPageSection";
 import { ProfileSection } from "@/components/settings/ProfileSection";
-import { PaymentsPanel } from "@/components/settings/PaymentsPanel";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { MessagingPrivacy } from "@/components/settings/MessagingPrivacy";
 import { DangerZone } from "@/components/settings/DangerZone";
@@ -21,7 +20,7 @@ export default function SettingsScreen() {
       <h1 className="text-2xl font-bold text-foreground">Settings</h1>
       <YourPageSection />
       <ProfileSection />
-      <PaymentsPanel />
+      {/* Part 2 (Payments) moved to the Earnings screen — earnings.md §3 (2026-10-10). */}
       <NotificationsSection />
       <MessagingPrivacy />
       <DangerZone />

@@ -1,6 +1,8 @@
 /**
- * PaymentsPanel — PayPal connect panel (settings.md Part 2). Payout rail = the
- * creator's own PayPal balance (PayPal-first, founder decision 2026-08-10).
+ * PaymentsPanel — honest PayPal connect card, now §3 of the Earnings screen
+ * (git mv from components/settings/ 2026-10-10; settings.md Part 2 is a
+ * moved-pointer stub). Payout rail = the creator's own PayPal balance
+ * (PayPal-first, founder decision 2026-08-10).
  */
 "use client";
 

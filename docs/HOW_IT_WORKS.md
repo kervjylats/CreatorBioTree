@@ -38,7 +38,7 @@ A marketing page with hero section, "How it works" steps, creator showcase marqu
 
 ### 4.1 Sidebar
 
-**Sidebar (≥`md`):** visible on tablet/desktop. On phones, a bottom bar (Overview/Network/Playground/Settings + More → drawer) replaces the sidebar. A single floating dock stack sits bottom-right on every `/dashboard/*` page: the **My Peeps** buttons (Partners/Fans/Staff) with the 💬 **chat inbox bubble** at the bottom — four uniform round icon buttons in one evenly-spaced vertical column.
+**Sidebar (≥`md`):** visible on tablet/desktop. On phones, a bottom bar (Overview/Network/Playground/Earnings/Settings + More → drawer) replaces the sidebar. A single floating dock stack sits bottom-right on every `/dashboard/*` page: the **My Peeps** buttons (Partners/Fans/Staff) with the 💬 **chat inbox bubble** at the bottom — four uniform round icon buttons in one evenly-spaced vertical column.
 
 The planned sidebar (when the dashboard shell is wired) is:
 
@@ -47,7 +47,8 @@ The planned sidebar (when the dashboard shell is wired) is:
 | **Overview** | Home page — stats, action center, link/QR, export |
 | **Network** | Partner discovery & collaboration |
 | **Playground** | See + edit your fan shell in one full-screen surface (formerly "Playground" + "View Playground") |
-| **Settings** | Account/security, payments, notifications, messaging & privacy |
+| **Earnings** | *(spec'd 2026-10-10, not wired)* The one money screen — sales, affiliate receipts (Mark paid / Confirm / Dispute + Red Card), PayPal handle — `screens/creator-dashboard/earnings/earnings.md` |
+| **Settings** | Account/security, notifications, messaging & privacy *(payments moved → Earnings)* |
 | **Admin Panel** | (Admin only) Platform management |
 | **Install my fan app** | (persistent) Installs your branded fan PWA on your phone |
 | **Messages** | (persistent, badge) Fan/guest conversations |
@@ -79,17 +80,17 @@ Full spec: `src/wiredLater/screens/creator-dashboard/playground/playground.md`.
 **Full spec: `src/wiredLater/screens/creator-dashboard/network/network.md`. WIRED (Sheet 18, 2026-08-30).**
 
 Creator-to-creator discovery + collab + people hub (B2B — fans never see it). **REBUILT 2026-09-26 (hub + dock + 3 sub-screens, per `docs/archive/NETWORK_REDESIGN_PLAN.md`):**
-- **Hub (`/dashboard/network`)** — 2 columns: left rail (Billboard + Affiliates: `＋ New deal` deal form → Your deals card → EarningsSummary/AffiliateDiscover/AffiliateLinks) · center = **Discover** (search box + result cards with Visit + Connect). The old 3-section layout's right rail is gone.
+- **Hub (`/dashboard/network`)** — 2 columns: left rail (**billboard mirror only** — the whole affiliate block `＋ New deal` → Your deals → AffiliateDiscover/AffiliateLinks **moved to the Earnings screen §2b on 2026-10-12**; earnings itself moved there 2026-10-10) · center = **Discover** (search box + result cards with Visit + Connect). The old 3-section layout's right rail is gone.
 - **3 dock pages** (routes under `/dashboard/circle/…` since 2026-09-27): `/partners` (collab requests → active collabs → invite card), `/fans` (full-width fan table + profile drawer), `/staff` (staff invites + members + permissions).
 - **My Peeps = unified dock stack** — ONE component in the single floating stack bottom-right (`Partners · Fans · Staff · 💬`, top→bottom): 3 icon buttons (Partners / Fans / Staff), active page highlights, each gets a single red combined-badge (Partners = pending requests + unread · Fans = unread · Staff = pending invites + unread). Counts come from `GET /api/creator/peeps` (polled 30s). Both MyPeeps and the chat bubble are position-less — the shell layout owns the stack placement (no hardcoded offsets).
-- Original feature set (kept): visibility switches (`show_in_search` = appear in Discover, `open_to_collab` = accept Connect requests — both renamed/added 2026-09-29, Naming Option B), billboard (tagline/tags/collab-style/bio/rate-card/media-kit message), search, friend-request collabs, affiliates (Section 7) — economics in `monetization/creators.md` Part 2; deal maker + Your deals card + My Earnings / Discover / My Links live in the hub left rail (affiliate mount 2026-09-27).
+- Original feature set (kept): collab switch (`open_to_collab` = appear in the default collab feed + accept Connect requests — **the one switch since 2026-10-09**, when `show_in_search` was removed: search is always on, everyone findable by name, FB-style — introduced together 2026-09-29, Naming Option B), billboard (tagline/tags/collab-style/bio/rate-card/media-kit message), search, friend-request collabs, affiliates (Section 7) — economics in `monetization/creators.md` Part 2; the deal maker + Your deals card + Discover / My Links **live on the Earnings screen §2b since 2026-10-12** (affiliate mount 2026-09-27 → rail → earnings: My Earnings moved 2026-10-10, the management block followed 2026-10-12).
 - **Deal Maker deferred to end of development** (messaging is already wired — see Section on chat; it no longer belongs to Network's deferred list).
 
 ### 4.5 Settings (`/dashboard/settings`)
 
-**WIRED (Sheet 9, 2026-08-30).** Profile (display name), payments, notifications, messaging & privacy, danger zone. Spec: `screens/creator-dashboard/settings/settings.md`.
+**WIRED (Sheet 9, 2026-08-30).** Profile (display name + avatar, 7-day identity locks since 2026-10-09), notifications, messaging & privacy, danger zone. Spec: `screens/creator-dashboard/settings/settings.md`. **Payments/payouts moved to the Earnings screen** (2026-10-10 — `settings.md` Part 2 = pointer stub, `screens/creator-dashboard/earnings/earnings.md` §3).
 
-**Honest-state panels (2026-10-01):** three controls have no backend yet and now SAY so instead of faking a success — **PayPal connect** (the OAuth route is Sheet 9 future work), **push notifications**, and **data export / account deletion**. The tagline field was removed from Profile because the Billboard (Network tab) is its single editor; a second editor could never save it. Stripe Connect remains deferred Atlas reference.
+**Honest-state panels (2026-10-01):** three controls have no backend yet and now SAY so instead of faking a success — **PayPal connect** (its card now lives on the Earnings screen §3; the OAuth route is Sheet 23 future work), **push notifications**, and **data export / account deletion**. The tagline field was removed from Profile because the Billboard (Network tab) is its single editor; a second editor could never save it. Stripe Connect remains deferred Atlas reference.
 
 ### 4.6 Admin Panel (`/admin`)
 
@@ -208,6 +209,7 @@ Plus: per-item **scheduling** (scheduled publish/unpublish — wired, `fanData.t
 | Dashboard Overview (`/dashboard`) | ✅ Wired (Sheet 10) — moved here from `/dashboard/overview` 2026-09-30 | `screens/creator-dashboard/overview/overview.md` (full) |
 | Playground (`/dashboard/playground`, formerly "My App") | ✅ Wired (Sheet 19-V1) — full editor, 16 types, uploads, draft/deploy | `screens/creator-dashboard/playground/playground.md` (full) |
 | Dashboard Network | ✅ Wired (Sheet 18) | `screens/creator-dashboard/network/network.md` (full) |
+| Dashboard Earnings (`/dashboard/earnings`) | ⏳ Spec'd 2026-10-10, not wired (Sheet 23) — sales, affiliate receipts (Mark paid / Confirm / Dispute), Red Card + 14-day ladder, PayPal handle | `screens/creator-dashboard/earnings/earnings.md` (full) |
 | Dashboard Messages (`/dashboard/circle/messages`) | ✅ Wired (Sheet 12) — full chat screen + floating inbox | `features/messaging.md` (full) |
 | Admin (`/admin`) | ✅ Wired (Sheet 8) — 5-tab panel | `screens/admin/admin.md` (full) |
 | Dashboard Settings | ✅ Wired (Sheet 9) | `screens/creator-dashboard/settings/settings.md` (full) |
@@ -344,7 +346,7 @@ Every mock file has `// PRODUCTION-NOTE:` comments marking what the real service
 | **RPC (stored procedures)** | ✅ Full | 7 RPCs mocked: stats, analytics, activity, partnerships, admin. |
 | **AI (Groq)** | ✅ Mock | Deterministic JSON responses for palettes and summaries. |
 | **PayPal checkout** | ✅ Mock | Fake session URL with `?payment=success` param (PayPal-first rail, 2026-08-10). |
-| **PayPal connect** | ❌ Stub | Fake connect button — `paypal_account_id` field (Stripe Connect = deferred Atlas reference). |
+| **PayPal connect** | ⏳ Spec'd | Honest "Coming soon" card + PayPal.me handle editor on the **Earnings screen §3** (spec'd 2026-10-10, Sheet 23 — not wired; Stripe Connect = deferred Atlas reference). |
 | **Paddle webhook** | ✅ Mock | Processes `transaction.completed` with mock data. |
 | **Resend email** | ✅ Mock | All emails captured to console + `temp_emails.log`. |
 | **Cloudflare Stream** | ⚠️ Stub | Fake stream URLs — no video processing. |

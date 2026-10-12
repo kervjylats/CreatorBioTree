@@ -9,10 +9,14 @@
  */
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Pencil } from "lucide-react";
 import { getVisibleNavItems } from "@/lib/nav-config";
 import { Logo } from "@/components/shared/Logo";
+import { Avatar } from "@/components/shared/Avatar";
+import { ProfileEditDialog } from "@/components/settings/ProfileEditDialog";
 
 interface DashboardSidebarProps {
   creator: {
@@ -34,6 +38,29 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const navItems = getVisibleNavItems(isAdmin);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+
+  // Earnings nav dot (earnings.md Part 5) — poll the cheap ?badge=1 branch on
+  // mount + every 60s: action_required (overdue owed-to-me / confirms waiting)
+  // or a red account lights the dot on the Earnings item.
+  const [earningsAlert, setEarningsAlert] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    const check = () => {
+      fetch("/api/creator/affiliates/earnings?badge=1")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: { action_required?: number; red_card?: boolean } | null) => {
+          if (alive && d) setEarningsAlert((d.action_required ?? 0) > 0 || Boolean(d.red_card));
+        })
+        .catch(() => {});
+    };
+    check();
+    const timer = setInterval(check, 60_000);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
+  }, []);
 
   // Overview is the dashboard ROOT ("/dashboard"), so it needs an exact match —
   // a plain startsWith("/dashboard") would light it up on every dashboard page.
@@ -56,13 +83,18 @@ export function DashboardSidebar({
         />
       </div>
 
-      {/* Creator identity */}
+      {/* Creator identity — photo now (was an initial letter); ✏️ = identity gateway
+          #1 (settings.md Part 13) → ProfileEditDialog → Settings → Profile. Desktop
+          only: the phone bottom bar has no identity block. */}
       <div className="border-b border-border px-4 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-            {(creator.display_name || creator.username || "?")[0].toUpperCase()}
-          </div>
-          <div className="min-w-0">
+          <Avatar
+            src={creator.avatar_url}
+            name={creator.display_name || creator.username || "Creator"}
+            size="h-9 w-9"
+            textClass="text-sm"
+          />
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-foreground">
               {creator.display_name || creator.username || "Creator"}
             </p>
@@ -70,7 +102,17 @@ export function DashboardSidebar({
               @{creator.username || "creator"}
             </p>
           </div>
+          <button
+            type="button"
+            title="Edit name & photo"
+            aria-label="Edit name and photo"
+            onClick={() => setProfileDialogOpen(true)}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            <Pencil size={14} />
+          </button>
         </div>
+        <ProfileEditDialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen} />
       </div>
 
       {/* Navigation — same items on desktop sidebar and mobile bottom bar */}
@@ -88,6 +130,12 @@ export function DashboardSidebar({
           >
             <item.icon size={18} />
             {item.label}
+            {item.href === "/dashboard/earnings" && earningsAlert && (
+              <span
+                className="ml-auto h-2 w-2 shrink-0 rounded-full bg-red-500"
+                aria-label="Action required"
+              />
+            )}
           </Link>
         ))}
       </nav>
@@ -116,9 +164,15 @@ export function DashboardSidebar({
                   : "text-muted-foreground"
               }`}
             >
-              <item.icon size={20} strokeWidth={active ? 2.5 : 2} />
+            <item.icon size={20} strokeWidth={active ? 2.5 : 2} />
+            {/* truncate: admin phones get 6 cells at 375px — labels elide, never wrap */}
+            <span className="min-w-full truncate text-center">
               {item.label}
-            </Link>
+              {item.href === "/dashboard/earnings" && earningsAlert && (
+                <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-red-500 align-middle" aria-label="Action required" />
+              )}
+            </span>
+          </Link>
           );
         })}
       </nav>

@@ -20,6 +20,8 @@ It is **fan-only**: guests never see it. It's reached exclusively from the **Con
 
 **Fan-auth gate:** if the visitor has no fan account for the creator → redirect to the guest page (no account → no partner page, per founder decision).
 
+**Affiliate hop (silent — founder 2026-10-10):** every entry above **also** runs the in-app attribution hop — if an active affiliate deal exists between the host and this partner, an `affiliate_attributions` row + 30-day `aff_attr` cookie are written **on open** (purchases complete inside the modal, so tagging must fire first). No deal = plain navigation; no UI, no labels (`monetization/creators.md` 2e Door 2; shared helper with the external `/ref` door).
+
 ---
 
 ## Part 2: The Bottom Modal (sheet)

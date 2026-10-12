@@ -1,10 +1,12 @@
-/** /onboarding screen — creator signup (onboarding.md): server-side already-logged-in redirect + ?invite= passthrough, renders AuthCard + OnboardingForm. */
+/** /onboarding screen — creator signup (onboarding.md): server-side already-logged-in redirect + ?invite= passthrough, renders AuthCard + OnboardingForm. Logged-in users with a valid ?invite= now CONSUME the partner invite (partnership.md "THE private-collab path", 2026-10-07) instead of dropping it. */
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AuthCard } from "@/components/auth/AuthCard";
 import { OnboardingForm } from "@/components/auth/OnboardingForm";
 import { hasCreatorSession } from "@/lib/guards";
+import { createClient } from "@/lib/supabase/server";
+import { consumePartnerInvite } from "@/lib/partnerInvites";
 
 export const metadata: Metadata = {
   title: "Create your page",
@@ -26,6 +28,26 @@ export default async function OnboardingScreen({
   const inviteCode = sanitizeInviteCode(invite);
 
   if (await hasCreatorSession()) {
+    // Logged-in + ?invite= = the private-collab path (partnership.md): consume the
+    // code here — dropping it forced hidden creators to log out first (2026-10-07).
+    if (inviteCode) {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const result = await consumePartnerInvite(supabase, user.id, inviteCode).catch(
+          () => null
+        );
+        if (result?.ok) {
+          const name = result.partner.display_name || result.partner.username || "";
+          redirect(
+            `/dashboard/circle/partners?joined=${encodeURIComponent(name)}`
+          );
+        }
+        redirect("/dashboard/circle/partners?invite_error=1");
+      }
+    }
     redirect("/dashboard/playground");
   }
 

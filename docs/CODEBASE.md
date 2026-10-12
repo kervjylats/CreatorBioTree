@@ -124,7 +124,8 @@ src/
 │   │                             #   shared across screens → own product-named folder; odds-and-ends → shared/
 │   ├── ui/                       # shadcn/ui components (11 files)
 │   ├── auth/                     # AuthCard, LoginForm, ForgotPasswordForm, OnboardingForm (wired)
-│   ├── network/                  # Network hub only: NetworkPage, Billboards, Affiliate×4 + YourDealsCard
+│   ├── network/                  # Network hub only: NetworkPage, Billboards, Discover chrome (the Affiliate×4 + YourDealsCard moved to earnings/ 2026-10-12)
+│   ├── earnings/                 # The money screen: EarningsPage + Sales/Affiliate/AffiliateDeals/Payments sections + PaymentsPanel (EarningsSummary 2026-10-10, the 4 affiliate widgets 2026-10-12)
 │   ├── circle/                   # Dock pages, mirrors /dashboard/circle/*: partners/ · fans/ · staff/
 │   │                             #   (pages + their guts: Collab trio + invite card · fan tables · staff rows)
 │   ├── messages/                 # MessagesShell.tsx — the whole messaging engine (dashboard + fan shell + guest)
@@ -139,7 +140,7 @@ src/
 │   ├── wiredLater.md             # Index of ALL spec files (read this first)
 │   ├── screens.md                # Walkthrough of every screen, grouped by category
 │   ├── screens/                  # SCREENS — grouped by what they are
-│   │   ├── creator-dashboard/     # The 4 major sidebar screens (overview, network, playground, settings)
+│   │   ├── creator-dashboard/     # The 5 major sidebar screens (overview, network, playground, earnings, settings)
 │   │   ├── admin/                 #   Platform owner + staff control room
 │   │   ├── fan-shell/             #   What fans experience (/{username})
 │   │   └── public/                #   Outside the app, no sidebar (landing, login, onboarding, offline)
@@ -196,7 +197,8 @@ Auth middleware that runs on **every request**. Reads `mock_auth_uid` cookie (mo
 | `/dashboard/circle/partners` | Collab requests + active collabs + invite card — **wired** (My Peeps dock) | Yes (creator/admin) |
 | `/dashboard/circle/fans` | Full-width fan table + profile drawer — **wired** (My Peeps dock) | Yes (creator/admin) |
 | `/dashboard/circle/staff` | Staff invites + members + permissions — **wired** (My Peeps dock) | Yes (creator/admin) |
-| `/dashboard/settings` | Payout setup — **wired** | Yes (creator/admin) |
+| `/dashboard/settings` | Account/security, notifications, messaging & privacy — **wired** (payouts/payments → `/dashboard/earnings` since 2026-10-10) | Yes (creator/admin) |
+| `/dashboard/earnings` | The money screen (§1 sales + §2 affiliate receipts + Red Card + §2b deal tools + §3 PayPal handle) — **wired 2026-10-10** (§2b since 2026-10-12, Sheet 23) | Yes (creator) |
 | `/admin` | Platform management (was `/dashboard/admin`) — **wired** (5-tab panel) | Yes (admin only) |
 | `/[username]` | REDIRECT → `/{username}/guest` | No/fan session |
 | `/{username}/guest` | Fan guest page (identical to fan view) | No |
@@ -367,7 +369,8 @@ Grouped by category (founder decision 2026-08-05). Read `wiredLater.md` first �
 | `screens/creator-dashboard/playground/playground.md` | Playground (formerly "Playground") — MEGA: full-screen shell, tap-to-edit brand popovers, 8 editor tabs, fan 3-layer display, free/pro tiers, build priority |
 | `screens/creator-dashboard/network/network.md` | Network search, billboard, collabs, affiliates |
 | `screens/creator-dashboard/overview/overview.md` | Dashboard Overview — stats, activity, quick actions |
-| `screens/creator-dashboard/settings/settings.md` | Dashboard Settings — money, identity, permissions |
+| `screens/creator-dashboard/earnings/earnings.md` | Dashboard Earnings — **WIRED 2026-10-10, §2b added 2026-10-12:** the one money screen (§1 sales, §2 affiliate receipts + Red Card + ladder, **§2b the affiliate management block moved from the Network rail**, §3 PayPal handle) |
+| `screens/creator-dashboard/settings/settings.md` | Dashboard Settings — identity, permissions *(payments moved → earnings.md, 2026-10-10)* |
 | `screens/admin/admin.md` | Founder setup, RBAC, audit log, admin invites |
 | `screens/fan-shell/fan-shell.md` | Fan shell — account model (4 layers), three gates, guest vs fan views, 4 tabs, auth |
 | `screens/public/landing.md` | Landing page (deferred) |

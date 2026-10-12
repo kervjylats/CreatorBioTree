@@ -1,15 +1,17 @@
 /**
  * GET/PUT /api/creator/playground — the Playground editor's read + deploy endpoint
  * (playground.md Part 2/4b). GET returns the creator row (theme + identity +
- * social links) and the catalog; PUT persists a deploy: display_name, bio,
- * avatar_url, banner_url, custom_theme, connect_empty_text, social_links. Both are
- * auth-guarded — the write whitelists only the allowed profile/theme fields.
+ * social links) + the catalog; PUT persists a deploy write. Identity fields carry
+ * the settings.md Part 13 7-day cooldown (founder 2026-10-09): a real change locks
+ * that field, answering 409 { error, retry_at }; identical-value saves pass.
+ * usePlaygroundForm strips identity from Deploy — enforcement targets Settings →
+ * Profile writes (the one edit home). Both methods auth-guarded, whitelist-only.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, handleAuthError } from "@/lib/requireAuth";
 import { zodErrorResponse } from "@/lib/zod-helpers";
-import { BILLBOARD_LIMITS } from "@/lib/limits";
+import { BILLBOARD_LIMITS, IDENTITY_COOLDOWN_DAYS, identityUnlock } from "@/lib/limits";
 
 const deploySchema = z.object({
   display_name: z.string().min(1).max(80).nullable().optional(),
@@ -30,7 +32,7 @@ export async function GET() {
 
     const { data: creator } = await supabase
       .from("creators")
-      .select("id, username, display_name, bio, avatar_url, banner_url, theme_id, custom_theme, connect_empty_text, social_links")
+      .select("id, username, display_name, bio, avatar_url, display_name_changed_at, avatar_changed_at, banner_url, theme_id, custom_theme, connect_empty_text, social_links")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -85,6 +87,11 @@ export async function GET() {
   }
 }
 
+/** "Oct 16, 2026" — human unlock date for the cooldown 409 copy. */
+function unlockLabel(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
 export async function PUT(request: NextRequest) {
   try {
     const { user, supabase } = await requireAuth();
@@ -95,9 +102,61 @@ export async function PUT(request: NextRequest) {
       return zodErrorResponse();
     }
 
+    // Current identity state — the cooldown needs both current values AND their
+    // last-change stamps (settings.md Part 13).
+    const { data: current, error: currentError } = await supabase
+      .from("creators")
+      .select("display_name, avatar_url, display_name_changed_at, avatar_changed_at")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (currentError) {
+      console.error("[creator/playground] PUT read:", currentError);
+      return NextResponse.json({ error: "Failed to deploy" }, { status: 500 });
+    }
+    if (!current) return NextResponse.json({ error: "Creator not found" }, { status: 404 });
+
+    const patch: Record<string, unknown> = { ...validation.data };
+    let displayNameChangedAt = (current.display_name_changed_at as string | null) ?? null;
+    let avatarChangedAt = (current.avatar_changed_at as string | null) ?? null;
+
+    // One rule per cooldown field: lock ONLY on a real value change — an
+    // identical-value save never stamps, never locks (so shared payloads can't
+    // trip it by accident).
+    const identityLock = (
+      field: "display_name" | "avatar_url",
+      label: string,
+    ): NextResponse | null => {
+      if (!(field in patch) || patch[field] === undefined) return null;
+      const next = (patch[field] as string | null) ?? null;
+      const prev = (current[field] as string | null) ?? null;
+      if (next === prev) return null;
+
+      const stampField = field === "display_name" ? "display_name_changed_at" : "avatar_changed_at";
+      const lastStr = (current[stampField] as string | null) ?? null;
+      const last = lastStr ? Date.parse(lastStr) : NaN;
+      if (Number.isFinite(last) && Date.now() - last < IDENTITY_COOLDOWN_DAYS * 86_400_000) {
+        const retryAt = identityUnlock(new Date(last));
+        return NextResponse.json(
+          { error: `You can change ${label} again on ${unlockLabel(retryAt)}.`, retry_at: retryAt },
+          { status: 409 },
+        );
+      }
+
+      const nowIso = new Date().toISOString();
+      patch[stampField] = nowIso;
+      if (stampField === "display_name_changed_at") displayNameChangedAt = nowIso;
+      else avatarChangedAt = nowIso;
+      return null;
+    };
+
+    const nameBlocked = identityLock("display_name", "your display name");
+    if (nameBlocked) return nameBlocked;
+    const avatarBlocked = identityLock("avatar_url", "your photo");
+    if (avatarBlocked) return avatarBlocked;
+
     const { error: updateError } = await supabase
       .from("creators")
-      .update(validation.data)
+      .update(patch)
       .eq("id", user.id);
 
     if (updateError) {
@@ -105,7 +164,12 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Failed to deploy" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    // Return both stamps so ProfileSection can set its lock state without a refetch.
+    return NextResponse.json({
+      success: true,
+      display_name_changed_at: displayNameChangedAt,
+      avatar_changed_at: avatarChangedAt,
+    });
   } catch (err) {
     const handled = handleAuthError(err);
     if (handled) return handled;

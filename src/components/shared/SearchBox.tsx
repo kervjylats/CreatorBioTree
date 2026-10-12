@@ -2,6 +2,7 @@
  * SearchBox — the shared creator search input (Search icon + field + spinner).
  * Visual shell only; wire it to `useCreatorSearch` for live search.
  * Used by the Network hub Discover center; admin tables can adopt later.
+ * Always enabled — search is never gated (FB model, network.md §3, 2026-10-09).
  */
 import { Search } from "lucide-react";
 import { Spinner } from "@/components/shared/Spinner";

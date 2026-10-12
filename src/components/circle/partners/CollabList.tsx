@@ -1,15 +1,17 @@
-/** Collab list (network.md) — shows active collabs with avatar, name, and message icon. Fetches from GET /api/creator/partners/list. */
+/** Collab list (network.md) — active collabs with avatar, name, badge, and a REAL
+ *  MessageIcon quick-thread (2026-10-12, was a decorative glyph). Row = div (the
+ *  icon is a button — no nested buttons); the icon click stops at the icon. */
 "use client";
 
 import { useEffect, useState } from "react";
 import { fetchJson } from "@/lib/fetchJson";
-import { MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/shared/Avatar";
 import { formatDate } from "@/lib/format";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Spinner } from "@/components/shared/Spinner";
 import { LABEL_CLASS } from "@/lib/ui-constants";
+import { MessageIcon } from "@/components/messages/MessagesShell";
 
 interface CollabPartner {
   id: string;
@@ -73,11 +75,20 @@ export function CollabList({ onSelect, selectedId }: CollabListProps) {
         if (!p) return null;
         const isSelected = selectedId === c.id;
         return (
-          <button
+          <div
             key={c.id}
-            type="button"
+            role="button"
+            tabIndex={0}
             onClick={() => onSelect?.(c.id)}
-            className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${
+            onKeyDown={(e) => {
+              // Enter/Space on the row itself — ignores keys from the inner icon button.
+              if (e.target !== e.currentTarget) return;
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect?.(c.id);
+              }
+            }}
+            className={`flex w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition-colors ${
               isSelected
                 ? "border-foreground bg-accent/50"
                 : "border-border bg-card hover:bg-accent/30"
@@ -93,8 +104,10 @@ export function CollabList({ onSelect, selectedId }: CollabListProps) {
               </div>
               <span className="text-xs text-muted-foreground">Since {formatDate(c.created_at)}</span>
             </div>
-            <MessageCircle size={16} className="shrink-0 text-muted-foreground" />
-          </button>
+            <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+              <MessageIcon otherKey={p.id} otherParty="creator" name={p.display_name} />
+            </div>
+          </div>
         );
       })}
     </div>

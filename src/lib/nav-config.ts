@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Globe,
   Smartphone,
+  DollarSign,
   Settings,
   Shield,
   Home,
@@ -63,6 +64,7 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/network", label: "Network", icon: Globe },
   { href: "/dashboard/playground", label: "Playground", icon: Smartphone },
+  { href: "/dashboard/earnings", label: "Earnings", icon: DollarSign },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
   { href: "/admin", label: "Admin Panel", icon: Shield, adminOnly: true },
 ];

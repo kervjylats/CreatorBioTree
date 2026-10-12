@@ -12,21 +12,22 @@ This folder contains **ONLY spec `.md` files** — the blueprints. No code lives
 
 **How this is organized (founder decision 2026-08-05):** the specs are grouped by WHAT THEY ARE, not numbered 1-22 like screens. Four categories:
 
-- **`screens/creator-dashboard/`** — the 4 major sidebar screens a creator navigates daily
+- **`screens/creator-dashboard/`** — the 5 major sidebar screens a creator navigates daily
 - **`screens/admin/`** — platform owner + staff control room (separate from the creator dashboard)
 - **`screens/fan-shell/`** — what fans experience (`/[username]`)
 - **`screens/public/`** — outside the app, no sidebar (pre-login pages + offline)
 - **`features/`** — **cross-cutting**: not standalone screens — they live AS TABS/SECTIONS inside the major screens (wiring homes TBD per feature). Includes the Playground editor-tab stubs
 - **Top-level** — `screens.md` (walkthrough index), plus `monetization/` (pricing rules home) and `ai/` (post-launch)
 
-### Screens — Creator Dashboard (4 major screens)
+### Screens — Creator Dashboard (5 major screens)
 
 | Spec | What it covers |
 |---|---|
 | [overview.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens\creator-dashboard\overview\overview.md) | Dashboard Overview `/dashboard` — stats cards, activity timeline, QR, fan email export |
-| [network.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens\creator-dashboard\network\network.md) | Dashboard Network `/dashboard/network` — **3-section anchored layout (DECIDED):** left rail (Discover + Affiliates), center detail, right rail = **My Peeps** (Partners / Fans / Staffs umbrella). In-app collabs (friend-request), discoverability toggle, affiliates (scope + trigger + type deal config) |
+| [network.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens\creator-dashboard\network\network.md) | Dashboard Network `/dashboard/network` — **3-section anchored layout (DECIDED):** left rail (Discover + Affiliates), center detail, right rail = **My Peeps** (Partners / Fans / Staffs umbrella). In-app collabs (friend-request), discoverability toggle, affiliates (creator-only scope + trigger + type deal config — scope simplified 2026-10-10) |
 | [playground.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens\creator-dashboard\playground\playground.md) | Playground `/dashboard/playground` (named "My App" 2026-08-05→2026-10-01, renamed back by founder; earlier also "My Page") — **the one surface for seeing + editing the fan shell**: full-screen phone view (guest-first, swipeable 5 surfaces), tap-to-edit brand popovers, editor sheet (8 tabs, 16 content types, funnels, scheduling), 4 editor options A/B/C/D specced for A/B test, PWA separated, all features free in v1 |
-| [settings.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens\creator-dashboard\settings\settings.md) | Dashboard Settings `/dashboard/settings` — account/security, payments, notifications, your page, messaging & privacy, danger zone |
+| [earnings.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens\creator-dashboard\earnings\earnings.md) | Dashboard Earnings `/dashboard/earnings` — **NEW 2026-10-10 (spec'd, not wired):** the one money screen — §1 Sales · §2 Affiliate earnings (earned/owed + receipt protocol + Red Card + 14-day prompt ladder + notifications) · §3 Payments (PayPal.me handle + honest connect card). Report-only, 0% in v1 |
+| [settings.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens\creator-dashboard\settings\settings.md) | Dashboard Settings `/dashboard/settings` — account/security, billing, notifications, your page, messaging & privacy, danger zone. **Payments moved to the Earnings screen (Part 2 = pointer stub, 2026-10-10)** |
 
 ### Screens — Admin (platform owner + staff)
 
@@ -81,7 +82,7 @@ These were merged into `playground.md` as editor tabs. Kept as stubs pointing at
 | Spec | What it covers |
 |---|---|
 | [screens.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\screens.md) | Walkthrough of every screen (grouped by the same categories as this index) + which specs apply to each |
-| [monetization/index.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\monetization\index.md) | Monetization — **split into 3 files (2026-08-05):** `index.md` (pointer) + `owner.md` (platform money: THE RULE everything free until end-of-dev, decision levers, locked pricing placeholder) + `creators.md` (creator money: catalog sales + full affiliate deal model — 5 types × 2 scopes × 6 triggers, asymmetric, no min/max, platform trust layer) |
+| [monetization/index.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\monetization\index.md) | Monetization — **split into 3 files (2026-08-05):** `index.md` (pointer) + `owner.md` (platform money: THE RULE everything free until end-of-dev, decision levers, locked pricing placeholder) + `creators.md` (creator money: catalog sales + full affiliate deal model — 5 types × **creator-only scope (2026-10-10)** × 6 triggers, asymmetric, no min/max, platform trust layer, two attribution doors, receipt protocol pointer) |
 | [ai-features.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\ai\ai-features.md) | AI features (full spec) — post-launch |
 | [ai-agents.md](vscode://file/C:\DEV\Projects\creatorpwa\src\wiredLater\ai\ai-agents.md) | AI agent workforce (placeholder) — post-launch |
 

@@ -50,7 +50,7 @@ Two audiences, one search engine:
 
 ### Discoverability gate
 
-- Only creators with `show_in_search = true` appear in public search (renamed from `is_discoverable` 2026-09-29). Opt-out creators are invisible to everyone, and their own searches return no results (they can still send collab requests from the Network unless their `open_to_collab` switch is off).
+- **Search is ALWAYS on — every creator appears in results** (FB-style directory, founder 2026-10-09). The old `show_in_search` gate is **removed** (column parked, default true): there are no hidden creators, and your own searches are never blanked. The collab switch (`open_to_collab`) never hides anyone from typed search — it only gates the collab feed + whether Connect works on their card (`network.md` §1/§3).
 - Featured creators (`is_featured`) float to the top.
 
 ---
@@ -78,7 +78,10 @@ Results ordered (best first):
 
 - Debounced input (no query spam while typing).
 - Enter submits; results update live as you type.
-- Empty query = show all discoverable creators (featured first) — the page is still useful before typing.
+- **Empty query on the Network hub = the default collab list** — pool = willing-to-collab (`open_to_collab`) ONLY, shuffled per load with Featured pinned (founder decision 2026-10-07, revised 2026-10-09, `network.md` §1) — never blank.
+- **Batched rendering (founder 2026-10-09):** typed results render in **batches of 24** with **Show more** (reset per query) — same batch rule as the collab list; production = server-side `LIMIT` + offset paging (see `network.md` §1 scale note).
+- **Empty query on the landing section (Part 1a)** = show all creators (featured first) — that surface keeps the show-all behavior (pool de-gated 2026-10-09).
+- **Search never greys** (2026-10-09): no disabled box, no banner — the old own-`show_in_search`-OFF rule is removed with the switch (`network.md` §3).
 
 ---
 
@@ -86,12 +89,14 @@ Results ordered (best first):
 
 | State | Behavior |
 |---|---|
-| **Empty query** | Show all discoverable creators (featured first, newest after) — never a blank page |
+| **Empty query** | Network hub: default **collab list** (willing pool, shuffled, Featured pinned) — never a blank section. Landing section: show all creators (featured first) |
 | **Zero results** | Friendly empty message + **"Did you mean?"** suggestions (Part 3) |
-| **No discoverable creators yet** | Brand-new platform → encouraging empty state ("Be the first creator on CreatorBioTree" style) |
+| **No creators yet** | Brand-new platform → encouraging empty state ("Be the first creator on CreatorBioTree" style) |
+| **Your collab switch OFF** | You drop out of the default collab feed + others' Connect on your card is disabled (403 at the API) — typed search still finds you, and **nothing ever greys** (`network.md` §3) |
+| **Target not open to collab** | Their search card shows a disabled "Not open to collabs" button instead of Connect — closed sign, not error-after-click |
 | **Loading** | Skeleton/spinner while fetching |
 | **Typing fast** | Debounced — one search per pause, no stale-result flicker |
-| **Creator not discoverable** | Never appears, even on exact-username match |
+| **Your own card** | Excluded from your own results (self-Connect would be a guaranteed 400 — self-exclusion added 2026-10-09); everyone else finds you normally |
 
 ---
 
@@ -101,7 +106,7 @@ Results ordered (best first):
 |---|---|---|
 | Matching | In-memory JS similarity (edit distance) + partial match | Postgres `pg_trgm` trigram similarity (indexed) for fast fuzzy name/username search |
 | Ranking | Simple sort in code | SQL ordering: exact match → featured → similarity → created_at |
-| Volume | In-memory creators table | Indexed `creators` table (`show_in_search` partial index); if search volume grows, evaluate a dedicated search service |
+| Volume | In-memory creators table | Indexed `creators` table (`open_to_collab` partial index for the collab-feed pool; `show_in_search` parked 2026-10-09 — no longer filtered); if search volume grows, evaluate a dedicated search service |
 
 ---
 
@@ -120,3 +125,6 @@ The landing-page search section ships **with the landing page** (deferred to the
 | #3 Typo suggestions | ✅ Decided — "Did you mean?" on zero results only |
 | #4 Username uniqueness | ✅ Decided — unique handle, availability-checked; display name non-unique, disambiguated by avatar + @handle |
 | #5 Platform updates feed ("What's new at CreatorBioTree") | ✅ Decided — roadmap future item only (see `docs/HOW_IT_WORKS.md` section 16); built with the landing page; small strip in dashboard Overview + small link in fan Settings |
+| #6 Toggle friction | ✅ Decided 2026-10-07 — **no cooldown/confirmation** (TikTok profile-views precedent). **Superseded 2026-10-09:** the `show_in_search` switch (and its grey-out) was removed entirely — search is always on; the one switch left (`open_to_collab`) only gates the collab feed + Connect |
+| #7 Default view | ✅ Decided 2026-10-07, revised 2026-10-09 — Network empty query = **collab list** (willing only, shuffled per load); typed search = **ALL creators** (FB directory); landing section shows all |
+| #8 Billboard nudge | ✅ Decided 2026-10-07, trigger retargeted 2026-10-09 — first Network visit while the billboard is undesigned shows an optional "design your billboard" modal (once ever); the permanent ✏️ lives in the My Billboard card header (see `network.md` §3) |

@@ -3,11 +3,11 @@
 /**
  * Affiliate deal creation form — lets a creator configure a new affiliate
  * deal: collaborator (@username, resolved to their account via the search
- * API), scope, deal type, trigger, rate, custom terms, and validity dates
- * (network.md §7, monetization/creators.md Part 2). Per-item deals pick a
- * catalog item from a dropdown — external-link items are excluded.
+ * API), deal type, trigger, rate, custom terms, and validity dates
+ * (network.md §7, monetization/creators.md Part 2). Creator-only since 2026-10-10
+ * (earnings.md §1): no per-item scope — a deal covers the owner's whole catalog.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { searchCreators } from "@/hooks/useCreatorSearch";
 
 interface AffiliateDealFormProps {
@@ -30,8 +29,6 @@ interface AffiliateDealFormProps {
 export interface DealFormData {
   owner_id?: string;
   promoter_id: string;
-  scope: "item" | "creator";
-  item_id?: string;
   deal_type: "percentage" | "fixed" | "free" | "tiered" | "custom";
   trigger: "purchase" | "follow" | "subscribe" | "tip" | "signup" | "any";
   rate?: number;
@@ -40,42 +37,16 @@ export interface DealFormData {
   valid_until?: string;
 }
 
-interface CatalogItem {
-  id: string;
-  title: string;
-  payment_handling?: string | null;
-}
-
 export function AffiliateDealForm({ onSubmit, onCancel }: AffiliateDealFormProps) {
   const [promoterName, setPromoterName] = useState("");
-  const [scope, setScope] = useState<"item" | "creator">("creator");
-  const [itemId, setItemId] = useState("");
   const [dealType, setDealType] = useState<DealFormData["deal_type"]>("percentage");
   const [trigger, setTrigger] = useState<DealFormData["trigger"]>("purchase");
   const [rate, setRate] = useState("");
   const [customTerms, setCustomTerms] = useState("");
   const [validFrom, setValidFrom] = useState("");
   const [validUntil, setValidUntil] = useState("");
-  const [items, setItems] = useState<CatalogItem[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  // Load the creator's own catalog once — drives the per-item picker.
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/creator/catalog")
-      .then((r) => (r.ok ? r.json() : { data: [] }))
-      .then((d) => {
-        if (alive) setItems(Array.isArray(d.data) ? d.data : []);
-      })
-      .catch(() => {});
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  const pickerItems = items.filter((i) => i.payment_handling !== "external_link");
-  const hiddenExternals = items.length - pickerItems.length;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,10 +54,6 @@ export function AffiliateDealForm({ onSubmit, onCancel }: AffiliateDealFormProps
     const q = promoterName.replace(/^@/, "").trim();
     if (!q) {
       setFormError("Enter the collaborator's @name.");
-      return;
-    }
-    if (scope === "item" && !itemId) {
-      setFormError("Pick which item this deal covers.");
       return;
     }
     setSubmitting(true);
@@ -101,8 +68,6 @@ export function AffiliateDealForm({ onSubmit, onCancel }: AffiliateDealFormProps
       }
       await onSubmit({
         promoter_id: match.id,
-        scope,
-        item_id: scope === "item" ? itemId : undefined,
         deal_type: dealType,
         trigger,
         rate: rate ? Number(rate) : undefined,
@@ -139,19 +104,6 @@ export function AffiliateDealForm({ onSubmit, onCancel }: AffiliateDealFormProps
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Scope</label>
-              <Select value={scope} onValueChange={(v) => setScope(v as "item" | "creator")}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="creator">Per-creator (entire catalog)</SelectItem>
-                  <SelectItem value="item">Per-item (single item)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
               <label className="text-sm font-medium">Deal Type</label>
               <Select value={dealType} onValueChange={(v) => setDealType(v as DealFormData["deal_type"])}>
                 <SelectTrigger className="w-full">
@@ -167,36 +119,6 @@ export function AffiliateDealForm({ onSubmit, onCancel }: AffiliateDealFormProps
               </Select>
             </div>
           </div>
-
-          {scope === "item" && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Item this deal covers</label>
-              <Select value={itemId} onValueChange={(v) => setItemId(v ?? "")}>
-                <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={pickerItems.length ? "Pick an item" : "No eligible items"}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {pickerItems.map((i) => (
-                    <SelectItem key={i.id} value={i.id}>
-                      {i.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {pickerItems.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  No eligible items — add catalog items in Playground first.
-                </p>
-              ) : hiddenExternals > 0 ? (
-                <Badge variant="secondary" className="text-xs">
-                  {hiddenExternals} external-link item{hiddenExternals > 1 ? "s" : ""} hidden
-                  (excluded from deals)
-                </Badge>
-              ) : null}
-            </div>
-          )}
 
           <div className="space-y-4">
             <div className="space-y-2">

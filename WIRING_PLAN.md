@@ -34,10 +34,10 @@
 > **🔀 REORDERED 2026-08-11 (founder decision — test-first):** the original end-to-end
 > order (8→23) is REPLACED by the **data-producer-first** order. The control-room screens
 > (Admin 8, Settings 9, Overview 10) and the network feature family (11–16, 18, 20) read
-> data produced elsewhere; My-App (19) and Fan Shell (21) PRODUCE that data and give the
+> data produced elsewhere; Playground (19) and Fan Shell (21) PRODUCE that data and give the
 > founder something to click today. New execution order:
 >
-> 1. **My-App (Sheet 19) — V1 CORE slice** (Phase 1 scope: phone shell, PreviewStateToggle,
+> 1. **Playground (Sheet 19) — V1 CORE slice** (Phase 1 scope: phone shell, PreviewStateToggle,
 >    ElementPopover, editor sheet Option A w/ Identity+Design+Catalog+Artist-Links live,
 >    catalog **7 core types**, auto-save + Deploy)
 > 2. **Fan Shell (Sheet 21) — V1 CORE slice** (guest 3-layer view, email-only follow,
@@ -57,7 +57,7 @@
 | 5 | Delete dead files + add missing rate limits (G7) + `pageview` → singleton | housekeeping |
 | **6** | **Login** `/login` | screen — ✅ done 2026-08-10 |
 | **7** | **Onboarding** `/onboarding` | screen — ✅ done 2026-08-10 |
-| **19-V1** | **My-App** `/dashboard/playground` — **V1 CORE** (reordered 2026-08-11) | screen — ✅ done 2026-08-11 (editor Option A; B/C/D deferred) · ✅ **ALL 16 CATALOG TYPES wired 2026-08-13 (Stage A of the Connected Loop Pass):** AddItemPicker + ItemEditor per-type sections (course lessons, session booking slots, membership benefits + billing cycle, physical/product variants + stock, bundle picker, live platform/stream, page body) + fan cards render every type with gates (memberships now check out; purchased-before-member gate fix) + PATCH schema gains `variants`/`booking_slots`. Verified end-to-end via curl (create → rich PATCH → fan-page render → delete). · **NOTE (2026-08-13):** real-mode must ENFORCE the 7-day lock server-side for App Name + App Icon + Display Name (specced in `features/branding.md` Part 9 — currently UI-note only, never enforced) |
+| **19-V1** | **Playground** `/dashboard/playground` — **V1 CORE** (reordered 2026-08-11) | screen — ✅ done 2026-08-11 (editor Option A; B/C/D deferred) · ✅ **ALL 16 CATALOG TYPES wired 2026-08-13 (Stage A of the Connected Loop Pass):** AddItemPicker + ItemEditor per-type sections (course lessons, session booking slots, membership benefits + billing cycle, physical/product variants + stock, bundle picker, live platform/stream, page body) + fan cards render every type with gates (memberships now check out; purchased-before-member gate fix) + PATCH schema gains `variants`/`booking_slots`. Verified end-to-end via curl (create → rich PATCH → fan-page render → delete). · **NOTE (2026-08-13):** real-mode must ENFORCE the 7-day lock server-side for App Name + App Icon + Display Name (specced in `features/branding.md` Part 9 — currently UI-note only, never enforced) |
 | **21-V1** | **Fan shell** — Guest · Home · Content · Connect · Settings — **FULLY WIRED** | screens — ✅ done 2026-08-11 (v1 core) · ✅ **Fan shell full spec pass 2026-08-31:** Home tab rebuilt as 7-section activity hub (Spotlight, New from creator, Updates from partners, Community section, Your activity, Upcoming, Announcements) · Community fan UI wired (Home section + guest "Join the community" card + Connect community card) · Connect tab completed (All Partners + Followed two-column layout, deal-weighted billboard rotation, Artist Links) · Partner bottom modal (PartnerModal) replacing full-page navigation, follow toggle persisted to `fan_follows` · Settings completed (Subscription card, 4 notification toggles, payment methods stub) · `fan_follows` table added to mock store |
 | **8** | **Admin** `/admin` | screen — ✅ done 2026-08-30 |
 | **9** | **Settings** `/dashboard/settings` | screen — ✅ done 2026-08-30 |
@@ -267,6 +267,10 @@ NOTE        payout rail = creator's PayPal balance; Payoneer = rail-swap at Sett
             boundary (monetization/creators.md 2e2) · take rate 0% — no platform_fee code
 ```
 
+> **✅ ADDENDUM (2026-10-09) — Profile identity shipped (settings.md Part 13):** ProfileSection rebuilt = avatar upload/replace/remove (`POST /api/creator/upload` `type=avatar` → PUT `avatar_url`) + display name input + **per-field 7-day lock states** ("You can change this again on {date}"). Server-enforced in `PUT /api/creator/playground` → **409 `{ error, retry_at }`**; stamps `display_name_changed_at` / `avatar_changed_at` on `creators` (mock now; real-DB migration later); `IDENTITY_COOLDOWN_DAYS` lives in `lib/limits.ts`. **Deploy strips identity fields** (`usePlaygroundForm` allow-list) so a stale localStorage draft can't revert or falsely trip a lock — the lock fires only on a real value change. ✏️ gateways: sidebar identity block (now an Avatar photo, not a letter) + `BillboardPreview` → new `ProfileEditDialog` → Settings (founder decision 2026-10-09; **App Name/Icon locks still UI-note only** — Playground Identity tab, when it ships).
+>
+> **✅ ADDENDUM (2026-10-10) — Payments moved to Sheet 23 (Earnings):** `PaymentsPanel` leaves this sheet → `git mv` → `components/earnings/` (renders in Earnings §3, with the new `paypal_handle` card). Settings Part 2 = pointer stub (numbering kept). This sheet keeps Profile · Account/Security · Billing · Notifications · Messaging · Your Page · Integrations stub · Danger Zone — the PayPal-connect route line above now belongs to Sheet 23.
+
 ---
 
 ## SHEET 10 — Overview
@@ -277,7 +281,7 @@ SCREEN: Overview ·  /dashboard  ·  spec: overview.md
 ENTRY       app/(shell)/dashboard/page.tsx
             → src/screens/creator/overview/Screen.tsx
 COMPONENTS  StatCards (AnalyticsWidgets) · ActivityTimeline (DashboardTimeline) ·
-            SetupChecklist · QuickActions (Edit My-App, Install app) ·
+            SetupChecklist · QuickActions (Edit Playground, Install app) ·
             QRCard + FanExportButton (CreatorManagementWidgets) — PROMOTE
 ROUTES      GET /api/creator/activity       LIVE
             POST /api/creator/pageview      LIVE (migrate rate-limit in #5)
@@ -304,7 +308,7 @@ LIB         search-utils.ts (PROMOTE) · CreatorService (getByUsername already)
 TABLES      creators (read — is_discoverable, is_featured, created_at for ranking)
 MERGE       CreatorSearchInput vs SearchFilters → ONE (SearchFilters wins)
             CreatorCard vs CreatorResultCard → ONE card
-DEPENDS ON  1 2 3 — landing search section deferred (Sheet 23)
+DEPENDS ON  1 2 3 — landing search section deferred (Sheet 19b)
 ```
 
 > **REMOVED 2026-09-28 (cleanup pass):** the standalone `/search` page stack (`app/(public)/search/`, `screens/public/search/`, `components/search/` incl. SearchBar + CreatorResultCard) was deleted — the Network hub's Discover center (Sheet 18) is the search home now, and the deal form resolves `@usernames` directly. `GET /api/discover/creators` (this sheet's route) stays live. `search-utils.ts` (PROMOTE item) was also removed as unused; `features/search.md` remains the spec for a possible landing-page search section (Sheet 23).
@@ -423,6 +427,8 @@ DEPENDED     #2 3 4 12 (chat on creator cards) · wiring home = Network left/cen
 ```
 
 > **MOUNTED 2026-09-27 (Network hub rail):** all 4 components live in `src/components/network/` (folder = product-name rule) and render on `/dashboard/network`'s left rail: `＋ New deal` (button-gated AffiliateDealForm — @username promoter resolver + catalog item picker, external-link items filtered) → **YourDealsCard** (NEW: status pills + Pause/Resume/Revoke, `is_owner` from GET) → EarningsSummary → AffiliateDiscover → AffiliateLinks. POST `owner_id` optional (defaults to session); owner-only PATCH/DELETE unchanged.
+>
+> **✅ ADDENDUM (2026-10-10) — creator-only scope + the money screen moves to Sheet 23:** `EarningsSummary` → `git mv` → `components/earnings/` (Sheet 23). The deal form loses its scope select + item picker (creator-only deals — `creators.md` 2b): drop the `z.enum(["item","creator"])` scope on `POST /api/creator/affiliates/deals`, simplify `scopeMatches` in `lib/affiliateAttribution.ts`, remove the Per-item/Per-creator badges (`YourDealsCard`, `AffiliateDiscover`, `AffiliateLinks`), drop `scope`/`item_id` from the deal types + mock seeds, park the `content_items.affiliate_enabled`/`affiliate_rate` readers (external-link items = automatic non-conversion, no warning UI). The receipt-protocol routes (extended earnings GET, `conversions/[id]/settle`, `earnings/paypal`, admin dispute verdicts), `computeRedCard`, `SETTLEMENT_DUE_DAYS`, and the hop endpoint live on **Sheet 23**.
 
 ---
 
@@ -432,7 +438,7 @@ DEPENDED     #2 3 4 12 (chat on creator cards) · wiring home = Network left/cen
 
 | Item | What |
 |---|---|
-| `PreviewStateToggle` | Draft/Live toggle component, shared between Playground + owner's "View my app" (playground.md Part 1b) |
+| `PreviewStateToggle` | Draft/Live toggle component, shared between the Playground editor + the owner's live `/{username}` view (playground.md Part 1b) |
 | `ElementPopover` | Tap-to-edit floating editor (deferred: My Sheet 19 opens it) |
 | brand CSS hooks | `globals.css` stays platform; per-creator — via inline tail, `data-brand` — applied on fan shell pages, never on dashboard/login |
 | PWA strings | Manifest route already does this; keep, and start `start_url` → if Joel /app sheet |
@@ -470,10 +476,14 @@ ORDER     18/23 — the most shelf-heavy (Need Themes like).
 > - **`GET /api/creator/fans/list`** now returns `id`, `do_not_contact`, computed `total_spent` (sum of completed `fan_purchases.amount_paid` per fan).
 > - **Billboard GET/PUT** adds `bio` (600) + `rate_card {post,story,video}` + `media_kit_message` (300) on the creators row; dead `/media-kit` shareable-URL block removed from BillboardEditor.
 > - **Mock fixes on the spot (2026-09-26):** mock query builder gained `.gt()`, `.is()`, and `select(…, { count })` support (were missing entirely → 500s in mock for relationships / staff+partner invites / count queries).
+> - **ADDENDUM (2026-10-09) — billboard DESIGN editing moves to Playground (`playground.md` Part 1d):** rail becomes mirror only — `BillboardEditor`'s design fields (tagline/tags/collab style/bio/rate card/media kit) relocate to `/dashboard/playground?view=billboard` (component home `components/network/` → `components/playground/`); the 2 visibility switches are **extracted into their own card INSIDE the Discover section and STAY in Network** (founder: *"the Playground is just for editing"*; position same-day follow-up: they gate Discover, so they live with it — the rail's pill became a status badge); nudge **[Design my billboard]** + the My Billboard card-header **✏️** → direct jump to that view (no dialog); undesigned standard unchanged (avatar + name + @handle, network.md §3).
+> - **ADDENDUM round 2 (2026-10-09, same day) — FB-model simplification:** `show_in_search` is **removed** from UI + logic (founder: search must always be on — no greying, everyone findable by name). Discover card = the **single Accept-collab switch** (default collab feed = willing only; typed search = ALL creators incl. closed ones with a disabled button; landing marquee = all creators); self excluded from own Discover; rail pill relabelled **Open/Closed to collabs** (status only); billboard nudge retargeted → **first Network visit while the billboard is undesigned** (once); `creators.show_in_search` column parked (network.md §1/§3, search.md, landing.md).
+> - **ADDENDUM round 3 (2026-10-10) — Earnings leaves the rail (Sheet 23):** `EarningsSummary` unmounts from the left rail → `components/earnings/` (its own screen). The rail's affiliate block = `＋ New deal` → YourDealsCard → AffiliateDiscover → AffiliateLinks — the remaining three keep sharing the `dealsKey` refresh bell. `AffiliateDealForm` loses its scope selector + item picker (creator-only deals); any "My Earnings" affordance becomes a link to `/dashboard/earnings`.
+> - **ADDENDUM round 4 (2026-10-12) — the whole affiliate block leaves the rail → Sheet 23 §2b (founder "A1"):** rail = **billboard mirror only** (Network = social). `AffiliateDealForm` + `YourDealsCard` + `AffiliateDiscover` + `AffiliateLinks` `git mv` → `components/earnings/`, composed by a new `AffiliateDealsSection` (owns `showDealForm` + `dealsKey` + `handleDealSubmit`, moved verbatim — no behavior change). Deal-logic work (Circle Partners `Make a deal`, chat deal cards, partners-only, cancel-future-only) stays PARKED.
 
 ---
 
-## SHEET 19 — My-App (biggest screen)
+## SHEET 19 — Playground (biggest screen)
 
 > **🔀 2026-08-11 — reordered to FIRST, V1-CORE scope (test-first):** wire Phases 1–2
 > of playground.md Part 6 now; Phases 3–5 deferred. V1-CORE = full-screen phone shell + 5
@@ -486,6 +496,17 @@ ORDER     18/23 — the most shelf-heavy (Need Themes like).
 > **DEFERRED (v1):** item types course/session/membership/physical/bundle/live/pdf/audio/page,
 > Spotlight tab, Funnels, Integrations/Auto-DM, Email campaigns, Media kit, AI Copilot,
 > editor options B/C/D (all remain spec'd — additive wiring later).
+
+> **ADDENDUM (2026-10-09) — top-level `Fans | Billboard` switch (playground.md Part 1d):**
+> Playground gains a second view: **Fans** = today's phone preview (Draft/Live/Deploy unchanged) ·
+> **Billboard** = result-preview card + the billboard editors moved from the Network rail
+> (`tagline 60 / 3 tags / collab style / bio 600 / rate_card {post,story,video} / media_kit 300`,
+> Save button, loading/saving states — spec moved verbatim from network.md). Existing
+> `GET/PUT /api/creator/partners/billboard` serves it — **no new API**. URL `?view=billboard`
+> (default `fans`; `?tab=` unchanged — fan-surface deep links inside Fans view). Entry points:
+> Network header ✏️ Edit billboard · nudge [Design my billboard] · direct URL. After a bio
+> save, refresh `GET /api/creator/playground` so the Fans preview agrees. Visibility switches
+> are NOT here (stay in Network rail).
 
 ```
 SCREEN: Playground ·  /dashboard/playground  ·  spec: playground.md
@@ -627,14 +648,68 @@ SCREEN: Landing → /  · spec: landing.md (full — un-parked 2026-09-29)
 ────────────────────
 LIVE  base page (hero / how-it-works / features / comparison / footer) +
       Phase 4 extras (components/landing/):
-      - CreatorShowcase — marquee of show_in_search creators (featured first,
-        max 12, hidden below 2; CSS loop in styles/globals.css)
+      - CreatorShowcase — marquee of ALL creators (featured first,
+        max 12, hidden below 2; CSS loop in styles/globals.css; pool
+        de-gated 2026-10-09 with the show_in_search removal)
       - LandingAuthModal — nav Sign in opens LoginForm in a dialog (stays on /)
       - LandingInstallButton — platform PWA #1 install (iOS/in-app show manual steps)
       - YourCreatorsRow — returning-fan row (fan_session → email → fan_accounts
         → creators; renders ONLY when recognized — privacy rule, landing.md)
 STILL DEFERRED: landing search section (embed shared Search per Sheet 11).
 ```
+
+---
+
+## SHEET 23 — Earnings (new money screen)  ·  spec: screens/creator-dashboard/earnings/earnings.md
+
+```
+SCREEN: Earnings ·  /dashboard/earnings  ·  spec: earnings.md  (NEW 2026-10-10 — spec'd, NOT wired)
+────────────────────────────────────────────────────────────────────
+ENTRY       app/(shell)/dashboard/earnings/page.tsx (2-line address book)
+            → src/screens/creator/earnings/Screen.tsx
+            → src/components/earnings/EarningsPage.tsx
+NAV         lib/nav-config.ts — NEW item (DollarSign) AFTER Playground, before
+            Settings; phone bottom bar gains a cell (verify labels @375px)
+COMPONENTS  EarningsPage (new) · SalesSection (new) · AffiliateSection (new:
+            EarnedCard/OwedCard/ReceiptRow/RedCardBanner) · PaymentsSection (new:
+            PayPalHandleCard) — PLUS two MOVES:
+              git mv components/network/EarningsSummary.tsx  → components/earnings/
+              git mv components/settings/PaymentsPanel.tsx   → components/earnings/
+            (NetworkPage.tsx drops its EarningsSummary render; settings/Screen.tsx
+            drops PaymentsPanel — settings.md Part 2 stays a pointer stub)
+ROUTES      NEW   GET  /api/creator/earnings/sales          (§1 list + server total)
+            EXTEND GET /api/creator/affiliates/earnings     (both directions + receipt
+                 fields + red_card + lazy ladder notices — idempotent via reminders_sent)
+            NEW   POST /api/creator/affiliates/conversions/[id]/settle
+                 { action: mark_paid | confirm | dispute } — role-checked, idempotent
+            NEW   PUT  /api/creator/earnings/paypal         (paypal_handle)
+            NEW   GET  /api/admin/disputes · POST /api/admin/disputes/[id]/resolve
+LIB         computeRedCard(userId) (NEW — one impl: deals POST 403 · engine pause ·
+            earnings banner) · SETTLEMENT_DUE_DAYS = 14 in lib/limits.ts
+            ladder evaluation lives in the earnings GET (PRODUCTION-NOTE: cron at
+            migration) · emails via mockResendSend (contract = forgot-password)
+TABLES      creators + paypal_handle (new, nullable)
+            affiliate_conversions + due_at, owner_paid_at?, confirmed_at?,
+            disputed_at?, dispute_reason?, reminders_sent, last_reminder_at?
+            settlement_status gains 'awaiting_confirm'
+            (receipt protocol — earnings.md Part 6 / creators.md 2f)
+EXTEND      GET /api/creator/activity — describe() + mock RPC get_creator_activity
+            gain affiliate events (affiliate_earned, payment_due/overdue/marked/
+            confirmed, dispute_opened) so Overview's timeline shows money moves
+DEPENDS ON  16 (deals + conversions + earnings route), 18 (rail unmount), 10 (activity)
+NOTE        report-only screen: no balance/Cash Out, platform 0% — wallet language
+            forbidden (earnings.md Concept). Red Card = protocol holds only, ZERO
+            PayPal code in v1; multiparty split + licence check = migration pass
+            (creators.md 2e2 production note). Mobile bar 5 cells (6 for admins).
+```
+
+> **Also in this sheet's blast radius (spec-phase decisions 2026-10-10):**
+> - **Creator-only scope** drops `scope` everywhere: `AffiliateDealForm` (scope select + item picker) · `POST /api/creator/affiliates/deals` zod (`z.enum(["item","creator"])`) · `scopeMatches` in `lib/affiliateAttribution.ts` · the "Per-item/Per-creator" badges in `YourDealsCard`/`AffiliateDiscover`/`AffiliateLinks` · `AffiliateDeal.type`/`AffiliateConversion`/`Attribution` scope fields in `types/index.ts` · `content_items.affiliate_enabled`/`affiliate_rate` readers (parked). External-link items = automatic non-conversion (no purchase row, no warning UI).
+> - **The in-app hop (Door 2):** one small rate-limited endpoint (e.g. `POST /api/fan/hop`) that mirrors `/ref/[code]`'s cookie + attribution write, called on partner-modal / partner-page OPEN; resolves the active host↔promoter deal (creator-only → single lookup; no deal = no-op). Shares `lib/affiliateAttribution.ts` with Door 1.
+> - **Deals POST 403** when `computeRedCard` says 🟥 (lock ①) · engine pauses owner-side deals while red (lock ②) · settle route enforces grace-cure (a hold never blocks a payment that clears the payer's own arrears).
+
+> **✅ ADDENDUM (2026-10-12) — §2b: the affiliate management block moves in here ("A1"):**
+> `git mv` `AffiliateDealForm` · `YourDealsCard` · `AffiliateDiscover` · `AffiliateLinks` from `components/network/` → `components/earnings/` + NEW `AffiliateDealsSection.tsx` (heading "Affiliate deals" + `＋ New deal` toggle + the four widgets sharing one `dealsKey` — state moved verbatim from NetworkPage). `EarningsPage` order: Sales → AffiliateSection → **AffiliateDealsSection** → Payments. `AffiliateSection`'s "create one in Network" empty-state link → "create one below". Rail on Sheet 18 loses the block (round-4 addendum). **Relocation only** — no deal-logic changes (money batch parked). Smoke 2026-10-12: 4 pages 200 · Network HTML has no `+ New deal`/Affiliates · Earnings has the heading + button · deal POST 201 → list 200 → DELETE cleanup · gates green (typecheck 0 · lint 0 · check-docs 420).
 
 ---
 

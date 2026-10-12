@@ -18,12 +18,32 @@ interface RawEvent {
 }
 
 function describe(event: RawEvent): { action: string; description: string } {
+  const amount = Number(event.amount ?? 0);
   if (event.type === "purchase") {
-    const amount = Number(event.amount ?? 0);
     return { action: "purchase", description: `A fan spent ${money(amount)}` };
   }
   if (event.type === "fan_joined") {
     return { action: "follow", description: `${event.email ?? "A fan"} joined your fans` };
+  }
+  // Settlement ledger events (earnings.md Part 5/7) — synthesized from the
+  // immutable affiliate_conversions rows by the get_creator_activity RPC.
+  if (event.type === "affiliate_earned") {
+    return { action: "affiliate", description: `You earned ${money(amount)} from an affiliate deal` };
+  }
+  if (event.type === "payment_due") {
+    return { action: "affiliate", description: `${money(amount)} became owed on your affiliate deal` };
+  }
+  if (event.type === "payment_overdue") {
+    return { action: "affiliate", description: `Payment overdue: ${money(amount)}` };
+  }
+  if (event.type === "payment_marked") {
+    return { action: "affiliate", description: `Payment of ${money(amount)} marked paid` };
+  }
+  if (event.type === "payment_confirmed") {
+    return { action: "affiliate", description: `Payment of ${money(amount)} confirmed` };
+  }
+  if (event.type === "dispute_opened") {
+    return { action: "affiliate", description: `Payment of ${money(amount)} disputed` };
   }
   return { action: "content", description: "New activity" };
 }
@@ -47,8 +67,9 @@ export async function GET() {
       const { action, description } = describe(event);
       const createdAt = event.created_at ?? new Date().toISOString();
       return {
-        // Stable across polls so React keys never collide or go undefined.
-        id: `${event.type ?? "event"}:${event.email ?? ""}:${createdAt}`,
+        // Stable across polls so React keys never collide or go undefined —
+        // amount joins the id because ledger events carry no email.
+        id: `${event.type ?? "event"}:${event.email ?? ""}:${event.amount ?? ""}:${createdAt}`,
         action,
         description,
         created_at: createdAt,

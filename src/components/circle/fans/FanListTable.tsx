@@ -1,5 +1,7 @@
 /**
- * Fan list with quick filters, search, and CSV export (relationships.md Part 2).
+ * Fan list with quick filters, search, CSV export, and a per-row MessageIcon
+ * quick-thread (relationships.md Part 2; the message cell added 2026-10-12 —
+ * clicking it stops there, the row click still opens the profile drawer).
  */
 "use client";
 
@@ -12,6 +14,7 @@ import { toast } from "sonner";
 import { fetchJson } from "@/lib/fetchJson";
 import { formatDate, money } from "@/lib/format";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { MessageIcon } from "@/components/messages/MessagesShell";
 
 interface FanRow {
   id: string;
@@ -127,12 +130,15 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
               <th className="sticky top-0 bg-muted/50 px-4 py-2.5">Referred</th>
               <th className="sticky top-0 bg-muted/50 px-4 py-2.5">Status</th>
               <th className="sticky top-0 bg-muted/50 px-4 py-2.5 text-right">LTV</th>
+              <th className="sticky top-0 bg-muted/50 px-4 py-2.5 text-right">
+                <span className="sr-only">Message</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-0">
+                <td colSpan={6} className="p-0">
                   <EmptyState
                     variant="inline"
                     title="No fans found."
@@ -159,6 +165,12 @@ export function FanListTable({ onSelectFan }: FanListTableProps) {
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     {money(fan.total_spent)}
+                  </td>
+                  <td
+                    className="px-4 py-2.5 text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MessageIcon otherKey={fan.id} otherParty="fan" name={fan.email} />
                   </td>
                 </tr>
               );

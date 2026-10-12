@@ -129,6 +129,42 @@ A **toggle at the top center** of Playground (above the phone frame) lets the cr
 
 ---
 
+## Part 1d: Top-Level Switch — Fans | Billboard (founder decision 2026-10-09)
+
+**Playground = the editing room for how the world sees you.** Two views behind one segmented switch at the top of the screen:
+
+| View | What it is |
+|---|---|
+| **Fans** (default) | Today's phone preview — Draft/Live/Deploy bar (Part 1b) + the 5 fan surfaces (Part 1) |
+| **Billboard** | Your billboard **exactly as Discover renders it** (live result-preview) + the billboard editors |
+
+- **The one rule (extends the identity pattern):** *Network = see + toggle visibility · Playground = design.* Name/avatar ✏️ → Settings (`settings.md` Part 13); billboard ✏️ → this screen's Billboard view — **direct jump, no dialog** (founder: no 7-day rule to explain)
+- **URL:** `/dashboard/playground?view=billboard` — `view` ∈ `fans` | `billboard`, default/absent = `fans`. The existing `?tab=` is unrelated: it deep-links a fan surface *inside* Fans view (`FAN_TAB_IDS` validation unchanged)
+- **Chrome split:** the Draft/Live/Deploy bar + phone frame render **only in Fans view** — the billboard has no draft state; it saves immediately
+
+### Billboard view layout
+
+- **Result-preview card (top):** how your card looks to other creators — avatar, display name, @handle, tagline (only if set), tag chips (only if set), collab style (only if set), Featured badge when featured. **No actions** (no Connect/Visit — it's you), **no pencils** (you're already in the edit room), **no visibility pill** (switches live in Network). **Undesigned = the plain standard** (`network.md` §3, confirmed 2026-10-09): avatar + name + @handle only — nothing fake, no placeholders
+- **Editors below** — moved verbatim from `network.md` (Component Concepts → BillboardEditor), plus the two fields that always belonged:
+  - Tagline: input, max 60 chars with live counter
+  - Tags: 3 inputs side by side, empty values filtered before save
+  - Collab style: textarea (2 rows), free text
+  - **Bio:** textarea, max `BILLBOARD_LIMITS.bio` (600) — **one edit home is here.** The fan page also renders bio, but the deferred fan-side editor must *link here*, never duplicate the field
+  - **Rate card:** 3 inputs (post / story / video), free-text price labels
+  - **Media kit message:** textarea, max `BILLBOARD_LIMITS.mediaKit` (300)
+  - **Save button** (not auto-save) + saving/disabled states; loading state while fetching
+  - **NOT here:** the collab switch (Network Discover card — `network.md` §3) · App Name/Icon (Identity tab, deferred) · display name/avatar (Settings → Profile)
+- **Data:** existing `GET/PUT /api/creator/partners/billboard` — covers every field, **no new API**. After a save that changes `bio`, refresh the fan-preview data (`GET /api/creator/playground`) so the Fans view agrees (bio renders on both surfaces)
+- **Entry points (all land on this view):**
+  1. Network My Billboard card-header **✏️** button
+  2. Billboard nudge modal **[Design my billboard]** (first Network visit while the billboard is undesigned — `network.md` §3, trigger retargeted 2026-10-09)
+  3. Direct: `/dashboard/playground?view=billboard`
+
+  (The rail card's pencil beside name/@handle stays the *identity* pencil → Settings. Two pencils, two homes, never stacked on the same spot.)
+- **Why here:** Playground is *"how the world sees me"* — fan app + billboard, two previews one room (Settings stays account-ish: identity, payments). This is also the Playground's **first real editor** — preview-first defers the fan-side editor UI, so "the page IS the editor" applies to the billboard before the phone.
+
+---
+
 ## Part 2: The Editor Tabs (content editing)
 
 **Where they live:** inside the editor **sheet** (Option A — Part 1c) as a tab strip: `Identity | Design | Catalog | Artist Links | Integrations | Email | Media Kit | Spotlight`. (Options B/C/D relocate the same 8 tabs; the tabs themselves are identical in all four options.)
@@ -157,8 +193,7 @@ A **toggle at the top center** of Playground (above the phone frame) lets the cr
 - **App Icon** — file upload, shows preview
   - ⚠️ Same 7-day lock as App Name — existing installs keep old icon.
 - **Status bar color** — PWA `theme_color` (from `colors.accent` by default — `features/branding.md` Part 9 #4)
-- **Display Name** — creator's public name
-  - ⚠️ Changeable anytime, with a **7-day lock** between changes. Static note: frequent changes confuse fans.
+- **Display Name** — **moved to Settings → Profile** (founder decision 2026-10-09: one edit home + ✏️ gateway buttons; the 7-day cooldown lives there — `settings.md` Part 13). Not editable on this tab.
 - **Bio** — textarea
 - **Connect Tab Empty State** — a single textarea (max 200 chars) for the message shown when the Connect tab is completely empty (no partners, no community, no socials, no followed)
   - Default value: "More to come — check back soon"

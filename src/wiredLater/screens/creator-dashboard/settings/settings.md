@@ -23,18 +23,13 @@ Designed from competitor research (Stan Store Settings, Gumroad Settings, Beacon
 
 ---
 
-## Part 2: Payments & Payouts
+## Part 2: Payments & Payouts — ➡️ MOVED (2026-10-10)
 
-| Piece | Shows / does |
-|---|---|
-| PayPal connect panel | Connect/disconnect PayPal, status badge (Connected / Needs attention / Not connected) — PayPal-first rail (founder decision 2026-08-10, `monetization/creators.md` Part 1a) |
-| Payout method | Where money lands: **PayPal balance** (v1 default) — **Payoneer hold** noted as the rail-swap option (`creators.md` 2e2) |
-| Payout schedule | Automatic (e.g., weekly/monthly) vs manual — production only |
-| Settlement ledger (affiliates) | Read-only summary of affiliate cuts settled via the Deal Rules & Settlement Engine (auto-split vs manual-PayPal.me pending) — links into Network → Affiliates → My Earnings (`network.md` §7) |
-
-**Mock:** panel renders connected-state UI against `paypal_account_id` on the creator row; no real PayPal calls. Payout method/schedule sections show as disabled placeholders with a "Production" tag.
-
-**Production notes:** real PayPal OAuth connect flow (OAuth 2.0 + PayPal identity), payout method via PayPal balance, schedule stored per creator. The old Stripe Connect panel (`StripeConnectPanel.tsx` in old-code) is **deferred reference** — the Atlas path (`creators.md` Part 1b) — not wired.
+> **This section moved to the Earnings screen** — `screens/creator-dashboard/earnings/earnings.md` **§3** (founder decision 2026-10-10: one dedicated money screen). PayPal.me handle editing, the honest Connect-PayPal card, payout method/schedule, and the settlement ledger all live there now. **Part numbering is kept** (this stub stays Part 2) so cross-references never break.
+>
+> - `PaymentsPanel` → `git mv` → `components/earnings/` (renders inside Earnings §3)
+> - Settings keeps: Profile (Part 13) · Account & Security · Billing · Notifications · Messaging & Privacy · Your Page · Integrations stub · Danger Zone
+> - Money-related *toggles* (e.g., "New sale" email) stay in Notifications (Part 4) — they're preferences, not balances
 
 ---
 
@@ -122,7 +117,7 @@ No UI beyond a placeholder card: "Integrations — pixels, email tools, and more
 |---|---|
 | Not logged in | Redirect to `/login` |
 | Logged in, no creator | Redirect to `/onboarding` |
-| PayPal not connected | Payments section shows "Connect PayPal" CTA (mock: fake connect button) |
+| PayPal not connected | ➡️ Handled on the **Earnings screen §3** (`earnings.md`) — the honest "Coming soon" connect card moved there 2026-10-10 |
 | 2FA mid-setup | Show pending state (production: verification code entry) |
 | Deleting account | Confirm modal; after delete → `/login` |
 
@@ -132,8 +127,7 @@ No UI beyond a placeholder card: "Integrations — pixels, email tools, and more
 
 | Piece | Mock | Production |
 |---|---|---|
-| PayPal connect | Fake connect button + `paypal_account_id` field | Real PayPal OAuth connect + PayPal Checkout webhooks |
-| Payout method/schedule | Disabled placeholders | PayPal balance payouts per creator (Payoneer = rail-swap option at the Settlement Engine boundary) |
+| PayPal connect + payout method/schedule (Part 2) | ➡️ MOVED 2026-10-10 → `earnings.md` §3 (honest connect card + PayPal.me handle) | Real PayPal OAuth connect + multiparty split at migration; Payoneer = rail-swap at the engine boundary |
 | Billing & plan | Static rows + toast | Paddle subscriptions, proration (Flow 3 — `owner.md`) |
 | Notifications | Persisted toggles, console logs | Resend emails + push via fan app infra |
 | 2FA | Stored flag only | Real TOTP (authenticator app) + recovery codes |
@@ -147,13 +141,14 @@ No UI beyond a placeholder card: "Integrations — pixels, email tools, and more
 | Topic | Status |
 |---|---|
 | #1 Account & Security (email, password, 2FA) | ✅ Decided — 2FA consistent with admin.md |
-| #2 Payments & Payouts (PayPal connect + payout) | ✅ Decided 2026-08-10 — PayPal-first (founder decision; `creators.md` 1a); PayPal-compatible panel replaces the deferred StripeConnectPanel |
+| #2 Payments & Payouts (PayPal connect + payout) | ✅ Decided 2026-08-10 → **moved 2026-10-10** to the Earnings screen (`earnings.md` §3 — one money screen; this Part 2 is the pointer stub) |
 | #3 Billing & Plan | ✅ Decided — UI shell, no-op in mock |
 | #4 Notifications (5 toggles) | ✅ Decided |
 | #5 Messaging & Privacy (allow-anyone toggle, partner toggle, requests folder) | ✅ Decided — messaging is free for everyone (`messaging.md`) |
-| #6 Your Page (custom domain + link, NO Link Address editing) | ✅ Decided — Link Address permanent at signup; link shown read-only, display name/app name/icon editable in Playground Identity |
+| #6 Your Page (custom domain + link, NO Link Address editing) | ✅ Decided — Link Address permanent at signup; link shown read-only; **display name + avatar editable in Settings → Profile (Part 13)** (moved out of "Playground Identity" by founder decision 2026-10-09); app name/icon stay in Playground Identity |
 | #7 Integrations stub | ✅ Decided — points to `integrations.md`, nothing wired |
 | #8 Danger Zone (delete account) | ✅ Decided |
+| #9 Profile (display name + avatar — cooldown + ✏️ gateways) | ✅ Decided 2026-10-09 — **(A) cooldown:** each field locks itself for 7 days after a real change (`display_name_changed_at` / `avatar_changed_at`; identical-value saves never lock) · **(B) ✏️ gateways:** sidebar identity block + BillboardPreview → `ProfileEditDialog` → Settings · **both fields** covered |
 
 ---
 
@@ -168,4 +163,34 @@ No UI beyond a placeholder card: "Integrations — pixels, email tools, and more
 ### Notes
 
 - Old backup `allScreens/dashboard-settings/page-old.tsx` **deleted by founder decision** (it was only a StripeConnectPanel wrapper — this spec fully replaces it).
-- `src/old-code/StripeConnectPanel.tsx` is **deferred reference** (the Atlas path, `creators.md` Part 1b) — Part 2 is a PayPal-first panel built from this spec, not a Stripe re-wire.
+- `src/old-code/StripeConnectPanel.tsx` is **deferred reference** (the Atlas path, `creators.md` Part 1b). The PayPal-first panel it would have been replaced by now lives on the **Earnings screen §3** (`earnings.md`, 2026-10-10).
+
+---
+
+## Part 13: Profile — display name & avatar
+
+> **Renders FIRST on the settings screen** (top card, above Account & Security). The **one and only** place a creator edits their display name and photo (founder decisions 2026-10-09). Everything else that shows identity — fan page, Discover, landing, messages, sidebar — only *reads* it.
+
+| Piece | Behavior |
+|---|---|
+| Avatar | Circular preview (photo, or initials fallback). **Upload photo** → file picker → `POST /api/creator/upload` (`type=avatar` → public URL) → saves `avatar_url`. **Remove** → back to initials. Both save **instantly** (no Save button) |
+| Display name | Text input (cap 80) + **Save changes** button |
+| Rule helper | Static line under the fields: *"Your name & photo appear on your fan page, Discover, landing and messages — changes show everywhere immediately. Each can be changed once every 7 days."* |
+| Locked state | Per field, independent: changed within the last 7 days → that field's input/buttons disabled + *"You can change this again on {date}."* |
+
+**7-day cooldown (founder decision 2026-10-09 — option A: cooldown, not deadline):**
+- A real change stamps `display_name_changed_at` / `avatar_changed_at` on the creator row → that field locks for `IDENTITY_COOLDOWN_DAYS` (7) — shared constant in `lib/limits.ts`.
+- **The lock fires only when the value actually CHANGES** — an identical-value save passes without locking (otherwise Playground Deploy, which PUTs these fields in the same payload, would trip locks).
+- Enforced **server-side** in `PUT /api/creator/playground` → `409 { error, retry_at }`; `GET /api/creator/playground` returns both timestamps so the UI renders lock state.
+
+**One row → every screen (propagation):** fan page + guest header · Network Discover cards + billboard modal · your billboard preview · landing marquee + returning-fan row · sidebar profile block · partner/staff lists + message conversation titles · admin Creators table. Save once → every surface shows the new value on next load. No per-surface editors (the billboard *displays* identity; it never edits it).
+
+**✏️ gateway buttons (founder decision 2026-10-09 — option B):** exactly two spots where a creator sees their OWN identity carry a small ✏️:
+1. **Dashboard sidebar identity block** (desktop only — the phone bottom bar has no identity block; phones reach editing via Settings nav)
+2. **BillboardPreview card** on the Network rail — the name/photo pencil, *distinct* from the existing ✏️ Edit billboard header button (that one focuses the rail editor)
+
+Press → **`ProfileEditDialog`**: *"Your display name and photo appear on your fan page, Discover, landing and messages — changes show everywhere immediately. ⚠️ You can change each once every 7 days."* → **[Open Settings]** → `/dashboard/settings` · [Not now]. The dialog shows on **every** press — it is the explainer + gateway, not a one-time tip.
+
+**Data model:** 2 nullable timestamp columns on `creators` — `display_name_changed_at`, `avatar_changed_at` (mock now; real-DB migration at the migration pass).
+
+**Out of scope:** banner image · App Name / App Icon (their 7-day locks stay specced in `playground.md` Part 2a — same dialog pattern when the Identity tab ships) · Link Address (permanent, no editor) · bio (lives in the Billboard).

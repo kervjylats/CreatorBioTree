@@ -6,12 +6,14 @@
  */
 "use client";
 
+import { useEffect } from "react";
 import { Heart } from "lucide-react";
 import { ArrowLeft } from "lucide-react";
 import type { CreatorBranding } from "@/lib/branding";
 import type { ContentItem } from "@/types";
 import { buttonClass } from "./themeStyles";
 import { PartnerBody, usePartnerFollow } from "./PartnerBody";
+import { firePartnerHop } from "@/lib/hopAttribution";
 
 interface PartnerPageContentProps {
   branding: CreatorBranding;
@@ -29,6 +31,12 @@ export function PartnerPageContent({
   partnerUsername,
 }: PartnerPageContentProps) {
   const { following, toggleFollow } = usePartnerFollow(partnerUsername, hostUsername);
+
+  // Silent hop (earnings.md Part 8, Door 2) — the full partner page is the
+  // second hop surface; same fire-and-forget, once per session pair.
+  useEffect(() => {
+    firePartnerHop(hostUsername, partnerUsername);
+  }, [hostUsername, partnerUsername]);
 
   return (
     <div
