@@ -14,7 +14,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Link2 } from "lucide-react";
+import { Copy, ExternalLink, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchJson } from "@/lib/fetchJson";
@@ -40,6 +40,13 @@ export function QrCard() {
     });
   };
 
+  // Overview-only door (overview.md decision #12, 2026-10-14): copy shows the
+  // address, this shows the place — guest eyes, new tab, every device.
+  const viewPage = () => {
+    if (!url) return;
+    window.open(url, "_blank", "noopener");
+  };
+
   return (
     <Card id="qr-section">
       <CardHeader>
@@ -52,10 +59,16 @@ export function QrCard() {
             {url || "Loading your link…"}
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={copyLink} disabled={!url}>
-          <Copy size={14} />
-          Copy link
-        </Button>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button size="sm" variant="outline" onClick={copyLink} disabled={!url}>
+            <Copy size={14} />
+            Copy link
+          </Button>
+          <Button size="sm" variant="outline" onClick={viewPage} disabled={!url}>
+            <ExternalLink size={14} />
+            View my page →
+          </Button>
+        </div>
         <p className="text-xs text-muted-foreground">
           A scannable QR code isn&apos;t available yet — the link above is the real one.
         </p>

@@ -852,7 +852,35 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
         }
       }
 
-      return { data: [...fans, ...purchases, ...affiliate], error: null };
+      // Deal-proposal events (messaging.md Part 2b, Batch B 2026-10-12) —
+      // synthesized from affiliate_deal_proposals rows involving this creator
+      // (both directions); `email` carries the counterparty NAME for display.
+      const creatorsById = new Map(
+        getTable("creators").map((c) => [String((c as Record<string, unknown>).id), c as Record<string, unknown>]),
+      );
+      const proposals: Array<Record<string, unknown>> = [];
+      for (const row of getTable("affiliate_deal_proposals")) {
+        const p = row as Record<string, unknown>;
+        if (p.proposer_id !== creatorId && p.partner_id !== creatorId) continue;
+        const iAmProposer = p.proposer_id === creatorId;
+        const other = creatorsById.get(String(iAmProposer ? p.partner_id : p.proposer_id));
+        const name = String(other?.display_name || other?.username || "a creator");
+        proposals.push({
+          type: iAmProposer ? "deal_proposed_by_me" : "deal_proposed_to_me",
+          email: name,
+          created_at: p.created_at,
+        });
+        const resolved_at = p.resolved_at ?? p.created_at;
+        if (p.status === "accepted") {
+          proposals.push({ type: iAmProposer ? "deal_accepted_by_them" : "deal_accepted_by_me", email: name, created_at: resolved_at });
+        } else if (p.status === "declined") {
+          proposals.push({ type: iAmProposer ? "deal_declined_by_them" : "deal_declined_by_me", email: name, created_at: resolved_at });
+        } else if (p.status === "canceled") {
+          proposals.push({ type: iAmProposer ? "deal_canceled_by_me" : "deal_canceled_by_them", email: name, created_at: resolved_at });
+        }
+      }
+
+      return { data: [...fans, ...purchases, ...affiliate, ...proposals], error: null };
     }
 
     case "get_creator_partnership_stats": {
@@ -921,6 +949,7 @@ function rpcHandler(name: string, args: Record<string, unknown>): MockResult {
         niche: args.p_niche ? String(args.p_niche) : null,
         tagline: null,
         collab_style: null,
+        primary_field: null,
         connect_empty_text: null,
         metadata: {},
         theme_id: "minimal",
@@ -1102,6 +1131,7 @@ function buildMockCreatorRow(id: string, email: string, displayName: string): Cr
     niche: null,
     tagline: null,
     collab_style: null,
+    primary_field: null,
     connect_empty_text: null,
     metadata: {},
     theme_id: "minimal",
@@ -1322,13 +1352,15 @@ export function seedMockAdmin(): void {
   if (!creators.some((c) => c.id === MOCK_ADMIN_ID)) {
     creators.push({
       id: MOCK_ADMIN_ID,
-      // Username-less on purpose (2026-09-29 staff law: admin accounts get a
-      // minimal creators row with NO Link Address). The old "admin" username
-      // leaked the staff account into creator search / collab feed / landing
-      // marquee once show_in_search was parked (founder 2026-10-09). Cast:
-      // Creator.username is still typed `string` (honest type = string|null —
-      // runtime already handles nulls; separate sweep).
-      username: null as unknown as string,
+      // Hybrid admin-creator (founder 2026-10-12): the mock admin gets a real
+      // Link Address so ONE login tests BOTH surfaces — the creator dashboard
+      // and the Admin Panel (dual-role law 2026-09-29: role = permission,
+      // identity = the username). Handle is "owner", NOT "admin": the static
+      // /admin route (the panel) shadows the fan-page catch-all, so an
+      // @admin live page would land on the panel instead. MOCK-ONLY — the
+      // real staff law is untouched: invited admins still get username: null
+      // until they choose a Link Address (admin.md Part 4).
+      username: "owner",
       display_name: "Platform Owner",
       bio: null,
       email: MOCK_ADMIN_EMAIL,
@@ -1342,6 +1374,7 @@ export function seedMockAdmin(): void {
       niche: null,
       tagline: null,
       collab_style: null,
+      primary_field: null,
       connect_empty_text: null,
       metadata: {},
       theme_id: "minimal",

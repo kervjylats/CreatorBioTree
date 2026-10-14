@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getMessageIdentity, isBlocked, resolveParticipantNames } from "@/lib/messages";
+import { proposalStatusExpired } from "@/lib/affiliateDeals";
 
 const sendSchema = z.object({
   body: z.string().min(1).max(2000),
@@ -42,6 +43,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const { data: attachmentRows } = messageIds.length
       ? await supabase.from("message_attachments").select("*").in("message_id", messageIds)
       : { data: [] };
+    // Deal-proposal cards (Part 2b, Batch B): messages carrying proposal_id
+    // render as structured cards — attach the live proposal state to each.
+    const proposalIds = [...new Set(
+      (messageRows ?? []).map((m) => m.proposal_id as string | null).filter((v): v is string => Boolean(v)),
+    )];
+    const { data: proposalRows } = proposalIds.length
+      ? await supabase.from("affiliate_deal_proposals").select("*").in("id", proposalIds)
+      : { data: [] };
+    const proposalById = new Map((proposalRows ?? []).map((p) => [p.id as string, p]));
 
     const names = await resolveParticipantNames(
       supabase,
@@ -65,7 +75,30 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           mime: a.mime,
           size: a.size ?? 0,
         })),
+        ...(proposalFor(m.proposal_id as string | null, me.key)),
       }));
+
+    // Lazy expiry for display (messaging.md Part 2b): a pending proposal past
+    // its 7-day window reads "expired"; the accept/decline routes flip the row.
+    function proposalFor(proposalId: string | null, myKey: string) {
+      const p = proposalId ? proposalById.get(proposalId) : undefined;
+      if (!p) return {};
+      const expired = proposalStatusExpired(p);
+      return {
+        proposal: {
+          id: p.id,
+          status: expired ? "expired" : p.status,
+          deal_type: p.deal_type,
+          rate: p.rate ?? null,
+          custom_terms: p.custom_terms ?? null,
+          expires_at: p.expires_at,
+          deal_id: p.deal_id ?? null,
+          proposer_id: p.proposer_id,
+          partner_id: p.partner_id,
+          am_proposer: p.proposer_id === myKey,
+        },
+      };
+    }
 
     return NextResponse.json({
       myKey: me.key,

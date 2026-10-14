@@ -1,11 +1,11 @@
 /**
  * NetworkPage — hub for the creator Network (network.md): LEFT rail = the
- * billboard mirror only, CENTER = Discover (collab-switch card + default collab
- * list + typed search, Modal A + billboard nudge 2026-10-07, FB model — search
- * always on, one switch, no greying 2026-10-09; design editors moved to
- * Playground → Billboard view 2026-10-09). **The affiliate block moved to the
- * Earnings screen §2b on 2026-10-12 (A1 — Network = social).** Sub-screens via
- * the MyPeeps dock. Mock + real ready.
+ * billboard mirror only, CENTER = Discover (collab-switch row in the heading +
+ * default collab list + typed search, Modal A + billboard nudge 2026-10-07,
+ * FB model — search always on, one switch, no greying 2026-10-09; design
+ * editors moved to Playground → Billboard view 2026-10-09). **The affiliate
+ * block moved to the Earnings screen §2b on 2026-10-12 (A1 — Network =
+ * social).** Sub-screens via the MyPeeps dock. Mock + real ready.
  */
 "use client";
 
@@ -17,14 +17,15 @@ import { Avatar } from "@/components/shared/Avatar";
 import { fetchJson } from "@/lib/fetchJson";
 import { useCreatorSearch, type CreatorSearchResult } from "@/hooks/useCreatorSearch";
 import { SearchBox } from "@/components/shared/SearchBox";
+import { PRIMARY_FIELD_BUCKETS } from "@/lib/limits";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Spinner } from "@/components/shared/Spinner";
 
 import { BillboardPreview } from "./BillboardPreview";
-import { NetworkSettings } from "./NetworkSettings";
 import { CreatorBillboardModal } from "./CreatorBillboardModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -80,7 +81,11 @@ export function NetworkPage() {
   const [billboard, setBillboard] = useState<BillboardRailState>(EMPTY_BILLBOARD);
   const [billboardLoading, setBillboardLoading] = useState(true);
 
-  const { query, setQuery, results: searchResults, loading: searchLoading, search } = useCreatorSearch();
+  // Field-filter chip (network.md §1b): "" = All. Single-select, tap-active-
+  // clears; narrows BOTH views server-side (pool filter + typed AND-combo).
+  const [fieldFilter, setFieldFilter] = useState("");
+
+  const { query, setQuery, results: searchResults, loading: searchLoading, search } = useCreatorSearch(300, fieldFilter);
   const [connectState, setConnectState] = useState<Record<string, string>>({});
 
   // Discover default view + Modal A + billboard nudge (network.md §1/§3;
@@ -95,7 +100,7 @@ export function NetworkPage() {
 
   useEffect(() => {
     setVisibleCount(FEED_BATCH);
-  }, [query]);
+  }, [query, fieldFilter]);
 
   /** On-demand reroll of the default collab list — same Fisher–Yates, no page
    *  reload (the per-visit reshuffle already happens on Network mount). */
@@ -123,10 +128,15 @@ export function NetworkPage() {
   // Default collab list: willing creators ONLY (open_to_collab — the search
   // box handles everyone), shuffled per load (Featured pinned). Always fetched
   // since 2026-10-09 (no visibility guard — nothing greys, network.md §3).
+  // The field chip narrows the pool server-side (?field=, network.md §1b).
   useEffect(() => {
     if (billboardLoading) return;
     let alive = true;
-    fetchJson<{ results: CreatorSearchResult[] }>("/api/discover/creators")
+    setListLoading(true);
+    const url = fieldFilter
+      ? `/api/discover/creators?field=${encodeURIComponent(fieldFilter)}`
+      : "/api/discover/creators";
+    fetchJson<{ results: CreatorSearchResult[] }>(url)
       .then((d) => {
         if (!alive) return;
         const willing = (d.results ?? []).filter((c) => c.open_to_collab !== false);
@@ -139,7 +149,7 @@ export function NetworkPage() {
     return () => {
       alive = false;
     };
-  }, [billboardLoading]);
+  }, [billboardLoading, fieldFilter]);
 
   const dismissNudge = useCallback(
     (design: boolean) => {
@@ -324,21 +334,58 @@ export function NetworkPage() {
               search(v);
             }}
             loading={searchLoading}
-            className="mb-4"
+            className="mb-3"
           />
 
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className={LABEL_CLASS}>Discover</h2>
+          {/* Field-filter chips (network.md §1b): single-select, tap the
+              active chip to clear back to All. Narrows both views (feed pool
+              + typed AND-combo). Scrollable row — 20 buckets + All. */}
+          <div className="mb-4 flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by field">
+            <Button
+              size="sm"
+              variant={fieldFilter === "" ? "default" : "outline"}
+              onClick={() => setFieldFilter("")}
+              className="shrink-0"
+              aria-pressed={fieldFilter === ""}
+            >
+              All
+            </Button>
+            {PRIMARY_FIELD_BUCKETS.map((bucket) => (
+              <Button
+                key={bucket}
+                size="sm"
+                variant={fieldFilter === bucket ? "default" : "outline"}
+                onClick={() => setFieldFilter((prev) => (prev === bucket ? "" : bucket))}
+                className="shrink-0"
+                aria-pressed={fieldFilter === bucket}
+              >
+                {bucket}
+              </Button>
+            ))}
           </div>
 
-          {/* The one switch lives INSIDE Discover (founder decision 2026-10-09 —
-              FB model: feed presence + receive Connects; search is never gated). */}
-          <div className="mb-4">
-            <NetworkSettings
-              openToCollab={billboard.open_to_collab}
-              onToggle={handleInstantToggle}
-            />
+          {/* The one switch sits IN the Discover heading row (founder compact
+              fix 2026-10-13 — was its own card; same switch, same instant-save,
+              no box. FB model: feed presence + receive Connects; search is
+              never gated). */}
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <h2 className={LABEL_CLASS}>Discover</h2>
+            <label
+              htmlFor="collab-switch"
+              className="flex min-h-11 cursor-pointer items-center gap-2"
+            >
+              <span className="text-sm font-medium text-foreground">Accept collab requests</span>
+              <Switch
+                id="collab-switch"
+                checked={billboard.open_to_collab}
+                onCheckedChange={() => handleInstantToggle("open_to_collab")}
+                aria-label="Accept collab requests"
+              />
+            </label>
           </div>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Show you in the collab feed and let creators Connect.
+          </p>
 
           {query.trim() === "" ? (
             /* Default view: shuffled collab list (network.md §1) — never blank.
@@ -352,7 +399,7 @@ export function NetworkPage() {
                 </p>
               )}
               {/* Reroll button sits DIRECTLY above the list, below the switch
-                  card (founder placement fix 2026-10-09 — was on the Discover
+                  row (founder placement fix 2026-10-09 — was on the Discover
                   heading row). Feed only: typed search is ranked, not shuffled.
                   Hidden while the list is loading/empty. */}
               {!listLoading && defaultList.length > 0 && (
@@ -374,8 +421,8 @@ export function NetworkPage() {
                 </div>
               ) : defaultList.length === 0 ? (
                 <EmptyState
-                  title="No creators open to collabs yet"
-                  hint="Check back later — new creators join all the time."
+                  title={fieldFilter ? `No ${fieldFilter} creators open to collabs yet` : "No creators open to collabs yet"}
+                  hint={fieldFilter ? "Try All, or check back later." : "Check back later — new creators join all the time."}
                 />
               ) : (
                 <>
@@ -387,7 +434,7 @@ export function NetworkPage() {
               )}
             </>
           ) : searchResults.length === 0 && !searchLoading ? (
-            <EmptyState title={`No creators match \u201C${query}\u201D`} />
+            <EmptyState title={fieldFilter ? `No creators match \u201C${query}\u201D in ${fieldFilter}` : `No creators match \u201C${query}\u201D`} />
           ) : (
             <>
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">

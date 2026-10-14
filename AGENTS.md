@@ -57,6 +57,10 @@ Not all code changes come from a pre-written plan. During development, bugs are 
 1. Check the **Impromptu Fix Log** below â€” if something was already fixed ad-hoc, don't re-plan it.
 2. If you discover a bug, fix it and add a log entry here. Do not wait for a plan update.
 
+**History informs, code decides (2026-10-14):** the log below is a diary â€” it records
+decisions AND their reversals in different entries. For any "does X exist / where
+is X" question, read the live file first; the diary tells you *why*, never *what is*.
+
 ---
 
 ## Mock-as-Draft Rule for Agents
@@ -77,6 +81,141 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 ---
 
 ## Impromptu Fix Log
+
+### 2026-10-14 — Media-kit door + View-my-page SPEC PASS (NOT built)
+
+**Founder "go" → spec phase only (phase gate — build awaits explicit approval).**
+
+- **Media-kit v1 door (`playground.md` Part 2g addendum):** sponsors = readers (no accounts, no checkout/ad units; money off-platform, 0%). V1 = Copy-link button in Billboard view → public read-only `GET /[username]/media-kit` (bio + rates + message + gated hero); PDF/iframe/contact deferred.
+- **Overview "View my page →" (`overview.md` Part 7 + decision #12):** new tab, guest eyes; Overview-only home (screens render everywhere, chrome doesn't); QrCard keeps copy-link.
+- **Also:** `search.md` Concept softened ("no public creator name-search"; Linktree = category browse only) · WIRING_PLAN round-9 addendum (SPEC ONLY) · AGENTS working rule ("History informs, code decides" — read live code for *what is*, diary for *why*).
+- Gates: typecheck 0 · lint 0 · check-docs PASS (docs-only).
+- **Spec phase only — stopping at the boundary.**
+
+### 2026-10-14 — Round-9 BUILT (media-kit page + copy-link + View-my-page; uncommitted)
+
+**Founder "yes go build" → built. Gates: typecheck 0 · lint 0 · check-docs PASS (428 files).**
+
+- **Page:** NEW `screens/fan/media-kit/Screen.tsx` + `index.ts` + address-book `app/(fan)/[username]/media-kit/page.tsx` (server, force-dynamic, stranger-view hero via `toHeroMedia` null identity, `notFound()` for unknown; bio + rate rows (non-empty only) + message + Visit-page link; `BillboardHero` reused as-is).
+- **Doors:** `BillboardView` gains Copy media-kit link (outline, below editor, `useCopyToClipboard` + sponsor toast) · `QrCard` gains View-my-page → (beside Copy link, `window.open` new tab; flex-wrap row).
+- **Gotchas:** PS hijacks bare `curl.exe` (Invoke-WebRequest alias) → full-path `& C:\windows\system32\curl.exe` works · PS single-quote trap re-hit (`\"` wrote literal backslashes → PUT 500 "Failed"; fixed by clean rewrite — app was innocent).
+- **Smoke (all green):** `/owner/media-kit` 200 (bio + $500 + message + hero video + visit link) · unknown 404 · dashboard HTML carries "View my page" · playground?view=billboard 200. Copy-link tap needs fingers (client-side) — founder browser-pass.
+- Commits still blocked (founder hasn't said commit).
+
+### 2026-10-14 — Billboard hero + The Lineup BUILT (spec approved → 2 passes, all green; uncommitted)
+
+**Founder "go" on the hero/Lineup spec → built. Gates green after every wave: typecheck 0 · lint 0 · check-docs PASS (425 files).**
+
+- **Pass 1 (personal hero):** NEW `lib/spotlightHero.ts` (`toHeroMedia` wraps `computeItemGate` — file stripped unless free/purchased; null when nothing showable) · `[id]` route + `primary_field` + gated `featured_item` (published + featured only — same row fans see; viewer = stranger, paid → cover-only) · NEW `components/network/BillboardHero.tsx` (LED video muted/loop/no-controls + motion-reduce poster swap, overlay eyebrow+headline in lower third, null = honest blank; shared by modal + preview + Lineup) · modal hero (body tagline hides while headlined — no dup lines) · billboard GET own UNGATED `featured_item` → preview hero via `ViewSettings` extension (editor contract untouched). Gotchas: Base-UI img needs eslint-disable like FanConnectTab; `requireAuth` return type feeds the helper's supabase param.
+- **Pass 2 (The Lineup):** fan/partners rows gain per-fan gated `featured_item` (session → account → completed purchases; one featured query for all partners, first-per-creator) · tab section "Partners" → **"The Lineup"**, slot = large hero (`@user` eyebrow + name headline) or today's avatar-card · `billboardIndex` → `lineupIndex` · rotation/dots/weights/modal/hop untouched · button innards div/p → spans (was invalid HTML nesting).
+- **Smoke (all green):** free video hero full on `[id]` + own billboard · paid item: stranger stripped + cover, owner full, reset → full · Lineup payload both directions (video + image heroes, dealWeight) · anon-fan paid gate (cover-only → reset → full) · pages 200 (network/playground/guest). Modal/Lineup pixels need eyes (client-rendered) — founder browser-pass in TweakLens.
+- **Server note:** route edits killed the dev process mid-smoke (listeners 0) → relaunched via harness background (store re-seeded by smoke: partnership + both featured items + fields live).
+- Commits still blocked (founder hasn't said commit).
+
+### 2026-10-14 — Billboard hero + The Lineup SPEC PASS (NOT built)
+
+**Founder: billboard must be visual-first (roadside LED, video-capable) with zero creator extra work + a merged all-partners showcase on the Connect tab → spec edits ONLY (phase gate).**
+
+- **Personal hero (`network.md` §2 + modal concept):** hero = the creator's spotlight item (same `is_featured` row fans see — video muted-loop / image poster / honest blank ladder); overlay = scrim + primary eyebrow + tagline headline + name/handle; renders ONLY in Modal A top + Playground preview (feed cards / rail mirror / marquee stay clean); gated media per audit law (cover-only for strangers); featuring lives in the catalog editor (Sheet 19), never the billboard editor.
+- **The Lineup (`fan-shell.md` Part 4c — renamed from "Partner Billboard"):** same rotation mechanism (5s, dots, deal 2×, tap → modal, silent hop), content swaps to partner-spotlight heroes; no-featured partners keep today's avatar-card slot; All Partners/Followed/Community/Links untouched; `/api/fan/partners` rows gain `featured_item`.
+- **Also:** `playground.md` Part 1d (preview hero) · WIRING_PLAN Sheet 18 round-8 + Sheet 21 CONNECT note (both SPEC ONLY).
+- **Build (NOT started):** `[id]` route + `featured_item` → modal hero → preview hero → fan partners route + `featured_item` → Lineup swap → gates ×3 + smoke → AGENTS build entry.
+- Gates: typecheck 0 · lint 0 · check-docs PASS (423 — docs-only).
+- **Spec phase only — stopping at the boundary.**
+
+### 2026-10-13 — Tag pill-adder BUILT (spec approved, gates green; uncommitted)
+
+**Founder "go" on the round-7 spec → built. Gates: typecheck 0 · lint 0 · check-docs PASS (423).**
+
+- **Code (`BillboardEditor.tsx` only):** 3 static boxes → pill-adder: input + [+ Add] (Enter works) → pill with × · "N left" counter / "3 of 3" cap state · dup-reject case-insensitive (Add disables on dup/empty/cap — no surprise states, no toast needed) · client normalizes on add (lowercase+trim, mirrors the server — pills show final form) · microcopy per spec ("What do you do?", `e.g. beats`, helper line) · `min-h-8` pills + 24px × buttons (touch-safe); `X` icon import.
+- **Smoke:** gates green · playground page 200 · PUT 3 tags → GET `[beats,mixing,vocals]` (save path untouched). Interactive behaviors (add/remove/dup/cap) need fingers — founder to tap-test in TweakLens (Playground → Billboard view).
+- Commits still blocked (founder hasn't said commit).
+
+### 2026-10-13 — Tag pill-adder + microcopy SPEC PASS (NOT built)
+
+**Founder: static Tag 1/2/3 boxes feel like a tax form + "Tags" is jargon → spec edits ONLY (phase gate).**
+
+- **Spec:** pill-adder behavior (input + [+ Add]/Enter → pill ×, "N left", dup-reject case-insensitive, disables at 3) + microcopy (label "What do you do?", e.g.-placeholders, helper line) → `network.md` §2 + `playground.md` Part 1d · decision #13 (1 primary + 3 tags RETAINED; second field + widening rejected, revisit on real complaints only) → `search.md` · WIRING_PLAN round-7 addendum (SPEC ONLY).
+- **Build (NOT started):** BillboardEditor adder UI → gates ×3 + smoke (add/remove/dup/cap, save round-trip) → AGENTS build entry.
+- Gates: typecheck 0 · lint 0 · check-docs PASS (423 — docs-only).
+- **Spec phase only — stopping at the boundary.**
+
+### 2026-10-13 — Find-by-field BUILT (spec approved → 3 waves, all green; uncommitted)
+
+**Founder "go" on the §1b spec → full build. Gates green after every wave: typecheck 0 · lint 0 · check-docs PASS (423).**
+
+- **Wave 1 (data):** `PRIMARY_FIELD_BUCKETS` (20) in `lib/limits.ts` · `Creator.primary_field: string | null` · 4 mock row literals (`buildMockCreatorRow`, upsert RPC, admin + test seeds) · billboard GET/PUT round-trip (bucket-validated, `""` clears, junk → null) + **tag normalization at save** (lowercase + trim, empties dropped) · `BillboardEditor` primary dropdown (Base UI Select, `__none` sentinel, `as string` casts per the DealDialog pattern) + `BillboardSettings` · `BillboardView` plumbing (EMPTY/GET/PUT/response). Gotcha: Base UI `onValueChange` passes `unknown`, not `string` (unlike Radix).
+- **Wave 2 (engine):** discover route `?field=` (unknown = ignored → All) + pool-first filter (both views, FB rule holds) + scorer tiers tag 150 / tagline 120 / bio 80 + `tags/bio/primary_field` selects + `field` echo in response · shared hook `searchCreators(q, field?)` / `useCreatorSearch(ms, field?)` — AffiliateDealForm untouched (defaults).
+- **Wave 3 (UI):** NetworkPage chip row (`All` + 20, scrollable, `aria-pressed`, tap-active-clears) under the search box · default-list refetch on chip (server `?field=`, willing filter kept, batch reset) · typed search carries the chip via the hook · filtered empty states ("No Music creators open to collabs yet" / "No creators match "x" in Wellness").
+- **Smoke (all green):** PUT validation/normalization (`Music`→stored, `JunkValue`→cleared, `["Music","  Beats  ",""]`→`[music,beats]`) · pools (`Music`→owner, `Wellness`→test, junk→both) · ranking (`music`→owner tagline before test bio) · AND-combo · chips in HTML · toggle re-verified OFF→ON. Demo store seeded: admin=Music/beats, test=Wellness/yoga (founder can retap chips + edit fields live in Playground).
+- Commits still blocked (founder hasn't said commit).
+
+### 2026-10-13 — Find-by-field SPEC PASS: primary field + filter chips + wider search (NOT built)
+
+**Founder design session (TT/Insta two-layer model) → spec edits ONLY (phase gate — build awaits explicit approval).**
+
+- **The design:** 🗂️ one preset `primary_field` (20 locked buckets — the filter target, nullable, edited in Playground → Billboard view) + 🏷️ 3 free-text tags (lowercase+trim at save; flavor + search matches, never filtered). Filter chips = scrollable single row under the search box (`All` + 20, single-select, tap-active-clears, AND-combined with typed query). Same search box matches wider: names → tags/tagline → bio last. FB directory rule holds inside the field (closed creators findable, disabled button).
+- **Files:** `network.md` (§1 stub → §1b full design · §2 primary + tag rules · data model `primary_field` row · layout/tree touch-ups) · `search.md` (Concept · Part 3 ranking 5→7 rows · Part 5 trigram + partial-index notes · decisions #9–#12) · `playground.md` Part 1d (primary dropdown editor row) · WIRING_PLAN Sheet 18 round-6 addendum (marked SPEC ONLY).
+- **Build (NOT started):** `primary_field` column (mock type/seed/route select) → billboard GET/PUT round-trip → Playground dropdown → Discover chip row → discover-route pool filter + text-match extension (`GET /api/discover/creators`) → ranking → gates ×3 + smoke → AGENTS build entry.
+- Gates: typecheck 0 · lint 0 · check-docs PASS (423 — docs-only change).
+- **Spec phase only — stopping at the boundary.**
+
+### 2026-10-13 — Login screen gains one-tap test accounts (mock-only, uncommitted)
+
+**Founder: "I usually forget the emails" + wants them inside TweakLens → two outline buttons under the socials, emails printed on them, one tap signs straight in.**
+
+- **Code (`LoginForm.tsx`):** `MOCK_ACCOUNTS` (Shield `admin@creatorpwa.app` "Admin + creator" · User `test@creatorpwa.app` "Creator") rendered inside the existing `USE_MOCKS` block; tap reuses the proven `handleSocial → signIn` path (mock ignores passwords, same as the social buttons since August) — zero new auth logic; footnote widened to cover both.
+- **Production-proof:** `USE_MOCKS`-gated like the social buttons — real mode never renders the block. No route/proxy/auth code touched.
+- **Spec:** `login.md` mock note + component row updated.
+- **Smoke:** login 200, heading + both emails + role label in HTML. Gates: typecheck 0 · lint 0 · check-docs PASS (423).
+- Commits still blocked (founder hasn't said commit).
+
+### 2026-10-13 — Discover switch de-carded: toggle folded into the heading row (uncommitted)
+
+**Founder (TweakLens): the Collab Requests card is too much chrome for one switch → kill the box, switch sits in the DISCOVER heading row with its caption underneath.**
+
+- **Code:** `NetworkPage` heading row = `DISCOVER` label + `<label htmlFor="collab-switch" min-h-11>` wrapping the same `Switch` (label-click toggles, 44px hit area kept; switch itself unchanged size) + muted caption line below · `git rm components/network/NetworkSettings.tsx` (sole importer was NetworkPage; `BillboardEditor` docstring repointed) · shuffle comment reworded.
+- **Specs:** `network.md` (VisibilitySwitch concept → heading-row position · BillboardEditor pointer · NetworkSettings → removed-stub · component tree) · WALKTHROUGH Stop 07 (Hub/Shuffle/Switch/Rail rows + 2 common-edits rows).
+- **Smoke:** page 200, `collab-switch` id + label in HTML, old card label gone (first probe caught a mid-HMR compile — re-probe clean) · toggle PUT OFF→GET False→PUT ON→GET True (instant-save + rollback path untouched). Gates: typecheck 0 · lint 0 · check-docs PASS (423 files — one fewer).
+- Commits still blocked (founder hasn't said commit).
+
+### 2026-10-13 — All `/dashboard/*` sub-pages 404ing: corrupt `.next` route manifest (3rd strike)
+
+**Founder screenshot: `/dashboard/network` → Next.js 404 in TweakLens (correct URL, his typing was fine). Server-side probe: `/dashboard` 200 + `/admin` 200, but network/playground/earnings/settings ALL 404 — files on disk, no `notFound()` in the screen, layout only redirects (never 404s). Verdict: the dev server's compiled route map lost the children (same corrupt-`.next` gremlin as 2026-10-07 API-404s + the 2026-10-12 toggle bug). Fix: killed PID on :3000 → deleted `.next` → clean `npm run dev` (harness background shell) → all 10 pages 200 (dashboard, network, playground, earnings, settings, all 4 circle pages, admin) + network HTML carries DISCOVER + full nav (billboard rail is client-fetched, absent from SSR by design). Founder: if every room 404s while the lobby works, it's the map — say the word and it's a 30-second fix.**
+
+### 2026-10-12 — Mock admin becomes a hybrid admin-creator: Link Address `owner` (mock-only)
+
+**Founder: "test the admin only so that I will have the whole of everything" + "hope it won't change when we migrate" → one login now covers BOTH surfaces.**
+
+- **Change:** `seedMockAdmin` creators row gains `username: "owner"` (was `null as unknown as string` — the 2026-09-29 staff-law cast, comment rewritten). Handle is **`owner`, NOT `admin`**: the static `/admin` route (the panel) shadows the `[username]` fan-page catch-all — an `@admin` live page would land on the panel instead of the fan page.
+- **Production UNTOUCHED (founder's worry):** this edits the MOCK SEED only. The real model is unchanged — role = permission, identity = username (dual-role law): invited admins still get `username: null` (admin.md Part 4) until they choose a Link Address, and the creator dashboard stays keyed off the creators row. No route/sidebar/proxy code touched.
+- **Side benefit:** the landing marquee renders only with ≥2 username'd creators — with the admin invisible it had just `@test` (hidden); now **both** show.
+- **Smoke (all green):** anonymous `?q=owner` → Platform Owner (open_to_collab true) · `/owner` → 307 `/owner/guest` → 200 shows "Platform Owner" · `/admin` panel 200 · `/dashboard` 200 as admin (sidebar = creator 5 + Admin Panel, Platform Owner name) · landing HTML contains both creators. Gates before restart: typecheck 0 · lint 0 · check-docs PASS (424).
+- **Restart note:** the seed applies on fresh boot only (early-return on existing email) — server was restarted after the edit (store → zero state; running in the harness background shell).
+
+### 2026-10-12 — Batch B audit: expired-proposal deadlock FIXED + accept gains the Red Card lock + cancel docstring corrected (uncommitted)
+
+**Founder asked for a full audit of the uncommitted Batch B + name-fallback changes before proceeding → code review of every file in the diff (1 medium bug, 2 small items, ~5 nits). Founder approved the 3 fixes; nits (pair-vs-direction wording, propose-409 copy, terms-not-required for tiered/custom, link-mint dedupe, `api()`-vs-raw-fetch consistency) stay OPEN by choice. Gates green after every wave: typecheck 0 · lint 0 · check-docs PASS (424 files).**
+
+- **🪲 The sticky-note bug (permanent lockout — fixed):** the propose route counted RAW `status === "pending"` rows, but the thread GET reports a lazily-expired proposal as `expired` and the card renders Accept/Decline/Cancel **only** while `status === "pending"` — so an ignored 7-day-old proposal's row stayed `pending` in the DB **forever with no UI to flip it**, and every future proposal between the pair 409'd "You already have a proposal waiting with {name}" (false on both counts). Fix: `api/messages/deals/route.ts` skips lazily-expired rows (`p.status === "pending" && !proposalStatusExpired(p)`; local `ProposalRow` gained `expires_at?`). Expired rows correctly don't trigger the cooldown (accepted/declined only) → re-proposing works immediately after expiry, matching the lazy-expiry design.
+- **Red Card closed the back door (`…/deals/[id]/accept`):** the direct deals POST 403s a Red-Card holder, but chat-accept inserted an active deal with no check on the proposer (the new deal's OWNER). No money leak — the attribution engine skips red owners + the earnings GET auto-pauses `owner_red` — but the deal would be created-then-instantly-paused while the form refuses upfront. Now: `computeRedCard(supabase, proposal.proposer_id)` → 403 "The creator who proposed this has overdue affiliate payments. They need to settle them in Earnings first." Same lock, both doors.
+- **Docstring fix (`…/deals/[id]/cancel`):** claimed cancel "feeds the cooldown like a decline" — `proposalCooldownUntil` explicitly skips canceled rows (spec: accepted/declined only). Code was right; the label was wrong.
+- **Specs synced:** `messaging.md` (Expiry row — expired pendings never block fresh proposals; Server-checks row — accept gains the proposer-Red-Card check) · `earnings.md` Part 4 lever #1 ("deal create — both the Earnings form and a chat proposal accept").
+- **Smoke (all green):** propose 201 → **duplicate-while-pending still 409** (the fix didn't over-open the gate) → priya accepts 200 (`deal_id` returned; deal row = percentage rate=10 owner=test promoter=priya trigger=purchase active) → replay accept 409 → thread card reads `accepted / am_proposer / deal_id / rate=10` → circle/messages + earnings pages 200. (True expired-row re-propose isn't smokeable via API — `expires_at` is server-set +7d — but the filter reuses the same `proposalStatusExpired` the GET's display already proves.)
+- **🪲 Harness + server gotchas (this session):** ① **PS 5.1 single-quote trap** — `'{\"code\":…}'` writes literal backslashes into the body file → every POST 500'd (my harness bug, not the app; inside single quotes just use `"` directly). ② **Dead-server false positive** — `(curl.exe … | ConvertFrom-Json).partnerships.Count` on a dead server prints **0** (PS null `.Count` = 0) — verify the page serves 200 before trusting a zero-state probe. ③ The **schtasks relaunch died silently** this time (no log line, old `^C` in err; `/run` output was suppressed — always show it) → fell back to the harness **background shell** for `npm run dev` (same mechanism as this morning's server, which ran 7:42→10:50). ④ Route-file edits auto-restart the dev server and wipe the in-memory store mid-smoke (re-hit).
+- **State:** demo store wiped back to the founder's requested zero (partnerships/deals/conversations all verified 0 via a server that actually answers). Commits still blocked (founder hasn't said commit) — Batch B + name-fallbacks + these 3 audit fixes all uncommitted.
+
+### 2026-10-12 — Deals-overhaul Batch B BUILT (partners-only + chat proposal cards + Circle "Make a deal"; uncommitted)
+
+**The parked money batch, un-parked by the founder → spec sweep (creators.md 2b2/2e2 · messaging.md Part 2b · network.md §7 · earnings.md §2b · screens.md · WIRING_PLAN Sheets 12/16/18/23 · WALKTHROUGH) + 3 build waves, gates green after every wave: typecheck 0 · lint 0 · check-docs PASS (422 files). Closes the deals overhaul (Batch A committed as `f1e529e`).**
+
+- **Partners-only everywhere (the discovery→negotiation flip):** `POST /api/creator/affiliates/deals` 403s *"You can make deals with your partners only — Connect in Network first."* without a non-ended `partnerships` row (self-deals die here too) · **`AffiliateDiscover` + `GET /api/creator/affiliates/discover` DELETED** (`git rm`, unmounted from `AffiliateDealsSection` — deals are negotiated, never browsed) · `POST /api/creator/affiliates/link` is now **promoter-only** (was: any creator could mint a `/ref` code for any deal) · `AffiliateDealForm` helper text names the rule; `AffiliateLinks` empty state → *"create one from an accepted deal in your partner chat"* · `YourDealsCard` revoke toast = *"Deal revoked — future sales no longer earn commission."* (prospective-only, matches engine).
+- **Shared rules lib — NEW `src/lib/affiliateDeals.ts` (one copy each):** `hasActivePartnership` (fetches MY non-ended rows via the proven `partners/list` query shape, checks the other side in JS — mock-parser-proof) · `proposalCooldownUntil` (7-day post-resolve, accepted/declined only) · `plusDaysISO` · `proposalStatusExpired` (lazy 7-day expiry — thread GET display + accept/decline flip) · `dealSummaryText`.
+- **Circle "Make a deal":** handshake `Handshake` icon per `CollabList` row (stopPropagation wrapper beside the real MessageIcon) → **NEW `components/circle/partners/DealDialog.tsx`** (partner prefilled; type · rate · trigger · terms — mirrors AffiliateDealForm; server 403 surfaces via toast).
+- **Chat proposal cards (`messaging.md` Part 2b):** new table **`affiliate_deal_proposals`** + `messages.proposal_id` anchor; `messages` GET joins proposals (lazy-expired display status, `am_proposer`, `deal_id`); **4 new routes** `POST /api/messages/deals` (direct creator↔creator only — 2 live members both creators; partners-only; one pending per direction; 7-day cooldown; inserts proposal + anchor message + bumps `last_message_at`) + `/[id]/{accept,decline,cancel}` (role-checked: accept/decline = partner, cancel = proposer; accept = lazy expiry → partnership re-check → `affiliate_deals` insert owner=proposer/promoter=accepter trigger=purchase → proposal `accepted`+`deal_id`). **`MessagesShell.tsx`:** `DealProposalCard` (neutral platform chrome; Accept/Decline vs Cancel by `am_proposer`; status chips incl. Expired; post-accept *"Get your affiliate link" → "Copy your link"* via the promoter-guarded link route) + `DealProposeForm` (handshake button above the composer, direct creator↔creator threads only) + `onResolved` refresh plumbing through MessageThread→List→Bubble. **Activity:** mock RPC `get_creator_activity` synthesizes 8 proposal event types (both directions; `email` slot carries the counterparty NAME) + `describe()` renders them both sides.
+- **Smoke (all green; full loop rebuilt post-wipe):** partnership invite→onboarding 200 → propose **201** (+7d expiry) · duplicate pending **409** · proposer-accepts-own **403** · partner-cancels **403** · partner accepts **200 + deal_id** · replay accept **409** · thread both directions: `accepted` + `deal_id` + `am_proposer` True/False + anchor body *"Deal proposal: $2 per conversion for you"* · **cooldown 409** *"…after Oct 19"* · non-partner deals POST **403** (exact copy) · partner deals POST **201** · **non-promoter link 403** / promoter link **201** · activity feed both sides (*"priya accepted your deal proposal"* / *"You accepted Test Creator's deal proposal"*) · `affiliates/discover` **404** · 4 pages 200 (circle/partners · earnings · network · circle/messages). Demo data left in store: test↔priya partnership + accepted $2 proposal card + its active deal + link; the redundant direct-POST deal revoked.
+- **🪲 Gotchas hit:** the 10-line docstring rule failed on the deals route when Batch B added a line (`*/` on 11) — compress, detail goes in body comments · **PS 5.1 inline-JSON re-hit** (curl `-d "{\"…\"}"` → `req.json()` throws → the route's generic 500 — harness, not app; file bodies fix it) · **conversation create returns `conversation_id`, not `id`** (smoke-script parse bug) · dev-server auto-restarts on route-file edits **wipe the store mid-smoke** (re-hydrate + rebuild partnership/conversation before continuing) · `me` narrowing doesn't survive a nested function declaration in TS — pass `myKey` as a param.
+- **Client-side worth a browser pass:** the proposal card render in a live thread, the propose button visibility rules, `DealDialog` from a partner row. **Commits blocked** (founder hasn't said commit).
 
 ### 2026-10-12 — Deals-overhaul Batch A ("A1"): affiliate block → Earnings + real msg icons on list rows (UI-only, uncommitted — 8 batches pending)
 

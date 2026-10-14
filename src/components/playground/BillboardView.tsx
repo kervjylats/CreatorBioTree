@@ -11,24 +11,35 @@
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/shared/Avatar";
 import { Spinner } from "@/components/shared/Spinner";
 import { fetchJson } from "@/lib/fetchJson";
 import { toast } from "sonner";
+import { Link2 } from "lucide-react";
 import { LABEL_CLASS } from "@/lib/ui-constants";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { BillboardEditor, type BillboardSettings } from "./BillboardEditor";
+import type { HeroMedia } from "@/lib/spotlightHero";
+import { BillboardHero } from "@/components/network/BillboardHero";
 
-const EMPTY_SETTINGS: BillboardSettings = {
+/** Editor settings + the read-only preview hero (chosen by featuring a
+ *  catalog item — never edited here; network.md §2 one-edit-home rule). */
+type ViewSettings = BillboardSettings & { featured_item: HeroMedia | null };
+
+const EMPTY_SETTINGS: ViewSettings = {
   display_name: "",
   username: "",
   avatar_url: null,
   is_featured: false,
+  primary_field: "",
   tagline: "",
   tags: [],
   collab_style: "",
   bio: "",
   rate_card: { post: "", story: "", video: "" },
   media_kit_message: "",
+  featured_item: null,
 };
 
 interface BillboardViewProps {
@@ -37,13 +48,24 @@ interface BillboardViewProps {
 }
 
 export function BillboardView({ onBioSaved }: BillboardViewProps) {
-  const [settings, setSettings] = useState<BillboardSettings>(EMPTY_SETTINGS);
+  const [settings, setSettings] = useState<ViewSettings>(EMPTY_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { copy } = useCopyToClipboard();
+
+  // v1 media-kit door (playground.md Part 2g, 2026-10-14): the public
+  // read-only link lives in the same room as the fields it shares.
+  const copyMediaKitLink = useCallback(() => {
+    if (!settings.username) return;
+    const link = `${window.location.origin}/${settings.username}/media-kit`;
+    void copy(link).then((ok) => {
+      if (ok) toast.success("Media-kit link copied — send it to sponsors");
+    });
+  }, [copy, settings.username]);
 
   useEffect(() => {
     let alive = true;
-    fetchJson<Partial<BillboardSettings>>("/api/creator/partners/billboard")
+    fetchJson<Partial<ViewSettings>>("/api/creator/partners/billboard")
       .then((d) => {
         if (!alive) return;
         setSettings({
@@ -54,6 +76,8 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
           tagline: d.tagline ?? "",
           tags: d.tags ?? [],
           collab_style: d.collab_style ?? "",
+          primary_field: (d as Partial<BillboardSettings>).primary_field ?? "",
+          featured_item: d.featured_item ?? null,
           bio: d.bio ?? "",
           rate_card: d.rate_card ?? { post: "", story: "", video: "" },
           media_kit_message: d.media_kit_message ?? "",
@@ -83,6 +107,7 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
           tagline: settings.tagline,
           tags: settings.tags,
           collab_style: settings.collab_style,
+          primary_field: settings.primary_field,
           bio: settings.bio,
           rate_card: settings.rate_card,
           media_kit_message: settings.media_kit_message,
@@ -95,6 +120,7 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
           tagline: d.tagline ?? "",
           tags: d.tags ?? [],
           collab_style: d.collab_style ?? "",
+          primary_field: (d as Partial<BillboardSettings>).primary_field ?? "",
           bio: nextBio,
           rate_card: d.rate_card ?? prev.rate_card,
           media_kit_message: d.media_kit_message ?? "",
@@ -126,6 +152,13 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
           the plain standard: avatar + name + @handle only. */}
       <Card className="p-4 space-y-3">
         <p className={LABEL_CLASS}>As Discover shows you</p>
+        {/* Hero mirror (network.md §2, 2026-10-14): your spotlight as Modal A
+            shows it. The tagline line hides while the hero headlines it. */}
+        <BillboardHero
+          media={settings.featured_item}
+          eyebrow={settings.primary_field || undefined}
+          headline={settings.tagline || undefined}
+        />
         <div className="flex items-center gap-3">
           <Avatar src={settings.avatar_url} name={settings.display_name} size="h-12 w-12" textClass="text-sm" />
           <div className="min-w-0 flex-1">
@@ -140,7 +173,7 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
             <span className="text-xs text-muted-foreground">@{settings.username}</span>
           </div>
         </div>
-        {settings.tagline && (
+        {settings.tagline && !settings.featured_item && (
           <p className="text-xs text-muted-foreground/70 italic">
             &ldquo;{settings.tagline}&rdquo;
           </p>
@@ -170,6 +203,17 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
         onSave={handleSave}
         saving={saving}
       />
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={copyMediaKitLink}
+        disabled={!settings.username}
+        className="w-full"
+      >
+        <Link2 size={14} />
+        Copy media-kit link
+      </Button>
     </div>
   );
 }

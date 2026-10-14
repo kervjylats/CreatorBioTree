@@ -3,7 +3,8 @@
  * ONE engine for every placement (Network hub live search, affiliate deal-form
  * resolve, landing showcase/search when built — search.md "one engine").
  * Exports: `searchCreators()` one-shot fetch (resolve exact handle on submit)
- * and `useCreatorSearch()` debounced live-search state (300ms default).
+ * and `useCreatorSearch()` debounced live-search state (300ms default). Both
+ * take an optional field-filter bucket (network.md §1b) — omitted = All.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -19,16 +20,18 @@ export interface CreatorSearchResult {
   open_to_collab?: boolean | null;
 }
 
-/** One-shot discover fetch for `q` — returns [] on failure. No React state. */
-export async function searchCreators(q: string): Promise<CreatorSearchResult[]> {
-  const res = await fetch(`/api/discover/creators?q=${encodeURIComponent(q.trim())}`);
+/** One-shot discover fetch for `q` (+ optional field bucket) — [] on failure. */
+export async function searchCreators(q: string, field = ""): Promise<CreatorSearchResult[]> {
+  const params = new URLSearchParams({ q: q.trim() });
+  if (field) params.set("field", field);
+  const res = await fetch(`/api/discover/creators?${params.toString()}`);
   if (!res.ok) return [];
   const data = await res.json();
   return Array.isArray(data.results) ? data.results : [];
 }
 
 /** Debounced live-search state: `search(q)` on each keystroke fetches after `debounceMs`. */
-export function useCreatorSearch(debounceMs = 300) {
+export function useCreatorSearch(debounceMs = 300, field = "") {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CreatorSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,7 +51,7 @@ export function useCreatorSearch(debounceMs = 300) {
         const seq = ++seqRef.current;
         setLoading(true);
         try {
-          const r = await searchCreators(q);
+          const r = await searchCreators(q, field);
           if (seq === seqRef.current) setResults(r);
         } catch {
           if (seq === seqRef.current) setResults([]);
@@ -57,7 +60,7 @@ export function useCreatorSearch(debounceMs = 300) {
         }
       }, debounceMs);
     },
-    [debounceMs]
+    [debounceMs, field]
   );
 
   useEffect(

@@ -183,19 +183,19 @@ Signup/login lives on the guest page. Guest logs in → stays on the same page �
 - Applies the Three Gates (Part 2)
 - Interactive cards per item type (see `playground.md` Part 3)
 
-### 4c. Connect Tab — the connection hub (smart live stack, billboard + two columns)
+### 4c. Connect Tab — the connection hub (smart live stack, The Lineup + two columns)
 
 **STATUS: ✅ DECIDED** — rebuilt as the connection hub (see `partner-page.md` for the modal). Not a partner-company dashboard — a live stack that adapts to what the creator actually has.
 
 **Render rule (founder decision 2026-08-05):** every section renders **ONLY if it has data**. No placeholders, no "0 partners yet" stubs.
 
-**Layout (founder decision 2026-08-05):**
+**Layout (founder decision 2026-08-05; §1 renamed 2026-10-14):**
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  BILLBOARD (top, full width)                         │
-│  Rotating partners with ACTIVE AFFILIATE DEALS       │
-│  (2x rotation boost on deal items)                   │
+│  THE LINEUP (top, full width)                        │
+│  Rotating PARTNER SPOTLIGHTS with ACTIVE AFFILIATE   │
+│  DEALS (2x rotation boost on deal items)             │
 │  ── Names of ALL partners underneath ──              │
 ├─────────────────────┬────────────────────────────────┤
 │  ALL PARTNERS       │  FOLLOWED                      │
@@ -210,7 +210,7 @@ Signup/login lives on the guest page. Guest logs in → stays on the same page �
 
 | # | Section | Renders if | Shows |
 |---|---|---|---|
-| 1 | **Billboard** | Creator has ≥1 active partner (collab or invited) | Big auto-rotating carousel **rotating only partners with an active affiliate deal** (a deal = the partner promotes the creator, see `network.md` §7) — each deal item gets a **2× rotation weight** (founder decision 2026-08-05: deals surface more often than non-deal partners). Partners with no deal still appear in the rotation but at 1× weight. **Names of ALL partners underneath the billboard**, clickable |
+| 1 | **The Lineup** (renamed 2026-10-14 — was "Partner Billboard"; "billboard" now means the personal billboard, `network.md` §2) | Creator has ≥1 active partner (collab or invited) | Big auto-rotating hero running each partner's **spotlight item** (their featured catalog row — video muted-loop / image poster / avatar-card fallback when they have no featured item; same fallback ladder as `network.md` §2). Mechanism unchanged: deal partners get **2× rotation weight** (founder 2026-08-05), 5s auto-advance, dots, tap → partner modal. One hero component, two feeds (personal billboard + Lineup) |
 | 2 | **All Partners** (left column) | Creator has ≥1 active partner | **Compact mini-spotlight cards for EVERY partner** (affiliate deal or not) — avatar, display name, tagline. The complete partner roster in one scrollable column. Tapping a card → the partner modal |
 | 3 | **Followed** (right column) | Fan follows ≥1 partner | Partners this fan follows (e.g., Michel follows 2 of Alex's partners → both listed here). Per-fan — each fan's own list. Cards carry the **"Following ✓" badge**; the follow/unfollow toggle itself lives in the partner modal only (founder decision 2026-08-05 — simpler, one place to change it) |
 | 4 | **Community** (bottom) | Creator has set up a community | A **card** that deep-links to the Home tab community section (gateway, not a full view — the community itself lives on Home, `messaging.md` Part 3) |
@@ -221,9 +221,9 @@ Signup/login lives on the guest page. Guest logs in → stays on the same page �
 - Tapping a partner's name (under the billboard) **or** any partner card (All Partners / Followed) → opens the **bottom modal** = the partner's content page (swipe up to ~3/4 of the screen, partner's branding; see `partner-page.md`)
 - **Follow toggle lives ONLY in the partner modal** — cards just show the "Following ✓" badge (founder decision 2026-08-05). Followed list = manage: open modal → unfollow
 - **Follows survive collab endings** — Alex ends a collab, Michel still sees the partner under Followed. Collab (network.md) ≠ fan follows (independent)
-- **New partners appear silently** — no notification. Fans discover them in the Billboard/All Partners on their next visit (founder decision 2026-08-05). The Billboard is a discovery surface, not an alert
-- **Affiliate deals are invisible to fans** — the Billboard rotates deal partners more often, but no affiliate label, no "sponsored" tag, no deal terms anywhere on the fan shell (founder decision 2026-08-05, see `monetization/creators.md` Part 2e)
-- **The in-app affiliate hop (silent — founder 2026-10-10):** opening ANY partner surface (billboard name / partner card → modal, or the full `/{host}/partner/{partnerUsername}` page) writes an `affiliate_attributions` row + the 30-day `aff_attr` cookie **when an active deal exists between host and partner** — the in-app twin of the external `/ref` door. Fires on OPEN (purchases can complete inside the modal); no deal = plain navigation, zero tagging; no UI, no labels (`monetization/creators.md` 2e Door 2)
+- **New partners appear silently** — no notification. Fans discover them in The Lineup/All Partners on their next visit (founder decision 2026-08-05). The Lineup is a discovery surface, not an alert
+- **Affiliate deals are invisible to fans** — The Lineup rotates deal partners more often, but no affiliate label, no "sponsored" tag, no deal terms anywhere on the fan shell (founder decision 2026-08-05, see `monetization/creators.md` Part 2e)
+- **The in-app affiliate hop (silent — founder 2026-10-10):** opening ANY partner surface (Lineup slot / partner name / partner card → modal, or the full `/{host}/partner/{partnerUsername}` page) writes an `affiliate_attributions` row + the 30-day `aff_attr` cookie **when an active deal exists between host and partner** — the in-app twin of the external `/ref` door. Fires on OPEN (purchases can complete inside the modal); no deal = plain navigation, zero tagging; no UI, no labels (`monetization/creators.md` 2e Door 2)
 - **Instant render** — sections appear/disappear immediately with data changes; no entry animations in v1
 
 ### 4d. Settings Tab — the account hub

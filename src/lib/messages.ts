@@ -56,7 +56,9 @@ export async function getMessageIdentity(supabase: SupabaseClient): Promise<Mess
   return null;
 }
 
-/** Display names for arbitrary participants (creator = display_name, fan = email). */
+/** Display names for arbitrary participants (creator = display_name, fan = email).
+ *  Creators fall back display_name → username → id: a cookie-hydrated row can
+ *  carry an empty display_name, and a raw id in a thread title reads as a bug. */
 export async function resolveParticipantNames(
   supabase: SupabaseClient,
   participants: MessageParticipant[],
@@ -68,12 +70,12 @@ export async function resolveParticipantNames(
   if (creators.length) {
     const { data } = await supabase
       .from("creators")
-      .select("id, display_name")
+      .select("id, display_name, username")
       .in(
         "id",
         creators.map((c) => c.key),
       );
-    for (const row of data ?? []) map.set(row.id, row.display_name || row.id);
+    for (const row of data ?? []) map.set(row.id, row.display_name || row.username || row.id);
   }
   if (fans.length) {
     const { data } = await supabase

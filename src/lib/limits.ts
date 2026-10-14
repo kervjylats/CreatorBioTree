@@ -56,6 +56,33 @@ export const BILLBOARD_LIMITS = {
   tags: 3,
 } as const;
 
+/** Primary-field buckets (network.md §1b, founder 2026-10-13 — the filterable
+ *  discovery identity, ONE per creator, nullable until set). Locked list:
+ *  additions are a future founder decision. Server validates PUTs against this;
+ *  the Discover chip row renders it. */
+export const PRIMARY_FIELD_BUCKETS = [
+  "Music",
+  "Wellness",
+  "Fitness",
+  "Comedy",
+  "Food & Drink",
+  "Fashion & Beauty",
+  "Gaming",
+  "Education",
+  "Business & Finance",
+  "Travel",
+  "Photography",
+  "Art & Design",
+  "Film & Video",
+  "Sports",
+  "Parenting & Family",
+  "Pets & Animals",
+  "Tech",
+  "Books & Writing",
+  "Spirituality",
+  "Lifestyle",
+] as const;
+
 /**
  * Settlement window (earnings.md Parts 4-5, founder decision 2026-10-10): a
  * creator-to-creator affiliate payment is due 14 days after the conversion is

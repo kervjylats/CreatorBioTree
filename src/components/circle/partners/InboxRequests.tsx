@@ -87,14 +87,16 @@ export function InboxRequests({ onAccepted }: InboxRequestsProps) {
       {requests.map((r) => {
         const p = r.partner_info;
         if (!p) return null;
+        // Cookie-hydrated rows can have an empty display_name — never render blank.
+        const name = p.display_name || p.username;
         return (
           <Card
             key={r.id}
             className="flex items-center gap-3 p-3"
           >
-            <Avatar src={p.avatar_url} name={p.display_name} />
+            <Avatar src={p.avatar_url} name={name} />
             <div className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-bold text-foreground">{p.display_name}</span>
+              <span className="block truncate text-sm font-bold text-foreground">{name}</span>
               <span className="text-xs text-muted-foreground">@{p.username}</span>
             </div>
             <Badge variant="outline" className="text-micro">

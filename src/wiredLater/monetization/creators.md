@@ -73,6 +73,21 @@ When two creators are collabed (in-app or via partnership), either side can offe
 | Multiple active deals | Each active deal writes its own conversion per sale (idempotent per sale+deal) — asymmetric per 2d. Keep one active deal per collab unless you intend both to pay |
 | UI | One field fewer in the deal form (type + trigger + terms only — `network.md` §7) |
 
+### 2b2. Who you can deal with — PARTNERS ONLY (founder decision 2026-10-12, "Batch B")
+
+**Deals are negotiated, not browsed.** A deal can only exist between creators who have a **non-ended partnership** (collab or invited — `partnerships` row checked **server-side at creation AND at accept**):
+
+| Piece | Rule |
+|---|---|
+| Server rule | `POST /api/creator/affiliates/deals` → **403 "You can make deals with your partners only — Connect in Network first."** unless a non-ended `partnerships` row contains both ids. The chat-proposal accept path re-checks it (a partnership may end between propose and accept → 409) |
+| Entry point ① | **Circle Partners → per-partner "Make a deal"** (handshake icon on each collab row → compact composer prefilled with that partner — `network.md` CollabList) |
+| Entry point ② | **Chat proposal cards** — negotiate in the partner thread, send a structured proposal, the other side accepts → deal created (`messaging.md` Part 2b). Proposer = deal **owner** (their catalog), accepter = **promoter** |
+| **`AffiliateDiscover` DIES** | The "browse other creators' open deals" widget + its `GET /api/creator/affiliates/discover` route are **removed** (2026-10-12) — with partners-only there is nothing to browse. Promoters get their link from the **accepted deal card** in the thread (or `POST /api/creator/affiliates/link`, now promoter-guarded) |
+| Earnings form | `AffiliateDealForm` keeps working (whole-catalog, @username resolver) with helper text: *"Deals are partner-only — the person must be one of your partners."* The server 403 surfaces inline |
+| Link route guard (founder money batch) | `POST /api/creator/affiliates/link` now requires `deal.promoter_id === me` — before 2026-10-12 any logged-in creator could mint a `/ref` code for someone else's deal |
+
+**Pre-migration cost: zero** (one extra SELECT on create; no new columns on `affiliate_deals`).
+
 ### 2c. Triggers — what counts as a conversion (NEW 2026-08-05)
 
 Beyond sales, a deal can pay on other fan actions. The trigger is part of the deal terms:
@@ -127,6 +142,8 @@ Even though the platform doesn't take a cut, **the platform is the trust and dis
 | **Manual settlement (creator opt-out)** | If the owner prefers (e.g., PayPal splits unavailable in the promoter's region, or the deal is "free cross-promo"), the platform records the owed cut as a **pending balance** and issues a one-click **"Settle via PayPal.me"** action. The platform marks it `settled_manually` on confirmation. No silent skips — a conversion stays `pending` until settled either way |
 | **Pending dashboard** | Both sides see their own settlement status per conversion on the **Earnings screen** (`earnings.md` §2 — earned/owed cards + receipt rows + status chips; the promoter's view shows settled vs pending exactly like PayPal's own payout ledger) |
 | **Never auto-creates money** | The engine never creates a payment out of thin air — it only records computed cuts + splits real captured funds. A "custom terms" deal that says "$1,000 if you send 100 fans" is still honored: the engine sums the conversions and the owner settles the agreed amount manually per the ledger |
+| **Cancel / revoke = PROSPECTIVE-ONLY** (founder 2026-10-12) | Revoking (or expiring) a deal flips its `status` — the engine skips it for **future** conversions. **Already-written `affiliate_conversions` rows are immutable and stay** (they were earned under the live terms; clawback is a production-migration item — `docs/BACKLOG.md`). UI copy on revoke: *"Deal revoked — future sales no longer earn commission."* |
+| **Deal proposals** (founder 2026-10-12) | Deals are **negotiated in the partner chat** (proposal cards → accept = deal row, `messaging.md` Part 2b) or offered directly via Circle's per-partner "Make a deal" (2b2). Proposals expire after **7 days**, one pending per direction, **7-day cooldown** after a resolve; every state change = toast + activity row |
 
 > **Live in mock since 2026-10-09:** `GET /ref/[code]` (click counted → `affiliate_attributions` row + 30-day `aff_attr` cookie → redirect to the deal **owner's** fan page) and `POST /api/fan/purchases/complete` → `lib/affiliateAttribution.ts` (rules evaluated: status / validity window / creator-only scope / trigger → `computeDealCuts` → immutable `affiliate_conversions` row, `pending`). Idempotent per sale + deal — a replayed purchase heals a missed row; no attribution → no conversion. **The settlement *marking* action is now SPEC'D (2026-10-10)** — the receipt protocol + prompt ladder + Red Card live in `earnings.md` Parts 3–5 (wiring = Sheet 23). Still open: the in-app hop's attribution writer (Door 2), the `?ref=` param passthrough, follow/subscribe/signup trigger writers, and the real PayPal webhook (route is mock-only today).
 

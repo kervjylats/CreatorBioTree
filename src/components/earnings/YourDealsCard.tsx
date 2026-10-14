@@ -78,7 +78,7 @@ export function YourDealsCard({ refreshKey = 0 }: { refreshKey?: number }) {
     try {
       const res = await fetch(`/api/creator/affiliates/deals/${id}`, { method: "DELETE" });
       if (res.ok) {
-        toast.success("Deal revoked");
+        toast.success("Deal revoked — future sales no longer earn commission.");
         await load();
       } else {
         toast.error("Couldn't revoke the deal");

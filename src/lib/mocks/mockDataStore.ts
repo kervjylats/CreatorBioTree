@@ -65,6 +65,8 @@ export type TableName =
   | "affiliate_attributions"
   | "affiliate_conversions"
   | "affiliate_links"
+  // ── Chat deal proposals (messaging.md Part 2b, Batch B 2026-10-12) ──
+  | "affiliate_deal_proposals"
   // ── External services (admin panel) ──
   | "admin_service_access";
 
@@ -123,6 +125,7 @@ function initStore(): void {
   mockStore.set("affiliate_attributions", []);
   mockStore.set("affiliate_conversions", []);
   mockStore.set("affiliate_links", []);
+  mockStore.set("affiliate_deal_proposals", []);
   mockStore.set("admin_service_access", []);
 }
 

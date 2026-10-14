@@ -4,7 +4,7 @@
 
 ## Concept
 
-Public creator discovery. Anyone can search for creators by display name or Link Address, browse discoverable creators, and land on their fan page. The search is the platform's answer to "find your favorite creator on CreatorBioTree" — a differentiator, since the link-in-bio competitors (Stan Store, Linktree, Beacon) have **no** creator search at all; only marketplace-style platforms (Patreon, Gumroad) do.
+Public creator discovery. Anyone can search for creators by display name, Link Address, **field, tags, tagline, or bio (extended 2026-10-13 — `network.md` §1b)** — names rank first, discovery fields after. Browse discoverable creators, and land on their fan page. The search is the platform's answer to "find your favorite creator on CreatorBioTree" — a differentiator, since the link-in-bio competitors have **no public creator name-search** (Linktree offers category browse, not name lookup; Stan/Beacons offer none — verified 2026-10-13); only marketplace-style platforms (Patreon, Gumroad) do.
 
 Two audiences, one search engine:
 
@@ -64,8 +64,10 @@ Results ordered (best first):
 | 1 | **Exact username match** | Unique handle → that creator is first, clearly THE result |
 | 2 | **Featured creators** | `is_featured` float above the rest |
 | 3 | **Name/username contains match** | Case-insensitive partial match on display name OR username |
-| 4 | **Newest creators** | `created_at` desc breaks ties |
-| 5 | **"Did you mean?" suggestions** | Shown **only when zero results** — see below |
+| 4 | **Tag / tagline match** (2026-10-13) | Query in `tags[]` or `tagline` (both normalized lowercase) — the field-finder tier |
+| 5 | **Bio contains** (2026-10-13) | Last resort — a bio is a story, not labels; mentioning "music" once ≠ a musician |
+| 6 | **Newest creators** | `created_at` desc breaks ties |
+| 7 | **"Did you mean?" suggestions** | Shown **only when zero results** — see below |
 
 ### "Did you mean?" (typo tolerance)
 
@@ -104,9 +106,9 @@ Results ordered (best first):
 
 | Piece | Mock | Production |
 |---|---|---|
-| Matching | In-memory JS similarity (edit distance) + partial match | Postgres `pg_trgm` trigram similarity (indexed) for fast fuzzy name/username search |
-| Ranking | Simple sort in code | SQL ordering: exact match → featured → similarity → created_at |
-| Volume | In-memory creators table | Indexed `creators` table (`open_to_collab` partial index for the collab-feed pool; `show_in_search` parked 2026-10-09 — no longer filtered); if search volume grows, evaluate a dedicated search service |
+| Matching | In-memory JS similarity (edit distance) + partial match | Postgres `pg_trgm` trigram similarity (indexed) for fast fuzzy name/username search — **extend the trigram index to `tagline` + `tags` + `bio` at wiring (2026-10-13)** |
+| Ranking | Simple sort in code | SQL ordering: exact match → featured → similarity → tag/tagline → bio → created_at |
+| Volume | In-memory creators table | Indexed `creators` table (`open_to_collab` partial index for the collab-feed pool; `show_in_search` parked 2026-10-09 — no longer filtered); **filtered pool gets a `primary_field` partial index** (2026-10-13); if search volume grows, evaluate a dedicated search service |
 
 ---
 
@@ -128,3 +130,8 @@ The landing-page search section ships **with the landing page** (deferred to the
 | #6 Toggle friction | ✅ Decided 2026-10-07 — **no cooldown/confirmation** (TikTok profile-views precedent). **Superseded 2026-10-09:** the `show_in_search` switch (and its grey-out) was removed entirely — search is always on; the one switch left (`open_to_collab`) only gates the collab feed + Connect |
 | #7 Default view | ✅ Decided 2026-10-07, revised 2026-10-09 — Network empty query = **collab list** (willing only, shuffled per load); typed search = **ALL creators** (FB directory); landing section shows all |
 | #8 Billboard nudge | ✅ Decided 2026-10-07, trigger retargeted 2026-10-09 — first Network visit while the billboard is undesigned shows an optional "design your billboard" modal (once ever); the permanent ✏️ lives in the My Billboard card header (see `network.md` §3) |
+| #9 Two-layer discovery identity | ✅ Decided 2026-10-13 (TT/Insta precedent) — ONE preset `primary_field` (the filterable identity) + 3 free-text `tags` (flavor + search matches, never filtered); multi-identity (musician + wellness) lives in the tags, the primary is "what I want to be FOUND as" |
+| #10 Preset bucket list | ✅ Decided 2026-10-13 — 20 locked buckets (Music · Wellness · Fitness · Comedy · Food & Drink · Fashion & Beauty · Gaming · Education · Business & Finance · Travel · Photography · Art & Design · Film & Video · Sports · Parenting & Family · Pets & Animals · Tech · Books & Writing · Spirituality · Lifestyle); additions = future founder decision |
+| #11 Filter chips | ✅ Decided 2026-10-13 — scrollable single row under the search box (`All` + 20), single-select, tap-active-clears; AND-combined with typed query; narrows both views (feed pool + directory, FB rule holds inside the field) |
+| #12 Tag honesty rules | ✅ Decided 2026-10-13 — tags normalized lowercase + trim at save; tagline's 60-char cap already blocks stuffing (kept); bio searched LAST (story, not labels) |
+| #13 Keep 1 primary + 3 tags | ✅ Decided 2026-10-13 (founder accepted the pushback) — NO second primary field (breaks filter crispness: AND/OR + ranking go blurry), NO widening to 5 (the cap is the honesty mechanism). Multi-identity lives in the tags. Revisit ONLY on real-creator complaints — never preemptively |

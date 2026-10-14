@@ -45,6 +45,33 @@ function describe(event: RawEvent): { action: string; description: string } {
   if (event.type === "dispute_opened") {
     return { action: "affiliate", description: `Payment of ${money(amount)} disputed` };
   }
+  // Deal-proposal events (messaging.md Part 2b, Batch B 2026-10-12) —
+  // `email` carries the counterparty NAME for these synthesized events.
+  const who = event.email ?? "a creator";
+  if (event.type === "deal_proposed_by_me") {
+    return { action: "affiliate", description: `You proposed a deal to ${who}` };
+  }
+  if (event.type === "deal_proposed_to_me") {
+    return { action: "affiliate", description: `${who} proposed a deal to you` };
+  }
+  if (event.type === "deal_accepted_by_them") {
+    return { action: "affiliate", description: `${who} accepted your deal proposal` };
+  }
+  if (event.type === "deal_accepted_by_me") {
+    return { action: "affiliate", description: `You accepted ${who}'s deal proposal` };
+  }
+  if (event.type === "deal_declined_by_them") {
+    return { action: "affiliate", description: `${who} declined your deal proposal` };
+  }
+  if (event.type === "deal_declined_by_me") {
+    return { action: "affiliate", description: `You declined ${who}'s deal proposal` };
+  }
+  if (event.type === "deal_canceled_by_me") {
+    return { action: "affiliate", description: `You canceled the deal proposal to ${who}` };
+  }
+  if (event.type === "deal_canceled_by_them") {
+    return { action: "affiliate", description: `${who} canceled their deal proposal` };
+  }
   return { action: "content", description: "New activity" };
 }
 

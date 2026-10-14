@@ -106,6 +106,7 @@ One line summary style — not a full analytics page. Deep-dive lives elsewhere 
 |---|---|
 | Share page | Copy page link (custom domain if set, else `host/username`) |
 | QR code | QR card of the page link (for real-life promo) |
+| View my page → | **Opens live `/{username}` in a new tab (guest eyes — what visitors see).** Overview-only home (2026-10-14): Overview renders on every device (it's a screen, not chrome) — sidebar/bottom-bar can't claim that. One row beside QrCard's copy-link; copy shows the address, this shows the place |
 | Edit Playground | → `/dashboard/playground` — the full-screen Playground editor (guest-first, swipeable, tap-to-edit). **This replaces the old "View my fan page" quick action** — Playground is now the one surface for both seeing and editing the fan shell (founder decision 2026-08-05; see `playground.md` Part 1). Popping out to the real live `/{username}` still works via the "Deployed — view it live" link after a deploy, and via the share action |
 | Install my fan app | **Optional.** Same install flow as a fan (`/[username]/manifest.json`) → installs their branded fan-shell PWA next to the Dashboard PWA → **2 apps on their phone** (Dashboard = workbench, fan app = what fans get). This is how creators dogfood their own app. See `fan-shell.md` |
 | Add content | → `/dashboard/playground` (opens the editor sheet with the Catalog tab — Part 1c mapping) |
@@ -184,6 +185,7 @@ Goal: the page never feels broken at 0 — it always points at the next action.
 | #9 Admin variant | ✅ Decided — platform totals, checklist/funnel/audience hidden |
 | #10 Empty state | ✅ Decided — always points at next action |
 | #11 AI plain-language insights | ⏳ **Deferred** — lives in `ai/ai-features.md`, future phase |
+| #12 View-my-page door | ✅ Decided 2026-10-14 — Overview-only "View my page →" (new tab, guest eyes); sidebar never carries it (chrome ≠ every device); QrCard keeps copy-link, this row opens the live page |
 
 ---
 

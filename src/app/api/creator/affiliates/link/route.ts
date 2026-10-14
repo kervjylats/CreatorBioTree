@@ -2,6 +2,8 @@
  * POST /api/creator/affiliates/link — generate an affiliate link for a deal.
  * Creates an affiliate_links row with a unique ref_code (network.md §7,
  * monetization/creators.md Part 2e — automatic attribution via ref param).
+ * PROMOTER-ONLY since Batch B 2026-10-12: you can only mint a /ref code for a
+ * deal you promote (before that any logged-in creator could).
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -31,11 +33,17 @@ export async function POST(req: Request) {
 
     const { data: deal } = await supabase
       .from("affiliate_deals")
-      .select("id, status")
+      .select("id, status, promoter_id")
       .eq("id", validation.data.deal_id)
       .maybeSingle();
 
     if (!deal) return NextResponse.json({ error: "Deal not found" }, { status: 404 });
+    if (deal.promoter_id !== user.id) {
+      return NextResponse.json(
+        { error: "You can only create affiliate links for deals you promote." },
+        { status: 403 },
+      );
+    }
     if (deal.status !== "active") {
       return NextResponse.json({ error: "Can only create links for active deals" }, { status: 400 });
     }

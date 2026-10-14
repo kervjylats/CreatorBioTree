@@ -1,9 +1,10 @@
-/** Login form — creator/staff gateway (login.md): email+password, Gumroad-style error copy, ?next= deep-link, mock-only social buttons. */
+/** Login form — creator/staff gateway (login.md): email+password, Gumroad-style error copy, ?next= deep-link, mock-only social buttons + one-tap test accounts. */
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Shield, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,13 @@ const MOCK_SOCIALS = [
   { key: "tiktok", label: "TikTok", email: "tiktok-test@creatorpwa.test" },
   { key: "instagram", label: "Instagram", email: "instagram-test@creatorpwa.test" },
   { key: "facebook", label: "Facebook", email: "facebook-test@creatorpwa.test" },
+] as const;
+
+/** One-tap demo logins (mock only, founder 2026-10-13 — no more forgotten
+ *  emails: the addresses print on the buttons, one tap signs straight in). */
+const MOCK_ACCOUNTS = [
+  { email: "admin@creatorpwa.app", role: "Admin + creator", icon: Shield },
+  { email: "test@creatorpwa.app", role: "Creator", icon: User },
 ] as const;
 
 function SocialIcon({ platform }: { platform: (typeof MOCK_SOCIALS)[number]["key"] }) {
@@ -179,6 +187,27 @@ export function LoginForm({ next }: LoginFormProps) {
               </Tooltip>
             ))}
           </div>
+
+          <div className="mt-4 space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest text-center">
+              Test accounts — one tap to log in
+            </p>
+            {MOCK_ACCOUNTS.map((account) => (
+              <Button
+                key={account.email}
+                type="button"
+                variant="outline"
+                disabled={loading}
+                onClick={() => handleSocial(account.email)}
+                className="w-full justify-start gap-2"
+                aria-label={`Log in as ${account.email}`}
+              >
+                <account.icon className="size-4 shrink-0" />
+                <span className="min-w-0 truncate">{account.email}</span>
+                <span className="ml-auto shrink-0 text-xs text-muted-foreground">{account.role}</span>
+              </Button>
+            ))}
+          </div>
         </>
       )}
 
@@ -191,7 +220,7 @@ export function LoginForm({ next }: LoginFormProps) {
 
       {USE_MOCKS && (
         <p className="mt-3 text-xs text-muted-foreground text-center">
-          * Social buttons are mock-only — they sign in a test account.
+          * Mock-only — social buttons + test accounts sign in instantly.
         </p>
       )}
     </div>

@@ -1,13 +1,14 @@
 /**
- * GET /api/discover/creators/[id] — billboard-modal payload (network.md
- * CreatorBillboardModal, 2026-10-07): full billboard fields for ONE creator by
- * id — any creator with a username (404 for unknown/username-less ids only;
- * the hidden-creator 404 died with the show_in_search switch, 2026-10-09 —
- * closed creators must open from typed search).
+ * GET /api/discover/creators/[id] — billboard-modal payload (network.md modal,
+ * hero spec 2026-10-14): full billboard fields + primary_field + the gated
+ * featured_item (spotlight hero; paid = cover-only for strangers). 404 for
+ * unknown/username-less ids only.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { enforceRateLimit } from "@/lib/rate-limiter";
+import { toHeroMedia } from "@/lib/spotlightHero";
+import type { ContentItem } from "@/types";
 
 export async function GET(
   req: NextRequest,
@@ -26,7 +27,7 @@ export async function GET(
     const { data: creator, error } = await supabase
       .from("creators")
       .select(
-        "id, username, display_name, avatar_url, tagline, tags, collab_style, bio, rate_card, media_kit_message, open_to_collab, is_featured"
+        "id, username, display_name, avatar_url, tagline, tags, collab_style, bio, rate_card, media_kit_message, open_to_collab, is_featured, primary_field"
       )
       .eq("id", id)
       .maybeSingle();
@@ -41,6 +42,18 @@ export async function GET(
       return NextResponse.json({ error: "Creator not found" }, { status: 404 });
     }
 
+    // Hero = the published featured item fans see (network.md §2). The viewer
+    // is a stranger creator: identity null + no purchases, so paid items shape
+    // cover-only (file_url stripped — 2026-10-01 audit law).
+    const { data: featured } = await supabase
+      .from("content_items")
+      .select("*")
+      .eq("creator_id", id)
+      .eq("is_featured", true)
+      .eq("is_published", true)
+      .limit(1)
+      .maybeSingle();
+
     return NextResponse.json({
       creator: {
         id: creator.id,
@@ -50,11 +63,15 @@ export async function GET(
         tagline: creator.tagline ?? "",
         tags: creator.tags ?? [],
         collab_style: creator.collab_style ?? "",
+        primary_field: (creator as { primary_field?: string | null }).primary_field ?? "",
         bio: creator.bio ?? "",
         rate_card: creator.rate_card ?? { post: "", story: "", video: "" },
         media_kit_message: creator.media_kit_message ?? "",
         is_featured: creator.is_featured,
         open_to_collab: creator.open_to_collab !== false,
+        featured_item: featured
+          ? toHeroMedia(featured as ContentItem, null, new Set<string>())
+          : null,
       },
     });
   } catch (err) {

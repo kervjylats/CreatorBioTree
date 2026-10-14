@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/shared/Spinner";
 import { fetchJson } from "@/lib/fetchJson";
 import type { CreatorSearchResult } from "@/hooks/useCreatorSearch";
+import type { HeroMedia } from "@/lib/spotlightHero";
+import { BillboardHero } from "./BillboardHero";
 
 export interface BillboardDetail {
   id: string;
@@ -27,11 +29,13 @@ export interface BillboardDetail {
   tagline: string;
   tags: string[];
   collab_style: string;
+  primary_field: string;
   bio: string;
   rate_card: { post: string; story: string; video: string };
   media_kit_message: string;
   is_featured: boolean | null;
   open_to_collab: boolean;
+  featured_item: HeroMedia | null;
 }
 
 interface CreatorBillboardModalProps {
@@ -107,10 +111,18 @@ export function CreatorBillboardModal({
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Hero (network.md §2, 2026-10-14): their spotlight as an LED
+                screen + eyebrow/headline overlay. The body tagline hides while
+                the hero shows it — no duplicated lines. */}
+            <BillboardHero
+              media={detail.featured_item}
+              eyebrow={detail.primary_field || undefined}
+              headline={detail.tagline || undefined}
+            />
             <div className="flex items-start gap-3">
               <Avatar src={detail.avatar_url} name={detail.display_name} />
               <div className="min-w-0 flex-1">
-                {detail.tagline && (
+                {detail.tagline && !detail.featured_item && (
                   <p className="text-sm font-medium text-foreground">{detail.tagline}</p>
                 )}
                 {detail.tags.length > 0 && (

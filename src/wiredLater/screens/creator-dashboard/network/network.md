@@ -37,8 +37,7 @@ The Network page is **3 sections, no tabs** (founder decision — tabs rejected)
 ## Features
 
 ### 1. Creator Search Engine
-- Search by display name and Link Address (user-facing copy; code/docs keep `username` — permanent, set once at signup, see `onboarding.md`)
-- Filter by tags (up to 3 from billboard)
+- Search by display name and Link Address (user-facing copy; code/docs keep `username` — permanent, set once at signup, see `onboarding.md`), **extended 2026-10-13: the same box also matches tags → tagline → bio, ranked below names** (§1b); a **field-filter chip row** (single preset primary, §1b) narrows either view
 - **All creators appear** — search is a full directory, always on (FB-style, founder 2026-10-09; no hidden-creator filter)
 - Featured creators float to top
 - Results in a grid of BillboardCards
@@ -55,14 +54,40 @@ The Network page is **3 sections, no tabs** (founder decision — tabs rejected)
 - **Search is ALWAYS on — no greying, ever** (founder 2026-10-09): the old `show_in_search` switch + mutual blind rule are **removed**; a closed creator is still findable, their card just shows the disabled **"Not open to collabs"** button (line below) — profile visible, request blocked
 - Clicking any card (either view) opens the **billboard modal** — `CreatorBillboardModal` in Component Concepts
 - Search-result cards whose target has `open_to_collab` OFF show a disabled **"Not open to collabs"** button instead of Connect — closed sign, not error-after-click
-- **Batching for scale (founder 2026-10-09 — "thinking big"):** both views render **batches of 24** with a **Show more** button (next 24; batches reset on every query change). The collab list **reshuffles on every Network visit/refresh** AND on demand via a **⇄ Shuffle button** (icon + label, **directly above the card list — below the switch card**, placement fixed by founder 2026-10-09; default feed only — typed search is ranked, not shuffled, so the button hides while typing; hidden while the list is loading/empty). Featured pinned first (max ~4 so they never dominate)
+- **Batching for scale (founder 2026-10-09 — "thinking big"):** both views render **batches of 24** with a **Show more** button (next 24; batches reset on every query change). The collab list **reshuffles on every Network visit/refresh** AND on demand via a **⇄ Shuffle button** (icon + label, **directly above the card list — below the switch row**, placement fixed by founder 2026-10-09; default feed only — typed search is ranked, not shuffled, so the button hides while typing; hidden while the list is loading/empty). Featured pinned first (max ~4 so they never dominate)
 - **Production note (scale):** today's pattern (server sends the full willing set → client shuffles → slices batches) is dev/small-scale only. At growth: real mode switches to **server-side random batches** (`ORDER BY random() LIMIT 24`, separate featured query) with keyset/`not.in(seen ids)` paging — the full-download pattern never ships (same for typed search: server `LIMIT` + offset)
+
+### 1b. Find by field (founder design session 2026-10-13 — TT/Insta two-layer model)
+
+Creators are multi-identity (musician + wellness) — one layer can't hold that. So discovery identity is **two layers**:
+
+| Layer | Rules | Job |
+|---|---|---|
+| 🗂️ **`primary_field`** (NEW column) | **One only**, picked from the ~20 preset buckets below; nullable until set (never forced — same non-forcing philosophy as everything); edited in Playground → Billboard view (`playground.md` Part 1d) | THE filter target — exact matches only |
+| 🏷️ **3 tags** (exists) | Free text, normalized at save (lowercase + trim); cap forces honesty — pick your 3 truest words | Flavor + search matches, never filtered |
+
+**Preset buckets (locked 2026-10-13 — additions are a future founder decision):** Music · Wellness · Fitness · Comedy · Food & Drink · Fashion & Beauty · Gaming · Education · Business & Finance · Travel · Photography · Art & Design · Film & Video · Sports · Parenting & Family · Pets & Animals · Tech · Books & Writing · Spirituality · Lifestyle.
+
+**Why split (recorded so nobody re-litigates):** filters need exact matches — free tags can't do that (`beats` ≠ `music` to a computer; teaching synonyms is a forever-job). One primary, not multi — multi-select primaries blur the filter; the 3 free tags already carry the multi-identity. The preset list stays short because it holds broad buckets only; the long tail lives in free tags.
+
+**Filter chips (Discover UI):** horizontally scrollable single row under the search box — `All` + the 20 buckets. Single-select; tapping the active chip clears to `All`. Chips narrow **both** views (pool filter first, then view logic):
+- Collab list + chip → willing (`open_to_collab`) AND `primary_field` == chip — still shuffled, Featured pinned, batches of 24
+- Typed search + chip → text match AND `primary_field` == chip — the FB directory rule holds (closed creators still findable *within* the field; their card keeps the disabled button)
+
+**Search-box matching (same box, wider net — engine: `search.md` Part 3):** handles/names first, then `tags[]` → `tagline`, then `bio` last (it's a story, not labels). Exact handle still king.
 
 ### 2. Billboard (Creator Discovery Card)
 Each creator can write a mini billboard:
-- **Tagline** — max 60 chars, one-liner pitch
-- **Tags** — up to 3 topic keywords
-- **Collab style** — what kind of collab they want (free-text)
+- **Primary field** — one preset bucket (§1b, nullable until set; dropdown in Playground → Billboard view) — the filterable identity; printed ONLY as the hero eyebrow (modal + preview + Lineup slots — never on feed cards or the rail mirror)
+- **Tagline** — max 60 chars, one-liner pitch (too short to keyword-stuff — good by accident, keep it); the hero HEADLINE in the modal
+- **Tags** — up to 3 topic keywords, free text, **normalized at save: lowercase + trim** (2026-10-13 — `Music` and `music` must be the same tag). **Entry UX (2026-10-13, founder: "Tag 1/2/3" boxes feel like a tax form):** pill-adder, not static boxes — one input + [+ Add] (Enter works too) → pill with ×; live counter ("2 left"); input disables at 3; duplicates rejected case-insensitively ("Beats" + "beats" = one). **Microcopy:** label **"What do you do?"** + `(up to 3 words)` · placeholders `e.g. beats` / `e.g. mixing` / `e.g. vocals` · helper *"Words creators search — your primary field carries the filter, these carry the rest."* (founder: the word "Tags" is jargon — nobody wakes up knowing it)
+- **Collab style** — what kind of collab they want (free-text); the hero subline
+- **Hero visual (2026-10-14, founder: "like a real billboard")** — the creator's **spotlight item** (`content_items` where `is_featured` — the SAME row the guest page + Home tab spotlight renders; one spotlight, two audiences — collab discovery reuses what fans see, zero billboard-specific work). Fallback ladder: featured **video** → featured **image** → other featured type (cover/poster frame) → **no featured item → honest blank** (tagline + chips only — the undesigned standard, nothing fake).
+  - Video plays as a roadside LED screen: **muted + loop + playsinline, no controls**; pauses when the modal closes / scrolled off (battery); `prefers-reduced-motion` → poster frame instead of motion.
+  - Overlay: gradient scrim + eyebrow (primary) + headline (tagline) + name/@handle — text stays in the lower third, the visual shouts.
+  - **Gated media (2026-10-01 audit law applies):** a paid featured item shows its **cover only** to strangers — full media iff free or purchased (`computeItemGate`, same rule as fan cards; never leak `file_url`).
+  - **Where the hero renders:** CreatorBillboardModal top + Playground result-preview (mirror of the modal top). **Where it does NOT:** Discover feed cards (clean — 24 flashing billboards = Times Square, scannability dies) · rail mirror `BillboardPreview` (compact facts only) · landing marquee (tiny cards).
+  - **Choosing the hero = featuring a catalog item** (`is_featured` flag — set in the catalog editor when it lands, Sheet 19; until then via API). NOT a billboard-editor field (one-edit-home rule).
 
 Billboard appears on the search result card and as a mirror in the creator's own Network rail. **Editing home moved to Playground → Billboard view (founder decision 2026-10-09 — `playground.md` Part 1d)** — the full field set (tagline, tags, collab style, **bio, rate card, media kit**) is edited there; Network shows the result (rail mirror) + the collab switch (inside the Discover section) only.
 
@@ -113,24 +138,24 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 **Flow:**
 1. Two creators are connected as collabs (step 4 above)
 2. Creator A configures a deal for a collab — choosing **deal type** (percentage / fixed / free / tiered / custom), **trigger** (purchase / follow / subscribe / tip / signup / any), and the terms. **Scope is creator-only since 2026-10-10** — the deal covers A's whole catalog (no item picker; `creators.md` 2b). The deal is A's own row — asymmetric (B configures their own deals independently, no forced pairing)
-3. Creator B discovers Creator A's deal in the **Earnings screen's Affiliate deals block (§2b)** → reads the terms → generates an affiliate link if they accept
+3. Creator B learns about the deal in **their partner chat** — either A sends a **proposal card** (accept = the deal row is created, `messaging.md` Part 2b) or A offers it directly via Circle's per-partner **"Make a deal"** (2026-10-12 — **deals are partners-only, `AffiliateDiscover`'s browsing is gone**). B then generates their affiliate link from the accepted card (`creators.md` 2b2)
 4. Creator B shares the link **or a fan simply opens B's partner surface (the in-app hop)** → the fan action happens (per the trigger) → the platform **evaluates the deal rules** and writes the conversion as a pending debt; settlement runs through the **receipt protocol + prompt ladder + Red Card** on the **Earnings screen** (`earnings.md` Parts 3–5; `creators.md` 2e2)
 
 > **Live in mock since 2026-10-09 (attribution + conversion writer):** step 3's link serves `GET /ref/[code]` — click counted, `affiliate_attributions` row + a 30-day `aff_attr` handoff cookie, redirect to the **deal owner's** fan page (not the link creator's — the product lives with the owner). Step 4 runs in `POST /api/fan/purchases/complete` → `lib/affiliateAttribution.ts`: deal rules (status / validity window / creator-only scope / trigger) → `computeDealCuts` → immutable `affiliate_conversions` row, `pending` until settled — idempotent per sale + deal (a replayed purchase heals a missed row; no cookie = no conversion). **Door 2 (the in-app hop) + the settlement marking action are SPEC'D 2026-10-10** (`creators.md` 2e/2e2 + `earnings.md`) — wiring = Sheet 23. Still open: the `?ref=` param passthrough (cookie-only today), follow/subscribe/signup trigger writers, and the real PayPal webhook (route is mock-only).
 
-**The affiliate UI MOVED → the Earnings screen (2026-10-12, founder "A1" — one money home):** the whole rail block — `＋ New deal` → `YourDealsCard` → `AffiliateDiscover` → `AffiliateLinks` — now renders as **§2b** of `/dashboard/earnings` (`earnings.md`; components `git mv`'d to `components/earnings/`). Network keeps **only the billboard mirror** + the Discover center (billboard + discover = the social screen). Deal *creation* behavior is unchanged (relocation only) — the parked deals-overhaul batch (creation in Circle Partners, chat-negotiated cards, partners-only, cancel-future-only) will pick the form up again later.
+**The affiliate UI MOVED → the Earnings screen (2026-10-12, founder "A1" — one money home):** the rail block — `＋ New deal` → `YourDealsCard` → `AffiliateLinks` — now renders as **§2b** of `/dashboard/earnings` (`earnings.md`; components `git mv`'d to `components/earnings/`). Network keeps **only the billboard mirror** + the Discover center (billboard + discover = the social screen).
 
-**Discover (§2b on Earnings):** browse other creators' open deals, "Create link" button (only available if the deal terms are acceptable to you — no silent sign-ups)
-**My Links (§2b on Earnings):** all your affiliate links, per-link stats (clicks, conversions, revenue), deactivate toggle
+**Batch B executed the same day (2026-10-12):** **`AffiliateDiscover` is DEAD** (component + its `GET /api/creator/affiliates/discover` route removed — deals are negotiated, not browsed) and deal creation gained its **Circle entry point**: a **"Make a deal" handshake icon on every CollabList row** (`DealDialog`, prefilled partner → same `POST /api/creator/affiliates/deals`, now partners-only server-side — `creators.md` 2b2). Revoking a deal stays **prospective-only** (future sales stop earning; recorded conversions stay).
+**My Links (§2b on Earnings):** all your affiliate links, per-link stats (clicks, conversions, revenue), deactivate toggle — promoters create one from the **accepted deal card** in their partner chat
 
 **Deal config (one surface, rule-builder style — simplified 2026-10-10):**
 - **The deal form** (`＋ New deal` in the Earnings §2b block — `AffiliateDealForm`, `git mv`'d from `components/network/` 2026-10-12):
-  - Collaborator (@username, resolved via the search engine) · deal type dropdown: Percentage (0-100%) / Fixed amount ($) / Free cross-promo (0%) / Tiered / Custom
+  - Collaborator (@username, resolved via the search engine) — **partners-only since 2026-10-12**: helper text under the field, server 403 surfaces inline · deal type dropdown: Percentage (0-100%) / Fixed amount ($) / Free cross-promo (0%) / Tiered / Custom
   - Fields per type: rate, fixed amount, tier rules, custom-terms textarea
   - **Trigger** dropdown: Purchase (default) / Follow / Subscribe / Tip / Signup / Any
   - Optional: deal valid_from / valid_until range; optional max affiliates (default unlimited)
   - **No scope selector** — creator-only since 2026-10-10 (the deal covers your whole catalog; `creators.md` 2b). The old per-item surface (an "Affiliate" section in each catalog item's editor) and its external-link warning are **removed with the item picker**
-- **In a collab detail** the same form can open (same fields, same rules — one form component)
+- **In a CollabList row** a handshake **"Make a deal"** icon opens `DealDialog` (compact same-fields composer, partner prefilled — 2026-10-12, Batch B). Chat **proposal cards** are the negotiation path (`messaging.md` Part 2b)
 
 **Asymmetry (2026-08-05):** each side's deals are THEIR OWN rows. A configures "10% on my course" for B; B configures "free cross-promo" for A — or nothing at all. No shared deal object, no echo. Money flows from the deal's owner to the promoter per conversion.
 
@@ -146,11 +171,11 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 - Switch labeled **"Accept collab requests"** (the only switch since 2026-10-09 — "Show me in search" removed)
 - States: checked/unchecked, disabled while saving
 - Saves instantly on toggle (not form-submit)
-- **Own card inside the Discover section since 2026-10-09** (extracted from `BillboardEditor` — the design fields moved to Playground; position moved rail → under the DISCOVER heading the same day, founder: it gates this section so it lives with it)
+- **Sits in the DISCOVER heading row since 2026-10-13** (founder compact fix — was its own card under the heading 2026-10-09→2026-10-12: extracted from `BillboardEditor` when the design fields moved to Playground; same switch, same instant-save, no box; caption line underneath; label click toggles via `htmlFor`, `min-h-11` hit area)
 
 ### BillboardEditor *(moved — 2026-10-09)*
 - **Editing now lives in Playground → Billboard view** (`playground.md` Part 1d, founder decision 2026-10-09): result-preview + full field set (tagline, tags, collab style, bio, rate card, media kit) + Save-button states — all specced there; component home becomes `components/playground/`
-- Network keeps only the collab switch (§3, its own card in Discover)
+- Network keeps only the collab switch (§3, in the Discover heading row since 2026-10-13)
 
 ### BillboardCard
 - Shows avatar, display name, link address, tagline, tags (as chips), collab style
@@ -170,7 +195,7 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 
 ### CreatorBillboardModal (founder decision 2026-10-07 — "Modal A")
 - Click any card (collab list OR search result) → center modal overlay on top of the dimmed Network screen — **no page navigation**, close (✕ / backdrop) returns to the exact list position
-- Content: avatar, display name, @handle, Featured badge, tagline, tags (chips), collab style, bio, rate card (post/story/video), media kit message
+- Content: **hero visual on top** (spotlight item — video muted-loop / image poster / honest blank; §2 ladder + gated-media rule), then avatar, display name, @handle, Featured badge, tagline, tags (chips), collab style, bio, rate card (post/story/video), media kit message
 - Actions inside: **Connect** (same state machine as the card — … → Requested → Connected; disabled **"Not open to collabs"** when the target has `open_to_collab` OFF) + **Visit ↗** (opens `/{username}`, new tab)
 - Data: fetch the target's billboard by id — `GET /api/discover/creators/[id]` (any creator with a username; 404 only for unknown/username-less ids — the hidden-creator 404 was removed 2026-10-09 with the switch). The list/search response carries `open_to_collab` (collab-feed pool filter + disabled button)
 - Reuses the app's existing `Dialog` (same machinery as checkout / guest-contact modals)
@@ -193,6 +218,7 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 - Each collab shows: avatar, display name, "Since {date}" joined date
 - "Collab" badge (green)
 - **Real `MessageIcon` in the row (since 2026-10-12)** — quick mini thread; clicking it stops there, clicking the row opens the detail (the old decorative `MessageCircle` glyph is gone)
+- **Handshake "Make a deal" icon in the row (since 2026-10-12, Batch B)** — opens `DealDialog` (compact composer, partner prefilled → `POST /api/creator/affiliates/deals`, partners-only). Two icon buttons, both stop-propagation
 - Clicking a collab → opens collab detail view (chat, deal maker, activity)
 - Empty state: dashed border card with "No collabs yet" + subtext
 
@@ -219,11 +245,9 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 - Saves as the creator's OWN `affiliate_deals` row (asymmetric — no echo to the other side)
 - States: loading, saving, error (silent)
 
-### NetworkSettings
-- Composes VisibilitySwitch **only** — *(BillboardEditor moved to Playground → Billboard view, `playground.md` Part 1d, 2026-10-09)*
-- **Renders inside the Discover section** (under the heading, above the results — position since 2026-10-09; the rail holds only the Billboard mirror)
-- Loads current collab switch from Supabase (`open_to_collab` only since 2026-10-09)
-- Toggle saves instantly; loading state while fetching
+### NetworkSettings *(removed — 2026-10-13)*
+- **Folded into `NetworkPage`'s Discover heading row** (founder compact fix — the card died, the `VisibilitySwitch` above lives on inline; `git rm components/network/NetworkSettings.tsx`)
+- *(Was: composed VisibilitySwitch only; rendered under the heading 2026-10-09→2026-10-12)*
 
 ### MyPeeps (right rail — see `relationships.md`)
 - The anchored umbrella: 3 rows — **Partners** (count), **Fans** (count), **Staffs** (count)
@@ -234,7 +258,7 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 
 ### NetworkPage (main page) — layout DECIDED
 - Page heading + subtitle
-- **Live layout since the 2026-09-26 hub rebuild:** 2 columns — LEFT rail (**billboard mirror only** — the affiliate block left for Earnings §2b on 2026-10-12) / CENTER = Discover (switch card + search + cards) — the 3-section diagram above is the original 2026-08-05 vision, pending the full-file review
+- **Live layout since the 2026-09-26 hub rebuild:** 2 columns — LEFT rail (**billboard mirror only** — the affiliate block left for Earnings §2b on 2026-10-12) / CENTER = Discover (switch row + search + filter chips + cards) — the 3-section diagram above is the original 2026-08-05 vision, pending the full-file review
 - Mobile: stacks vertically (Discover first, then the billboard mirror)
 
 ---
@@ -245,7 +269,8 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 |---|---|---|---|
 | `show_in_search` | `creators` | boolean | **PARKED 2026-10-09** (switch removed — search always on; column kept, default true, zero reads; future Settings "private mode") |
 | `open_to_collab` | `creators` | boolean | Exists (new 2026-09-29, default true; collab-feed pool + partners/request 403 gate — the ONE switch since 2026-10-09) |
-| `tags` | `creators` | string[] | Exists |
+| `tags` | `creators` | string[] | Exists — **normalized lowercase + trim at save (2026-10-13, §1b)** |
+| `primary_field` | `creators` | string? | **NEW 2026-10-13 (§1b)** — one preset bucket or null; the field-filter target; pre-migration = free (no ALTER) |
 | `tagline` | `creators` | string? | Need to add to Creator type |
 | `collab_style` | `creators` | string? | Need to add to Creator type |
 | `commission_pct` | `partnerships` | number | Exists (optional — set in DealMaker) |
@@ -272,11 +297,11 @@ Full affiliate data model (the immutable ledger): `monetization/creators.md` Par
 | `/api/discover/creators/[id]` | GET | Billboard-modal payload by id — any creator with a username, 404 only for unknown ids (2026-10-07; hidden-creator 404 removed 2026-10-09) |
 | `/api/messages/*` *(all creator↔creator chat)* | — | Shared messaging API — see `messaging.md` (Part 7). No separate per-collab chat route |
 | `/api/creator/partners/deal` | POST | Create/update deal agreement *(future — superseded by affiliates in v1)* |
-| `/api/creator/affiliates/deals` | GET/POST | List/create MY affiliate deals (owner side; scope + trigger + type + terms) — **UI caller = the Earnings screen §2b since 2026-10-12** |
-| `/api/creator/affiliates/deals/[id]` | PATCH/DELETE | Edit/pause/revoke a deal |
+| `/api/creator/affiliates/deals` | GET/POST | List/create MY affiliate deals (owner side; trigger + type + terms) — **UI callers = Earnings §2b + Circle's DealDialog since 2026-10-12; POST is PARTNERS-ONLY (403 without a non-ended partnership — `creators.md` 2b2)** |
+| `/api/creator/affiliates/deals/[id]` | PATCH/DELETE | Edit/pause/revoke a deal (**revoke = prospective-only**, `creators.md` 2e2) |
 | `/api/creator/affiliates/earnings` | GET | Earnings summary |
-| `/api/creator/affiliates/discover` | GET | Browse affiliate-eligible deals |
-| `/api/creator/affiliates/link` | POST | Generate affiliate link |
+| ~~`/api/creator/affiliates/discover`~~ | ~~GET~~ | **REMOVED 2026-10-12 (Batch B)** — deals are negotiated (chat proposals / Make a deal), not browsed |
+| `/api/creator/affiliates/link` | POST | Generate affiliate link (**promoter-only since 2026-10-12** — you can only mint a link for deals you promote) |
 | `/api/creator/affiliates/links` | GET | List your affiliate links |
 | `/api/creator/affiliates/links/[id]` | PATCH | Activate/deactivate link |
 | *(earnings screen)* | — | The money routes moved with the screen: `GET /creator/earnings/sales` · extended `GET /creator/affiliates/earnings` · `POST /creator/affiliates/conversions/[id]/settle` · `PUT /creator/earnings/paypal` + admin dispute verdicts — all spec'd in `earnings.md` Part 6 |
@@ -294,13 +319,13 @@ NetworkPage
 │   ├── FansRow → FanList (relationships.md Part 2)
 │   └── StaffsRow → StaffList (staff.md Part 4)
 ├── LEFT RAIL (billboard mirror ONLY since 2026-10-12)
-│   ├── NetworkSettings → renders inside the Discover section (§3)
-│   │   ├── VisibilitySwitch (the single collab switch)
-│   │   └── BillboardEditor → moved to Playground Billboard view (Part 1d, 2026-10-09)
 │   ├── BillboardPreview (mirror; status pill Open/Closed to collabs; card-header ✏️ → Playground, name-row ✏️ → Settings)
-│   └── (the affiliate block — AffiliateDealForm / YourDealsCard / AffiliateDiscover / AffiliateLinks —
-│        MOVED → Earnings screen §2b, 2026-10-12)
+│   └── (the affiliate block — AffiliateDealForm / YourDealsCard / AffiliateLinks —
+│        MOVED → Earnings screen §2b, 2026-10-12; AffiliateDiscover DIED 2026-10-12;
+│        NetworkSettings card DIED 2026-10-13 — switch folded into the CENTER heading row)
 ├── CENTER = Discover
+│   ├── Discover heading row: DISCOVER label + VisibilitySwitch inline (the single
+│   │   collab switch — caption line underneath; card died 2026-10-13)
 │   ├── SearchBox (§1: default collab list = willing only + typed search = ALL creators — never greys)
 │   │   └── BillboardCard[] → CreatorBillboardModal (click)
 │   ├── Inbox

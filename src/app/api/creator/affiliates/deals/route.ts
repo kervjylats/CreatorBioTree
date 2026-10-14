@@ -5,12 +5,14 @@
  * `owner_id` is optional on create and defaults to the session user.
  * Deals are immutable after creation; status updates go through PATCH
  * /deals/[id]. Creator-only since 2026-10-10 (earnings.md §1 — no per-item
- * scope); POST 403s while the creator holds the Red Card (earnings.md Part 4).
+ * scope); POST 403s on Red Card (earnings.md Part 4) or a promoter who isn't
+ * an active partner (PARTNERS-ONLY, Batch B 2026-10-12 — creators.md 2b2).
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, handleAuthError } from "@/lib/requireAuth";
 import { computeRedCard } from "@/lib/settlement";
+import { hasActivePartnership } from "@/lib/affiliateDeals";
 
 const createDealSchema = z.object({
   owner_id: z.string().min(1).optional(),
@@ -71,6 +73,16 @@ export async function POST(req: Request) {
     if (redCard.red) {
       return NextResponse.json(
         { error: "You have overdue affiliate payments. Settle them in Earnings to create new deals." },
+        { status: 403 },
+      );
+    }
+
+    // Partners-only (Batch B 2026-10-12, creators.md 2b2): no non-ended
+    // partnership between owner and promoter → no deal. Self-deals die here
+    // too (you can't be partnered with yourself).
+    if (!(await hasActivePartnership(supabase, user.id, data.promoter_id))) {
+      return NextResponse.json(
+        { error: "You can make deals with your partners only — Connect in Network first." },
         { status: 403 },
       );
     }

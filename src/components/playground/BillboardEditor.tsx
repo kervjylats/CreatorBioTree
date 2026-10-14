@@ -1,10 +1,10 @@
 /**
- * BillboardEditor — controlled form for the billboard DESIGN fields (tagline,
- * tags, collab style) + Media Kit fields (bio, rate card, custom message) in
- * Playground's Billboard view (playground.md Part 1d — moved from the Network
- * rail 2026-10-09). Visibility switches stay in Network (`components/network/
- * NetworkSettings.tsx`). State is lifted to the parent (BillboardView) so the
- * result-preview updates live. No internal data fetching.
+ * BillboardEditor — controlled form for the billboard DESIGN fields (primary
+ * field, tagline, tags, collab style) + Media Kit fields (bio, rate card,
+ * custom message) in Playground's Billboard view (playground.md Part 1d —
+ * moved from the Network rail 2026-10-09). Visibility switches stay in
+ * Network (the Discover heading row in NetworkPage). State is lifted to the
+ * parent (BillboardView) so the result-preview updates live. No data fetching.
  */
 "use client";
 
@@ -13,15 +13,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { BILLBOARD_LIMITS } from "@/lib/limits";
+import { ChevronDown, ChevronRight, X } from "lucide-react";
+import { BILLBOARD_LIMITS, PRIMARY_FIELD_BUCKETS } from "@/lib/limits";
 import { Spinner } from "@/components/shared/Spinner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface BillboardSettings {
   display_name: string;
   username: string;
   avatar_url: string | null;
   is_featured: boolean;
+  primary_field: string;
   tagline: string;
   tags: string[];
   collab_style: string;
@@ -68,9 +76,52 @@ function Section({ title, badge, defaultOpen = false, children }: {
 }
 
 export function BillboardEditor({ settings, onFieldChange, onSave, saving }: BillboardEditorProps) {
+  // Pill-adder draft (network.md §2, 2026-10-13): the input holds unsaved
+  // text only — pills ARE settings.tags. Normalization matches the server
+  // (lowercase + trim) so pills show their final form, no post-save surprise.
+  const [draft, setDraft] = useState("");
+  const atCap = settings.tags.length >= BILLBOARD_LIMITS.tags;
+  const normalizedDraft = draft.trim().toLowerCase();
+  const isDup =
+    normalizedDraft.length > 0 &&
+    settings.tags.some((t) => t.trim().toLowerCase() === normalizedDraft);
+
+  const addTag = () => {
+    if (!normalizedDraft || isDup || atCap) return;
+    onFieldChange({ tags: [...settings.tags, normalizedDraft].slice(0, BILLBOARD_LIMITS.tags) });
+    setDraft("");
+  };
+
+  const removeTag = (tag: string) => {
+    onFieldChange({ tags: settings.tags.filter((t) => t !== tag) });
+  };
+
   return (
     <div className="space-y-4">
       {/* Billboard fields */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground">Primary field</label>
+        <Select
+          value={settings.primary_field || "__none"}
+          onValueChange={(v) => onFieldChange({ primary_field: (v as string) === "__none" ? "" : (v as string) })}
+        >
+          <SelectTrigger className="mt-1 w-full">
+            <SelectValue placeholder="What should creators find you as?" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none">Not set</SelectItem>
+            {PRIMARY_FIELD_BUCKETS.map((bucket) => (
+              <SelectItem key={bucket} value={bucket}>
+                {bucket}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="mt-1 text-micro text-muted-foreground">
+          The one field the Discover filter matches — your tags carry the rest.
+        </p>
+      </div>
+
       <div>
         <label className="text-xs font-medium text-muted-foreground">Tagline</label>
         <Input
@@ -85,26 +136,59 @@ export function BillboardEditor({ settings, onFieldChange, onSave, saving }: Bil
       </div>
 
       <div>
-        <label className="text-xs font-medium text-muted-foreground">Tags (up to 3)</label>
-        <div className="mt-1 flex gap-2">
-          {[0, 1, 2].map((i) => (
-            <Input
-              key={i}
-              value={settings.tags[i] ?? ""}
-              onChange={(e) => {
-                const newTags = [...settings.tags];
-                if (e.target.value) {
-                  newTags[i] = e.target.value;
-                } else {
-                  newTags.splice(i, 1);
-                }
-                onFieldChange({ tags: newTags.slice(0, BILLBOARD_LIMITS.tags) });
-              }}
-              placeholder={`Tag ${i + 1}`}
-              className="flex-1"
-            />
-          ))}
+        <label htmlFor="tag-input" className="text-xs font-medium text-muted-foreground">
+          What do you do? (up to 3 words)
+        </label>
+        {settings.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {settings.tags.map((tag) => (
+              <span
+                key={tag}
+                className="flex min-h-8 items-center gap-1 rounded-full bg-foreground/10 py-1 pl-3 pr-1.5 text-xs font-semibold text-foreground"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  aria-label={`Remove ${tag}`}
+                  className="flex size-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/20 hover:text-foreground"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="mt-2 flex gap-2">
+          <Input
+            id="tag-input"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addTag();
+              }
+            }}
+            placeholder={atCap ? "3 of 3 — remove one to add another" : "e.g. beats"}
+            disabled={atCap}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addTag}
+            disabled={!normalizedDraft || isDup || atCap}
+            className="shrink-0"
+          >
+            + Add
+          </Button>
         </div>
+        <p className="mt-1 text-micro text-muted-foreground">
+          {atCap
+            ? "3 of 3 words — remove one to add another."
+            : `${BILLBOARD_LIMITS.tags - settings.tags.length} left. Words creators search — your primary field carries the filter, these carry the rest.`}
+        </p>
       </div>
 
       <div>

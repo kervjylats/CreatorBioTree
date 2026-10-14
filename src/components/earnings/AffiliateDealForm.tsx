@@ -98,7 +98,7 @@ export function AffiliateDealForm({ onSubmit, onCancel }: AffiliateDealFormProps
               required
             />
             <p className="text-xs text-muted-foreground">
-              We look up their account when you hit Create.
+              Deals are partner-only — they must be one of your partners (Connect in Network first). We look up their account when you hit Create.
             </p>
           </div>
 

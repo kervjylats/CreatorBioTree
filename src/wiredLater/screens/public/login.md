@@ -111,7 +111,7 @@ When the creator has 2FA enabled (see `settings.md` Part 1 + `admin.md` Part 1):
 | Passkeys (WebAuthn) | Deferred — post-v1, production roadmap |
 | CAPTCHA | Production hardening — deferred |
 
-**Mock note:** the mock social buttons set a test user session directly (no real OAuth in mock). Real OAuth = developer registrations per provider at production time.
+**Mock note:** the mock social buttons set a test user session directly (no real OAuth in mock). Real OAuth = developer registrations per provider at production time. **One-tap test accounts (2026-10-13, founder: no more forgotten emails):** two outline buttons under the socials — `admin@creatorpwa.app` (Admin + creator) + `test@creatorpwa.app` (Creator) — same direct-session trick, one tap signs in; `USE_MOCKS`-gated so production never renders them.
 
 ---
 
@@ -150,7 +150,7 @@ When the creator has 2FA enabled (see `settings.md` Part 1 + `admin.md` Part 1):
 |---|---|
 | `src/app/login/page.tsx` | Address-book re-export → `src/screens/public/login/Screen.tsx` (server component: `?next=` validated, already-logged-in redirect) |
 | `src/components/auth/AuthCard.tsx` | Centered wrapper — logo, title, subtitle, children |
-| `src/components/auth/LoginForm.tsx` | Email + password, root-cause error copy, `?next=` redirect, mock auto-signup fallback, mock-only social buttons |
+| `src/components/auth/LoginForm.tsx` | Email + password, root-cause error copy, `?next=` redirect, mock auto-signup fallback, mock-only social buttons + one-tap test accounts |
 
 ### Backups / reusable
 

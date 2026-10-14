@@ -1,5 +1,5 @@
 /**
- * MessagesShell.tsx — the complete messaging engine (messaging.md Parts 1/2/4):
+ * MessagesShell.tsx — the complete messaging engine (messaging.md Parts 1/2/2b/4):
  * useMessages polling hook, the floating MessageInboxPopover,
  * the full MessagesShell screen (list + requests + privacy toggle + groups),
  * MessageThread (1-on-1 + groups with announcements mode), MessageList /
@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   Check,
   Download,
+  Handshake,
   Image as ImageIcon,
   MessageCircle,
   Paperclip,
@@ -27,11 +28,23 @@ import {
 import { toast } from "sonner";
 import { submitFollow } from "@/lib/follow";
 import { formatDate } from "@/lib/format";
+import { formatDealRate } from "@/lib/affiliate-format";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { Sheet } from "@/components/shared/Sheet";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Spinner } from "@/components/shared/Spinner";
 import { Avatar } from "@/components/shared/Avatar";
 import { CountPill } from "@/components/shared/CountPill";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { LABEL_CLASS } from "@/lib/ui-constants";
 import { MAX_MESSAGE_UPLOAD_BYTES, formatByteLimit } from "@/lib/limits";
@@ -70,6 +83,22 @@ export interface MessageItem {
   edited_at: string | null;
   deleted_at: string | null;
   attachments: MessageAttachment[];
+  /** Attached when the message anchors a deal proposal (Part 2b, Batch B). */
+  proposal?: DealProposalItem;
+}
+
+/** Live state of a chat deal proposal, attached to its anchor message. */
+export interface DealProposalItem {
+  id: string;
+  status: "pending" | "accepted" | "declined" | "canceled" | "expired";
+  deal_type: string;
+  rate: number | null;
+  custom_terms: string | null;
+  expires_at: string;
+  deal_id: string | null;
+  proposer_id: string;
+  partner_id: string;
+  am_proposer: boolean;
 }
 
 export interface ThreadData {
@@ -461,6 +490,7 @@ interface MessageThreadProps {
 export function MessageThread({ conversationId, onBack, onOpenFull, compact, accentColor }: MessageThreadProps) {
   const [data, setData] = useState<ThreadData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showPropose, setShowPropose] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const api = useMessageApi();
 
@@ -507,6 +537,17 @@ export function MessageThread({ conversationId, onBack, onOpenFull, compact, acc
 
   const title = data?.conversation.title ?? "…";
   const isGroup = data?.conversation.type === "group";
+  // Propose-a-deal door (Part 2b): direct creator↔creator threads only —
+  // the server re-checks; fan threads and groups never show the button.
+  const meMember = data ? data.members.find((m) => m.key === data.myKey) : undefined;
+  const otherLive = data ? data.members.filter((m) => m.key !== data.myKey && !m.left) : [];
+  const canPropose = Boolean(
+    data &&
+      data.conversation.type === "direct" &&
+      meMember?.party === "creator" &&
+      otherLive.length === 1 &&
+      otherLive[0].party === "creator",
+  );
 
   return (
     <div className={`flex min-h-0 flex-1 flex-col ${compact ? "" : "h-full"}`}>
@@ -537,7 +578,31 @@ export function MessageThread({ conversationId, onBack, onOpenFull, compact, acc
         myKey={data?.myKey ?? ""}
         isGroup={isGroup}
         accentColor={accentColor}
+        onResolved={() => void load()}
       />
+
+      {canPropose && (
+        <div className="border-t border-border px-3 py-1.5">
+          <button
+            type="button"
+            onClick={() => setShowPropose((v) => !v)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
+          >
+            <Handshake className="h-3.5 w-3.5" />
+            {showPropose ? "Close" : "Propose a deal"}
+          </button>
+        </div>
+      )}
+      {showPropose && canPropose && (
+        <DealProposeForm
+          conversationId={conversationId}
+          onCancel={() => setShowPropose(false)}
+          onProposed={() => {
+            setShowPropose(false);
+            void load();
+          }}
+        />
+      )}
 
       <MessageComposer
         conversationId={conversationId}
@@ -556,11 +621,13 @@ function MessageList({
   myKey,
   isGroup,
   accentColor,
+  onResolved,
 }: {
   messages: MessageItem[];
   myKey: string;
   isGroup: boolean;
   accentColor?: string;
+  onResolved?: () => void;
 }) {
   if (messages.length === 0) {
     return (
@@ -572,7 +639,14 @@ function MessageList({
   return (
     <div className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
       {messages.map((m) => (
-        <MessageBubble key={m.id} message={m} mine={m.sender_key === myKey} showSender={isGroup} accentColor={accentColor} />
+        <MessageBubble
+          key={m.id}
+          message={m}
+          mine={m.sender_key === myKey}
+          showSender={isGroup}
+          accentColor={accentColor}
+          onResolved={onResolved}
+        />
       ))}
     </div>
   );
@@ -583,13 +657,24 @@ function MessageBubble({
   mine,
   showSender,
   accentColor,
+  onResolved,
 }: {
   message: MessageItem;
   mine: boolean;
   showSender: boolean;
   accentColor?: string;
+  onResolved?: () => void;
 }) {
   const deleted = Boolean(message.deleted_at);
+  // Deal proposals (Part 2b) render as a structured card, not a text bubble.
+  if (message.proposal && !deleted) {
+    return (
+      <div className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
+        <DealProposalCard proposal={message.proposal} mine={mine} onResolved={onResolved} />
+        <span className="px-1 pt-0.5 text-micro text-muted-foreground">{timeAgo(message.created_at)}</span>
+      </div>
+    );
+  }
   return (
     <div className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
       {showSender && !mine && !deleted && (
@@ -618,6 +703,232 @@ function MessageBubble({
       </div>
       <span className="px-1 pt-0.5 text-micro text-muted-foreground">{timeAgo(message.created_at)}</span>
     </div>
+  );
+}
+
+const PROPOSAL_STATUS: Record<string, { label: string; chip: string }> = {
+  pending: { label: "Pending", chip: "border-border text-muted-foreground" },
+  accepted: { label: "Accepted ✓", chip: "border-green-300 text-green-700" },
+  declined: { label: "Declined", chip: "border-border text-muted-foreground" },
+  canceled: { label: "Canceled", chip: "border-border text-muted-foreground" },
+  expired: { label: "Expired", chip: "border-amber-300 text-amber-700" },
+};
+
+/**
+ * DealProposalCard (messaging.md Part 2b, Batch B 2026-10-12) — the structured
+ * proposal inside a partner thread. Neutral platform chrome per branding.md;
+ * recipient gets Accept/Decline, the proposer Cancel, and after acceptance the
+ * promoter mints their /ref link right here.
+ */
+function DealProposalCard({
+  proposal,
+  mine,
+  onResolved,
+}: {
+  proposal: DealProposalItem;
+  mine: boolean;
+  onResolved?: () => void;
+}) {
+  const api = useMessageApi();
+  const [busy, setBusy] = useState(false);
+  const [refCode, setRefCode] = useState<string | null>(null);
+  const { copied, copy } = useCopyToClipboard();
+
+  const status = PROPOSAL_STATUS[proposal.status] ?? PROPOSAL_STATUS.pending;
+  const rateLine = formatDealRate({ deal_type: proposal.deal_type, rate: proposal.rate });
+  const headline =
+    proposal.deal_type === "free" ? "Free cross-promo" : `${rateLine} on purchases`;
+
+  async function act(action: "accept" | "decline" | "cancel") {
+    setBusy(true);
+    try {
+      await api(`/api/messages/deals/${proposal.id}/${action}`, { method: "POST" });
+      toast.success(
+        action === "accept"
+          ? "Deal accepted — it's live in your Earnings"
+          : action === "decline"
+            ? "Proposal declined"
+            : "Proposal canceled",
+      );
+      onResolved?.();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "That didn't work");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function createLink() {
+    if (!proposal.deal_id) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/creator/affiliates/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deal_id: proposal.deal_id }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        toast.error(typeof d.error === "string" ? d.error : "Couldn't create your link");
+        return;
+      }
+      const d = (await res.json()) as { link?: { ref_code?: string } };
+      if (d.link?.ref_code) {
+        setRefCode(d.link.ref_code);
+        toast.success("Affiliate link created");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className={`max-w-[19rem] rounded-xl border border-border bg-card p-3 text-left ${mine ? "ml-auto" : ""}`}>
+      <div className="flex items-center gap-1.5">
+        <Handshake className="h-4 w-4 text-muted-foreground" />
+        <span className="text-xs font-bold text-foreground">Affiliate deal proposal</span>
+        <span className={`ml-auto rounded-full border px-2 py-0.5 text-micro ${status.chip}`}>{status.label}</span>
+      </div>
+      <p className="mt-1.5 text-sm font-semibold text-foreground">{headline}</p>
+      {proposal.custom_terms && (
+        <p className="mt-1 break-words text-xs text-muted-foreground">{proposal.custom_terms}</p>
+      )}
+      {proposal.status === "pending" && (
+        <p className="mt-1 text-micro text-muted-foreground">
+          Expires {formatDate(proposal.expires_at)}
+        </p>
+      )}
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {proposal.status === "pending" && !proposal.am_proposer && (
+          <>
+            <Button size="sm" onClick={() => void act("accept")} disabled={busy}>
+              Accept
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => void act("decline")} disabled={busy}>
+              Decline
+            </Button>
+          </>
+        )}
+        {proposal.status === "pending" && proposal.am_proposer && (
+          <Button size="sm" variant="outline" onClick={() => void act("cancel")} disabled={busy}>
+            Cancel
+          </Button>
+        )}
+        {proposal.status === "accepted" && !proposal.am_proposer && proposal.deal_id && (
+          refCode ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => void copy(`${window.location.origin}/ref/${refCode}`)}
+            >
+              {copied ? "Copied ✓" : "Copy your link"}
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => void createLink()} disabled={busy}>
+              {busy ? "Creating…" : "Get your affiliate link"}
+            </Button>
+          )
+        )}
+        {proposal.status === "accepted" && proposal.am_proposer && (
+          <span className="text-micro text-green-700">Live — track it in Earnings → Affiliate earnings</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+type ProposeDealType = "percentage" | "fixed" | "free" | "tiered" | "custom";
+
+/** Mini proposal form above the composer (Part 2b) — type · rate · terms. */
+function DealProposeForm({
+  conversationId,
+  onCancel,
+  onProposed,
+}: {
+  conversationId: string;
+  onCancel: () => void;
+  onProposed: () => void;
+}) {
+  const api = useMessageApi();
+  const [dealType, setDealType] = useState<ProposeDealType>("percentage");
+  const [rate, setRate] = useState("");
+  const [terms, setTerms] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const needsRate = dealType === "percentage" || dealType === "fixed";
+    if (needsRate && !rate) {
+      toast.error(dealType === "percentage" ? "Enter a percentage." : "Enter an amount.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api("/api/messages/deals", {
+        method: "POST",
+        body: JSON.stringify({
+          conversation_id: conversationId,
+          deal_type: dealType,
+          rate: rate ? Number(rate) : undefined,
+          custom_terms: terms || undefined,
+        }),
+      });
+      toast.success("Deal proposal sent");
+      onProposed();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't send the proposal");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-3 border-t border-border bg-muted/30 px-3 py-3">
+      <p className="text-xs font-semibold text-foreground">
+        Propose a deal — they promote your whole catalog under these terms
+      </p>
+      <Select value={dealType} onValueChange={(v) => setDealType(v as ProposeDealType)}>
+        <SelectTrigger className="h-9 w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="percentage">Percentage (%)</SelectItem>
+          <SelectItem value="fixed">Fixed amount ($)</SelectItem>
+          <SelectItem value="free">Free cross-promo</SelectItem>
+          <SelectItem value="tiered">Tiered</SelectItem>
+          <SelectItem value="custom">Custom terms</SelectItem>
+        </SelectContent>
+      </Select>
+      {(dealType === "percentage" || dealType === "fixed") && (
+        <Input
+          type="number"
+          min={0}
+          step="any"
+          value={rate}
+          onChange={(e) => setRate(e.target.value)}
+          placeholder={dealType === "percentage" ? "e.g. 10" : "e.g. 5.00"}
+          className="h-9"
+          required
+        />
+      )}
+      {(dealType === "custom" || dealType === "tiered") && (
+        <Textarea
+          value={terms}
+          onChange={(e) => setTerms(e.target.value)}
+          placeholder="Describe the deal terms..."
+          rows={2}
+        />
+      )}
+      <div className="flex justify-end gap-2">
+        <Button type="button" size="sm" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" size="sm" disabled={submitting}>
+          {submitting ? "Sending…" : "Send proposal"}
+        </Button>
+      </div>
+    </form>
   );
 }
 

@@ -1,6 +1,6 @@
 /**
  * FanConnectTab.tsx — the Connect tab (fan-shell.md Part 4c): smart live-stack
- * — Partner Billboard → All Partners/Followed → Community → Artist Links → empty state.
+ * — The Lineup → All Partners/Followed → Community → Artist Links → empty state.
  * Sections render ONLY when they have data; no empty placeholders.
  * Partner cards open a bottom-sheet modal (partner-page.md Part 2).
  */
@@ -16,6 +16,8 @@ import { cardRadius } from "./themeStyles";
 import { SectionTitle } from "./SectionTitle";
 import { getInitials } from "@/lib/fan-helpers";
 import { firePartnerHop } from "@/lib/hopAttribution";
+import type { HeroMedia } from "@/lib/spotlightHero";
+import { BillboardHero } from "@/components/network/BillboardHero";
 
 interface Partner {
   id: string;
@@ -23,6 +25,8 @@ interface Partner {
   display_name: string;
   avatar_url: string | null;
   tagline: string | null;
+  /** Gated spotlight hero (null = avatar-card slot instead). */
+  featured_item?: HeroMedia | null;
   dealWeight?: number;
 }
 
@@ -37,7 +41,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
   const links = data.artistLinks ?? [];
   const [partners, setPartners] = useState<Partner[]>([]);
   const [followed, setFollowed] = useState<Partner[]>([]);
-  const [billboardIndex, setBillboardIndex] = useState(0);
+  const [lineupIndex, setLineupIndex] = useState(0);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
 
   const fetchPartners = useCallback(() => {
@@ -53,7 +57,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
     fetchPartners();
   }, [fetchPartners]);
 
-  // Deal-weighted billboard rotation — partners with deals get 2× appearance.
+  // Deal-weighted Lineup rotation — partners with deals get 2× appearance.
   const weightedPartners = partners.flatMap((p) =>
     p.dealWeight && p.dealWeight > 1 ? [p, p] : [p],
   );
@@ -61,7 +65,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
   useEffect(() => {
     if (partners.length <= 1) return;
     const timer = setInterval(() => {
-      setBillboardIndex((i) => (i + 1) % weightedPartners.length);
+      setLineupIndex((i) => (i + 1) % weightedPartners.length);
     }, 5000);
     return () => clearInterval(timer);
   }, [partners.length, weightedPartners.length]);
@@ -88,45 +92,61 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
         </h1>
       </div>
 
-      {/* Partner Billboard — taps open the partner modal (deal-weighted rotation) */}
+      {/* The Lineup — taps open the partner modal (same rotation mechanism:
+          deal-weighted, 5s auto-advance, dots; each slot runs the partner's
+          spotlight hero, avatar-card fallback when they have none) */}
       {partners.length > 0 && (() => {
-        const currentPartner = weightedPartners[billboardIndex % weightedPartners.length];
+        const currentPartner = weightedPartners[lineupIndex % weightedPartners.length];
         return (
           <section className="px-4 pt-4">
-            <SectionTitle branding={branding}>Partners</SectionTitle>
+            <SectionTitle branding={branding}>The Lineup</SectionTitle>
             <button
               type="button"
               onClick={() => openPartner(currentPartner.username)}
-              className={cardRadius(branding, "block w-full p-4 text-left transition-all")}
-              style={{ backgroundColor: branding.cardColor }}
+              className="block w-full text-left"
+              aria-label={`Open ${currentPartner.display_name}`}
             >
-              <div className="flex items-center gap-3">
-                <span
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-bold overflow-hidden"
-                  style={{ backgroundColor: branding.accentColor + "22", color: branding.textColor }}
-                >
-                  {currentPartner.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={currentPartner.avatar_url ?? ""}
-                      alt={currentPartner.display_name ?? ""}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    getInitials(currentPartner.display_name)
-                  )}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold" style={{ color: branding.textColor }}>
-                    {currentPartner.display_name}
+              {currentPartner.featured_item ? (
+                <BillboardHero
+                  large
+                  media={currentPartner.featured_item}
+                  eyebrow={`@${currentPartner.username}`}
+                  headline={currentPartner.display_name}
+                />
+              ) : (
+              <span
+                className={cardRadius(branding, "block w-full p-4 text-left transition-all")}
+                style={{ backgroundColor: branding.cardColor }}
+              >
+                <span className="flex items-center gap-3">
+                  <span
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-bold overflow-hidden"
+                    style={{ backgroundColor: branding.accentColor + "22", color: branding.textColor }}
+                  >
+                    {currentPartner.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={currentPartner.avatar_url ?? ""}
+                        alt={currentPartner.display_name ?? ""}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      getInitials(currentPartner.display_name)
+                    )}
                   </span>
-                  {currentPartner.tagline && (
-                    <p className="mt-0.5 line-clamp-1 text-xs" style={{ color: branding.textColor + "aa" }}>
-                      {currentPartner.tagline}
-                    </p>
-                  )}
-                </div>
-              </div>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-bold" style={{ color: branding.textColor }}>
+                      {currentPartner.display_name}
+                    </span>
+                    {currentPartner.tagline && (
+                      <span className="mt-0.5 line-clamp-1 block text-xs" style={{ color: branding.textColor + "aa" }}>
+                        {currentPartner.tagline}
+                      </span>
+                    )}
+                  </span>
+                </span>
+              </span>
+              )}
             </button>
             {partners.length > 1 && (
               <div className="mt-2 flex justify-center gap-1.5">
@@ -134,7 +154,7 @@ export function FanConnectTab({ data, editMode, onEdit }: FanConnectTabProps) {
                   <span
                     key={i}
                     className="h-1.5 w-1.5 rounded-full transition-colors"
-                    style={{ backgroundColor: i === (billboardIndex % partners.length) ? branding.accentColor : branding.textColor + "22" }}
+                    style={{ backgroundColor: i === (lineupIndex % partners.length) ? branding.accentColor : branding.textColor + "22" }}
                   />
                 ))}
               </div>

@@ -143,6 +143,9 @@ export interface Creator {
   tagline: string | null;
   /** How the creator likes to collab (network.md — freetext). */
   collab_style: string | null;
+  /** Filterable discovery identity (network.md §1b — ONE preset bucket or null
+   *  until set; never printed on cards; the free-text `tags` carry flavor). */
+  primary_field: string | null;
   /** Empty-state text for the Connect tab (branding.md Part 9 #5). */
   connect_empty_text: string | null;
   /**

@@ -96,7 +96,7 @@ export function AffiliateLinks({ refreshKey = 0 }: { refreshKey?: number }) {
         <CardContent className="p-0">
           <EmptyState
             variant="inline"
-            title="No affiliate links yet. Browse deals or create one from a collaboration."
+            title="No affiliate links yet — create one from an accepted deal in your partner chat."
             className="px-6 text-base"
           />
         </CardContent>

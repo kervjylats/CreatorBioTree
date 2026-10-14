@@ -67,6 +67,9 @@ export function CollabDetail({ partnershipId, onBack }: CollabDetailProps) {
     );
   }
 
+  // Cookie-hydrated rows can have an empty display_name — never render blank.
+  const name = partner.display_name || partner.username;
+
   return (
     <div className="space-y-4">
       {onBack && (
@@ -78,16 +81,16 @@ export function CollabDetail({ partnershipId, onBack }: CollabDetailProps) {
 
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-3">
-          <Avatar src={partner.avatar_url} name={partner.display_name} size="h-14 w-14" textClass="text-lg" />
+          <Avatar src={partner.avatar_url} name={name} size="h-14 w-14" textClass="text-lg" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="min-w-0 text-base font-bold text-foreground">{partner.display_name}</h3>
+              <h3 className="min-w-0 text-base font-bold text-foreground">{name}</h3>
               <Badge variant="outline" className="shrink-0 text-micro border-green-300 text-green-700">Collab</Badge>
               {partner.id && (
                 <MessageIcon
                   otherKey={partner.id}
                   otherParty="creator"
-                  name={partner.display_name}
+                  name={name}
                 />
               )}
             </div>

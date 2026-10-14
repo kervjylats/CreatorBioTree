@@ -144,10 +144,11 @@ A **toggle at the top center** of Playground (above the phone frame) lets the cr
 
 ### Billboard view layout
 
-- **Result-preview card (top):** how your card looks to other creators — avatar, display name, @handle, tagline (only if set), tag chips (only if set), collab style (only if set), Featured badge when featured. **No actions** (no Connect/Visit — it's you), **no pencils** (you're already in the edit room), **no visibility pill** (switches live in Network). **Undesigned = the plain standard** (`network.md` §3, confirmed 2026-10-09): avatar + name + @handle only — nothing fake, no placeholders
+- **Result-preview card (top):** how your card looks to other creators — avatar, display name, @handle, tagline (only if set), tag chips (only if set), collab style (only if set), Featured badge when featured. **Hero on top (2026-10-14):** your spotlight item as the modal would show it (muted-loop video / poster image / nothing when unfeatured) — mirror of Modal A. **No actions** (no Connect/Visit — it's you), **no pencils** (you're already in the edit room), **no visibility pill** (switches live in Network). **Undesigned = the plain standard** (`network.md` §3, confirmed 2026-10-09): avatar + name + @handle only — nothing fake, no placeholders
 - **Editors below** — moved verbatim from `network.md` (Component Concepts → BillboardEditor), plus the two fields that always belonged:
+  - **Primary field:** single-select dropdown of the ~20 preset buckets (`network.md` §1b) — nullable, unset by default, never forced; the filterable identity (not printed on cards)
   - Tagline: input, max 60 chars with live counter
-  - Tags: 3 inputs side by side, empty values filtered before save
+  - Tags: **pill-adder** (2026-10-13) — input + [+ Add]/Enter → pill with ×, "N left" counter, dup-reject case-insensitive, disables at 3; label **"What do you do?"**, placeholders `e.g. beats/mixing/vocals`; empty values filtered before save (existing)
   - Collab style: textarea (2 rows), free text
   - **Bio:** textarea, max `BILLBOARD_LIMITS.bio` (600) — **one edit home is here.** The fan page also renders bio, but the deferred fan-side editor must *link here*, never duplicate the field
   - **Rate card:** 3 inputs (post / story / video), free-text price labels
@@ -335,6 +336,15 @@ The `newsletter` catalog item handles **signup** (fan enters email). This tab ha
 **Shareable:** Unique URL (`/[username]/media-kit`), downloadable PDF, embed iframe
 
 **Brand partner view:** Opens media kit → "Interested?" → Contact form or partnership request
+
+> **ADDENDUM v1 door (2026-10-14, founder "go" on spec):** sponsors have no
+> accounts (readers, never users — no login, no checkout, no ad units). So v1
+> ships the smallest reachable door: a **Copy media-kit link** button in the
+> Billboard view (below the editors, beside Save — same room as the fields it
+> shares) → public read-only `GET /[username]/media-kit` rendering bio + rate
+> card + custom message + spotlight hero (gated media per the audit law —
+> cover-only for strangers on paid items). No PDF / iframe / contact form in
+> v1 (deferred — sharing = you send the link, they read what's public).
 
 ### 2h. Spotlight Tab
 

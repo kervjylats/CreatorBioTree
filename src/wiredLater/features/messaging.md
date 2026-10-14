@@ -74,6 +74,26 @@ The inbox icon shows a **red badge with the unread count**, updated via light po
 | **Mute** | Per-conversation notifications off |
 | **Leave** | Leave any 1-on-1 or group |
 
+### Part 2b: Deal cards in partner threads (founder Option B — 2026-10-12, the money batch)
+
+**Where deals get made: the partner chat.** Two creators who are partners negotiate in their 1:1 thread and formalize with a **structured deal card** — no forms on separate screens, no browsing strangers (`creators.md` 2b2: deals are partner-only; `AffiliateDiscover` died with this batch).
+
+| Piece | Rule |
+|---|---|
+| Scope | **Direct creator↔creator threads ONLY** — the propose button never renders in fan threads or groups (server re-checks: identity must be a creator, the other member a creator, exactly 2 members) |
+| Propose | A **handshake button** above the composer opens a mini form (deal type · rate · custom terms note) → `POST /api/messages/deals` → a `messages` row with `proposal_id` set — the thread renders it as a **card**, not a bubble |
+| Direction | Proposer = the deal **owner** (their catalog pays), accepter = the **promoter**. Counter-offers = just send another proposal after declining (each side proposes their own, per 2d asymmetry) |
+| Card states | `pending` (recipient sees **Accept / Decline**; proposer sees **Cancel**) → `accepted` (card shows the live deal + **the promoter gets "Create link" → "Copy /ref link"**) · `declined` · `canceled` · `expired` (state computed when pending + past `expires_at`) |
+| Expiry | **7 days** (`expires_at = created_at + 7d`, founder lean ①). Lazy: the accept/decline routes 409 on an expired pending proposal and flip it `expired`; an expired pending row never blocks fresh proposals (propose skips lazily-expired rows — audit fix 2026-10-12, otherwise an ignored proposal locked the pair out forever) |
+| One pending per direction | A second proposal to the same partner while one is pending → 409 "You already have a proposal waiting with {name}." |
+| Cooldown | **7 days after a resolve** (accepted OR declined — founder lean ③) before the same proposer can propose to that same partner again → 409 with the unlock date |
+| Server checks | Propose: non-ended `partnerships` row between the two creators (partners-only). Accept: partnership **still** non-ended (may have ended since proposing → 409 "This partnership has ended."), recipient = me, status pending, not expired, **proposer not holding the Red Card** (403 — same lock as the direct deals POST, audit fix 2026-10-12; the new deal's owner is the proposer) |
+| Feedback | Every state change → **toast to the actor + an activity-feed row for both sides** (founder lean ② — `describe()` in `/api/creator/activity`: "You proposed a deal to X" / "X proposed a deal to you" / accepted / declined / canceled) |
+| Styling | **Neutral platform chrome** (branding.md rule — messaging is never creator-themed). The card is a platform component, identical in every thread |
+| Fan invisibility | Nothing about proposals ever touches the fan shell — creator-to-creator only |
+
+**Accept creates the deal row:** `affiliate_deals {owner: proposer, promoter: accepter, deal_type, rate, trigger: "purchase", status: "active"}` — the exact row the deals API would have made; everything downstream (attribution, conversions, receipts, Red Card) is unchanged.
+
 ---
 
 ## Part 3: Community *(DECIDED — 2026-08-04, one at a time with the founder)*
@@ -162,6 +182,7 @@ Community is **Phase 3** of the messaging build (see Part 9) — it ships only a
 | `message_attachments` | id, message_id, storage_url, mime, name, size |
 | `message_requests` | id, from_key, to_key, status (pending/approved/ignored), created_at — the Requests folder |
 | `blocked_users` | blocker_key, blocked_key, created_at |
+| `affiliate_deal_proposals` | id, conversation_id, proposer_id, partner_id, deal_type, rate, custom_terms, status (`pending`/`accepted`/`declined`/`canceled`/`expired`), created_at, resolved_at, expires_at (+7d), deal_id (set on accept) — Part 2b. **`messages.proposal_id`** (nullable) anchors each proposal to its timeline message |
 | `communities` | id, creator_id (owner), name, icon, join_rule (open / fans_partners / invite_only), created_at — one per creator in v1 (Part 3) |
 
 **Participant keying:** fan side uses the per-creator `fan_accounts` (fan-shell model); creator side uses `creators.id`. A person who is both uses the appropriate key per context (same as the two-auth-system split elsewhere).
@@ -206,6 +227,8 @@ Community is **Phase 3** of the messaging build (see Part 9) — it ships only a
 | `POST /api/messages/block` / `GET /api/messages/blocks` | Block list management |
 | `GET /api/messages/unread` | Unread badge counts (polled) |
 | `PATCH /api/messages/preferences` | "Allow messages from anyone" toggle + mute prefs |
+| `POST /api/messages/deals` | Propose a deal in a partner thread (Part 2b — partners-only, one pending per direction, 7-day cooldown) |
+| `POST /api/messages/deals/[id]/{accept,decline,cancel}` | Resolve a proposal — accept creates the `affiliate_deals` row (owner = proposer, promoter = accepter); expire/cooldown enforced lazily |
 
 Auth: fan-side cookie sessions (`fan_` pattern) or creator auth (`mock_auth_uid` / Supabase), matching whichever party is making the request — same split as the rest of the app.
 

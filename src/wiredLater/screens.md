@@ -74,7 +74,7 @@ Playground editor-tab stub specs (merged, reference only — in `features/`): [c
 
 ## Dashboard Earnings `/dashboard/earnings` *(WIRED 2026-10-10 → §2b added 2026-10-12)*
 
-The one money screen: **§1 Sales** (what fans paid you) · **§2 Affiliate earnings** (earned vs owed + receipt rows: Mark paid → Confirm/Dispute + the **Red Card** 🟥 + 14-day prompt ladder) · **§2b Affiliate deals & links** (`＋ New deal` form → Your deals → Discover → Links — **the whole block moved out of the Network rail 2026-10-12**, founder "A1": Network = social, Earnings = money; relocation only, no deal-logic changes) · **§3 Payments** (PayPal.me handle + honest Connect-PayPal card). Report-only, 0% platform cut. `EarningsSummary` (from the Network rail), `PaymentsPanel` (from Settings), and the 4 affiliate widgets (from the Network rail) all live here.
+The one money screen: **§1 Sales** (what fans paid you) · **§2 Affiliate earnings** (earned vs owed + receipt rows: Mark paid → Confirm/Dispute + the **Red Card** 🟥 + 14-day prompt ladder) · **§2b Affiliate deals & links** (`＋ New deal` form → Your deals → Links — **the whole block moved out of the Network rail 2026-10-12**, founder "A1"; **Batch B the same day**: partners-only 403 + partner-only helper text, `AffiliateDiscover` **retired** (negotiated, not browsed), revoke toast = prospective-only; deal creation also lives on Circle partner rows via `DealDialog` + chat proposal cards — `messaging.md` Part 2b) · **§3 Payments** (PayPal.me handle + honest Connect-PayPal card). Report-only, 0% platform cut. `EarningsSummary` (from the Network rail), `PaymentsPanel` (from Settings), and the affiliate widgets (from the Network rail — 3 since `AffiliateDiscover`'s retirement) all live here.
 
 **Full spec: `screens/creator-dashboard/earnings/earnings.md`**
 
@@ -200,6 +200,7 @@ Surfaces:
 - **Network** — chat icons next to creator names (creator↔creator, before/after collabbing; see `network.md` §5)
 - **Partner page** — chat icon next to partner names (fan↔partner)
 - **Offline** — messages queue locally and sync (see `screens/public/offline.md`)
+- **Deal cards (Part 2b, since 2026-10-12)** — in a direct **partner** thread: handshake button above the composer → proposal card (Accept/Decline/Cancel; 7-day expiry; accept creates the `affiliate_deals` row) → accepted card mints the promoter's `/ref` link
 
 No new screen route beyond `/dashboard/circle/messages` — the rest lives inside the fan shell frame and existing screens. Full data model, requests/block/toggles, group chats + announcements, Community (Part 3), and the single-file `MessagesShell.tsx` plan are all in `messaging.md`. **Status: WIRED 2026-08-17 (Sheet 12)** — `src/components/messages/MessagesShell.tsx` + `src/lib/messages.ts` + 12 `/api/messages/*` routes; Community (Part 3) remains unbuilt.
 

@@ -74,13 +74,13 @@ Rendered directly under §2 (same `space-y-6` stack, no outer card — each widg
 | Piece | Behavior |
 |---|---|
 | Heading row | **Affiliate deals** label + `＋ New deal` button (toggles the form) |
-| `AffiliateDealForm` | Opens under the heading on `＋ New deal` / closes on Cancel — unchanged (creator-only scope, @username resolver) |
-| `YourDealsCard` | Status pills + Pause/Resume/Revoke |
-| `AffiliateDiscover` | Browse other creators' open deals → Create link |
-| `AffiliateLinks` | Your links + copy + active toggle |
-| Refresh | One shared `dealsKey` bumps after a create → all three cards refetch (the 2026-10-01 audit fix — preserved verbatim) |
+| `AffiliateDealForm` | Opens under the heading on `＋ New deal` / closes on Cancel — unchanged fields (creator-only scope, @username resolver) **+ partner-only helper text since 2026-10-12** (server 403 surfaces inline) |
+| `YourDealsCard` | Status pills + Pause/Resume/Revoke — **revoke toast since 2026-10-12: "Deal revoked — future sales no longer earn commission."** (revoke = prospective-only, `creators.md` 2e2) |
+| ~~`AffiliateDiscover`~~ | **DEAD 2026-10-12 (Batch B)** — component + `GET /api/creator/affiliates/discover` removed; deals are negotiated in the partner chat (`messaging.md` Part 2b) or via Circle's per-partner **Make a deal** (`network.md` CollabList), never browsed |
+| `AffiliateLinks` | Your links + copy + active toggle — empty state now reads *"No affiliate links yet — create one from an accepted deal in your partner chat."* Promoters mint links from the accepted deal card (`POST /api/creator/affiliates/link`, promoter-only) |
+| Refresh | One shared `dealsKey` bumps after a create → the cards refetch (the 2026-10-01 audit fix — preserved verbatim) |
 
-> **Not in this batch (money batch, parked 2026-10-12):** partners-only creation, chat-negotiated deal cards in Circle Partners, `Make a deal` per partner row, cancel-future-only semantics, `AffiliateDiscover`'s retirement. This batch is a **relocation only**.
+> **Batch B executed 2026-10-12 (same day as A1):** partners-only creation (server 403) · Circle "Make a deal" (`DealDialog`) · chat proposal cards with 7-day expiry, one-pending-per-direction, 7-day cooldown, toast + activity on every state change · revoke = prospective-only. **Still parked:** nothing — the deals overhaul is fully built; refund clawback stays a production-migration item (`docs/BACKLOG.md`).
 
 ### §3 Payments — where money lands
 
@@ -124,7 +124,7 @@ pending ──[Mark as paid]──▶ awaiting_confirm ──[Confirm received]�
 
 | # | While 🟥 — what locks | Why |
 |---|---|---|
-| 1 | **No new deals, any role** (server 403 on deal create) | Why would anyone sign a deal with someone in arrears? |
+| 1 | **No new deals, any role** (server 403 on deal create — both the Earnings form and a chat proposal accept) | Why would anyone sign a deal with someone in arrears? |
 | 2 | **Owner-side deals pause** (engine stops writing new conversions on deals they pay) | The existing engine already refuses non-active deals — set them `paused`, auto-restore on clear |
 | 3 | **Receivables held** — people who owe 🟥 see *"Hold this payment — releases automatically"*, their due-clock **pauses** (they stay 🟩) | Money must not flow into a red account ahead of its own creditors |
 | 4 | **Clears only by paying** — self-unlock when no outgoing debt is overdue and no dispute is open | Paying is the cure; nothing else is |
@@ -202,11 +202,11 @@ EarningsPage
 │   ├── OwedCard    (you owe → Pay now / Mark as paid)
 │   ├── ReceiptRow  (counterparty · terms · status chip · role action)
 │   └── RedCardBanner (when 🟥 — the 4 locks + what clears it)
-├── AffiliateDealsSection (§2b — moved from the Network rail 2026-10-12)
-│   ├── ＋ New deal → AffiliateDealForm (git mv from components/network/)
-│   ├── YourDealsCard      (git mv)
-│   ├── AffiliateDiscover  (git mv)
-│   └── AffiliateLinks     (git mv)   — all four share one dealsKey
+├── AffiliateDealsSection (§2b — moved from the Network rail 2026-10-12; Batch B same day)
+│   ├── ＋ New deal → AffiliateDealForm (git mv from components/network/; partner-only helper 2026-10-12)
+│   ├── YourDealsCard      (git mv; revoke = prospective-only copy)
+│   ├── ~~AffiliateDiscover~~ (DEAD 2026-10-12 — negotiated, not browsed)
+│   └── AffiliateLinks     (git mv)   — all share one dealsKey
 └── PaymentsSection (§3)
     ├── PayPalHandleCard (input + live preview + Save)
     └── PaymentsPanel    (honest "Coming soon" connect card — git mv from settings/)
@@ -229,4 +229,5 @@ EarningsPage
 | #5 14-day window + prompt ladder (Option A) | ✅ Decided 2026-10-10 — T0/3/7/14, both sides notified, `SETTLEMENT_DUE_DAYS = 14` in `lib/limits.ts` |
 | #6 Notifications v1 | ✅ Decided 2026-10-10 — Earnings badges + Overview activity + email (`mockResendSend`); bell/push deferred with honest labels |
 | #7 Guarantee layering | ✅ Decided 2026-10-10 — v1 = pressure (ledger + ladder + Red Card + verdict, $0, no licence); production = PayPal multiparty split at capture (re-checked at migration — buy only PayPal's licence) |
-| #8 Affiliate block relocation ("A1") | ✅ Decided 2026-10-12 — the whole management block (`＋ New deal` · Your deals · Discover · Links) leaves the Network rail → **§2b here**; Network = social (billboard + Discover). **Relocation only** — no deal-logic changes (that batch is parked: Circle Partners `Make a deal`, chat deal cards, partners-only, cancel-future-only) |
+| #8 Affiliate block relocation ("A1") | ✅ Decided 2026-10-12 — the whole management block (`＋ New deal` · Your deals · Discover · Links) leaves the Network rail → **§2b here**; Network = social (billboard + Discover). Relocation only — no deal-logic changes |
+| #9 Batch B — deals are negotiated | ✅ Decided 2026-10-12 (same day) — **partners-only** creation (server 403 + helper text) · **`AffiliateDiscover` retired** · Circle CollabList row **"Make a deal"** · chat **proposal cards** (7-day expiry · one pending per direction · 7-day cooldown after resolve · toast + activity row per state change — founder leans ①②③) · **revoke = prospective-only**. Full spec: `creators.md` 2b2/2e2 + `messaging.md` Part 2b |

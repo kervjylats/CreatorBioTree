@@ -2,11 +2,10 @@
 
 /**
  * AffiliateDealsSection (earnings.md §2b) — the affiliate management block:
- * ＋ New deal → AffiliateDealForm → YourDealsCard → AffiliateDiscover →
- * AffiliateLinks, sharing one dealsKey. Relocated VERBATIM from the Network
- * rail 2026-10-12 (founder "A1": Network = social, Earnings = money) — no
- * behavior change; the deals-overhaul batch (Circle Partners, chat cards)
- * is parked separately.
+ * ＋ New deal → AffiliateDealForm → YourDealsCard → AffiliateLinks, sharing
+ * one dealsKey. Relocated VERBATIM from the Network rail 2026-10-12 (founder
+ * "A1": Network = social, Earnings = money); AffiliateDiscover died the same
+ * day with Batch B (deals are negotiated in Circle/chat, never browsed).
  */
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,6 @@ import { toast } from "sonner";
 import { LABEL_CLASS } from "@/lib/ui-constants";
 import { AffiliateDealForm, type DealFormData } from "./AffiliateDealForm";
 import { YourDealsCard } from "./YourDealsCard";
-import { AffiliateDiscover } from "./AffiliateDiscover";
 import { AffiliateLinks } from "./AffiliateLinks";
 
 export function AffiliateDealsSection() {
@@ -51,11 +49,10 @@ export function AffiliateDealsSection() {
       {showDealForm && (
         <AffiliateDealForm onSubmit={handleDealSubmit} onCancel={() => setShowDealForm(false)} />
       )}
-      {/* One dealsKey for the whole block: a new deal must refresh Your Deals,
-          Discover and Links together (2026-10-01 audit fix — carried over from
-          the Network rail unchanged). */}
+      {/* One dealsKey for the whole block: a new deal must refresh Your Deals
+          and Links together (2026-10-01 audit fix — carried over from the
+          Network rail unchanged). */}
       <YourDealsCard refreshKey={dealsKey} />
-      <AffiliateDiscover refreshKey={dealsKey} />
       <AffiliateLinks refreshKey={dealsKey} />
     </div>
   );
