@@ -59,7 +59,7 @@ Parts archive (old code) available for the discovery directory:
 
 **The one place where a creator sees + edits their entire fan shell** (replaces both the old Playground editor and the old "View my fan page" action — founder decision 2026-08-05). Full spec at `screens/creator-dashboard/playground/playground.md` (name history: **Playground** → "My App" 2026-08-05 → **Playground** again 2026-10-01, founder decision).
 
-- **Top-level switch `Fans | Billboard` (founder decision 2026-10-09 — Part 1d):** **Fans** = today's phone preview (Draft/Live/Deploy stays here) · **Billboard** = your card as Discover renders it + the billboard editors (moved from the Network rail — Network keeps the mirror + the one collab switch). Deep link: `/dashboard/playground?view=billboard`
+- **Top-level switch `Fans | Billboard` (founder decision 2026-10-09 — Part 1d):** **Fans** = today's phone preview (status beacon + Deploy bar stays here — Draft/Live pills removed 2026-10-15) · **Billboard** = your card as Discover renders it + the billboard editors (moved from the Network rail — Network keeps the mirror + the one collab switch). Deep link: `/dashboard/playground?view=billboard`
 - Opens **full-screen** phone view, **guest page first**, swipe Guest → Home → Content → Connect → Settings
 - **Tap-to-edit popovers** = the brand layer (background / text / font / button / card / link — universal across all surfaces; Part 1a)
 - **Editor sheet** with the 8 tabs: Identity, Design, Catalog (16 item types + funnels + link scheduling), Artist Links (rich social embeds), Integrations (Auto-DM + Commerce), Email (campaigns), Media Kit (brand kit), Spotlight — 4 editor options (A sheet default / B replace / C drawer / D in-place) all specced for A/B test at wiring (Part 1c)

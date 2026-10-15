@@ -30,12 +30,16 @@ function DialogOverlay({
 
 function DialogContent({
   className,
+  overlayClassName,
   children,
   ...props
-}: React.ComponentProps<typeof Dialog.Popup>) {
+}: React.ComponentProps<typeof Dialog.Popup> & {
+  /** Override the backdrop styling (e.g. a lighter dim so a preview stays visible behind). */
+  overlayClassName?: string
+}) {
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay className={overlayClassName} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <Dialog.Popup
           data-slot="dialog-content"

@@ -1,9 +1,10 @@
 /**
  * ProfileEditDialog — the ✏️ gateway explainer (settings.md Part 13, founder
- * decision 2026-10-09 option B). Opened from the dashboard sidebar identity block
- * and the BillboardPreview card: shows the identity rules + sends the creator to
- * Settings → Profile, the one edit home. Deliberately shows on EVERY press — it is
- * the explainer + gateway, not a one-time tip.
+ * decision 2026-10-09 option B; target repointed 2026-10-15). Opened from the
+ * dashboard sidebar identity block and the BillboardPreview card: shows the
+ * identity rules + sends the creator to the Playground's 📌 "Who I am" note,
+ * the one edit home (playground.md Part 1e). Deliberately shows on EVERY
+ * press — it is the explainer + gateway, not a one-time tip.
  */
 "use client";
 
@@ -26,9 +27,9 @@ interface ProfileEditDialogProps {
 export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps) {
   const router = useRouter();
 
-  const goToSettings = () => {
+  const goToPlayground = () => {
     onOpenChange(false);
-    router.push("/dashboard/settings");
+    router.push("/dashboard/playground");
   };
 
   return (
@@ -39,14 +40,15 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
           <DialogDescription>
             Your display name and photo appear on your fan page, Discover, landing and messages —
             changes show everywhere immediately. ⚠️ You can change each once every 7 days.
+            Edit them in the 📌 &quot;Who I am&quot; note (top-left of the Playground).
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Not now
           </Button>
-          <Button type="button" onClick={goToSettings}>
-            Open Settings
+          <Button type="button" onClick={goToPlayground}>
+            Open Playground
           </Button>
         </DialogFooter>
       </DialogContent>

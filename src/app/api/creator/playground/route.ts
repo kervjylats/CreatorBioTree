@@ -1,11 +1,11 @@
 /**
  * GET/PUT /api/creator/playground — the Playground editor's read + deploy endpoint
- * (playground.md Part 2/4b). GET returns the creator row (theme + identity +
+ * (playground.md Parts 2/4/1e). GET returns the creator row (theme + identity +
  * social links) + the catalog; PUT persists a deploy write. Identity fields carry
- * the settings.md Part 13 7-day cooldown (founder 2026-10-09): a real change locks
- * that field, answering 409 { error, retry_at }; identical-value saves pass.
- * usePlaygroundForm strips identity from Deploy — enforcement targets Settings →
- * Profile writes (the one edit home). Both methods auth-guarded, whitelist-only.
+ * 7-day cooldowns (settings.md Part 13 + Part 1e app locks): a real change locks
+ * that field, answering 409 { error, retry_at }; identical-value saves pass. The
+ * 📌 note's Deploy is the write path for every identity field now.
+ * Both methods auth-guarded, whitelist-only.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -32,7 +32,7 @@ export async function GET() {
 
     const { data: creator } = await supabase
       .from("creators")
-      .select("id, username, display_name, bio, avatar_url, display_name_changed_at, avatar_changed_at, banner_url, theme_id, custom_theme, connect_empty_text, social_links")
+      .select("id, username, display_name, bio, avatar_url, display_name_changed_at, avatar_changed_at, app_name_changed_at, app_icon_changed_at, banner_url, theme_id, custom_theme, connect_empty_text, social_links")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -102,11 +102,11 @@ export async function PUT(request: NextRequest) {
       return zodErrorResponse();
     }
 
-    // Current identity state — the cooldown needs both current values AND their
-    // last-change stamps (settings.md Part 13).
+    // Current identity state — the cooldowns need current values AND their
+    // last-change stamps (settings.md Part 13 + playground.md Part 1e app locks).
     const { data: current, error: currentError } = await supabase
       .from("creators")
-      .select("display_name, avatar_url, display_name_changed_at, avatar_changed_at")
+      .select("display_name, avatar_url, display_name_changed_at, avatar_changed_at, app_name_changed_at, app_icon_changed_at, custom_theme")
       .eq("id", user.id)
       .maybeSingle();
     if (currentError) {
@@ -118,20 +118,23 @@ export async function PUT(request: NextRequest) {
     const patch: Record<string, unknown> = { ...validation.data };
     let displayNameChangedAt = (current.display_name_changed_at as string | null) ?? null;
     let avatarChangedAt = (current.avatar_changed_at as string | null) ?? null;
+    let appNameChangedAt = (current.app_name_changed_at as string | null) ?? null;
+    let appIconChangedAt = (current.app_icon_changed_at as string | null) ?? null;
 
     // One rule per cooldown field: lock ONLY on a real value change — an
     // identical-value save never stamps, never locks (so shared payloads can't
     // trip it by accident).
-    const identityLock = (
-      field: "display_name" | "avatar_url",
+    const lockOnRealChange = (
+      next: string | null,
+      prev: string | null,
+      stampField: "display_name_changed_at" | "avatar_changed_at" | "app_name_changed_at" | "app_icon_changed_at",
       label: string,
+      setStamp: (iso: string) => void,
     ): NextResponse | null => {
-      if (!(field in patch) || patch[field] === undefined) return null;
-      const next = (patch[field] as string | null) ?? null;
-      const prev = (current[field] as string | null) ?? null;
-      if (next === prev) return null;
-
-      const stampField = field === "display_name" ? "display_name_changed_at" : "avatar_changed_at";
+      // "" ≡ null (a null custom_theme stores appName/appIconUrl as "", and a
+      // blank-string save must never count as a change or start a cooldown).
+      const norm = (v: string | null) => (v === "" ? null : v);
+      if (norm(next) === norm(prev)) return null;
       const lastStr = (current[stampField] as string | null) ?? null;
       const last = lastStr ? Date.parse(lastStr) : NaN;
       if (Number.isFinite(last) && Date.now() - last < IDENTITY_COOLDOWN_DAYS * 86_400_000) {
@@ -141,18 +144,51 @@ export async function PUT(request: NextRequest) {
           { status: 409 },
         );
       }
-
       const nowIso = new Date().toISOString();
       patch[stampField] = nowIso;
-      if (stampField === "display_name_changed_at") displayNameChangedAt = nowIso;
-      else avatarChangedAt = nowIso;
+      setStamp(nowIso);
       return null;
     };
 
-    const nameBlocked = identityLock("display_name", "your display name");
+    /** Top-level identity fields (display name / avatar). */
+    const topLock = (field: "display_name" | "avatar_url", label: string): NextResponse | null => {
+      if (!(field in patch) || patch[field] === undefined) return null;
+      const next = (patch[field] as string | null) ?? null;
+      const prev = (current[field] as string | null) ?? null;
+      return lockOnRealChange(next, prev, field === "display_name" ? "display_name_changed_at" : "avatar_changed_at", label, (iso) => {
+        if (field === "display_name") displayNameChangedAt = iso;
+        else avatarChangedAt = iso;
+      });
+    };
+
+    // App identity locks (playground.md Part 1e): appName/appIconUrl live inside
+    // custom_theme.profile — same 7-day law, compared against the stored theme.
+    const themePatch = (patch.custom_theme ?? null) as Record<string, unknown> | null;
+    const themeProfile = (themePatch?.profile ?? null) as Record<string, unknown> | null;
+    const currentTheme = (current.custom_theme ?? null) as Record<string, unknown> | null;
+    const currentProfile = (currentTheme?.profile ?? null) as Record<string, unknown> | null;
+    const appLock = (
+      key: "appName" | "appIconUrl",
+      stampField: "app_name_changed_at" | "app_icon_changed_at",
+      label: string,
+    ): NextResponse | null => {
+      if (!themeProfile || !(key in themeProfile) || themeProfile[key] === undefined) return null;
+      const next = (themeProfile[key] as string | null) ?? null;
+      const prev = ((currentProfile?.[key] as string | null) ?? null);
+      return lockOnRealChange(next, prev, stampField, label, (iso) => {
+        if (stampField === "app_name_changed_at") appNameChangedAt = iso;
+        else appIconChangedAt = iso;
+      });
+    };
+
+    const nameBlocked = topLock("display_name", "your display name");
     if (nameBlocked) return nameBlocked;
-    const avatarBlocked = identityLock("avatar_url", "your photo");
+    const avatarBlocked = topLock("avatar_url", "your photo");
     if (avatarBlocked) return avatarBlocked;
+    const appNameBlocked = appLock("appName", "app_name_changed_at", "your app name");
+    if (appNameBlocked) return appNameBlocked;
+    const appIconBlocked = appLock("appIconUrl", "app_icon_changed_at", "your app icon");
+    if (appIconBlocked) return appIconBlocked;
 
     const { error: updateError } = await supabase
       .from("creators")
@@ -164,11 +200,13 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Failed to deploy" }, { status: 500 });
     }
 
-    // Return both stamps so ProfileSection can set its lock state without a refetch.
+    // Return all four stamps so the 📌 note can set lock state without a refetch.
     return NextResponse.json({
       success: true,
       display_name_changed_at: displayNameChangedAt,
       avatar_changed_at: avatarChangedAt,
+      app_name_changed_at: appNameChangedAt,
+      app_icon_changed_at: appIconChangedAt,
     });
   } catch (err) {
     const handled = handleAuthError(err);

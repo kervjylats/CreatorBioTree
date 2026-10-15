@@ -1,26 +1,25 @@
 /**
- * PreviewStateToggle — Draft / Live toggle + Deploy button.
- * Renders as the top bezel strip of the phone frame (border-8 border-b-0),
- * sitting directly above PhonePreview so the two form one continuous phone.
- * Width follows the frame (w-full); paddings are tuned so the pills + Deploy
- * fit in a single row even at the ~229px worst-case frame width (iPhone SE).
+ * PreviewStateToggle — the phone bezel strip: an honest status beacon + the
+ * Deploy button (playground.md Part 1b, founder reversal 2026-10-15). The old
+ * Draft|Live pills were a DEAD control — PhonePreview never consumed that
+ * state, the phone always rendered the draft, yet two pills read as two
+ * preview modes ("which one am I looking at?"). Now the strip tells the
+ * truth: 🟠 "Draft — not live yet" while changes pend, 🟢 "What fans see now"
+ * when the draft matches the server. Width follows the frame (w-full) — must
+ * fit the ~229px worst-case width (iPhone SE).
  */
 "use client";
 
 import { useState } from "react";
-import { CloudUpload } from "lucide-react";
-
-export type PreviewState = "draft" | "live";
+import { CheckCircle2, CloudUpload } from "lucide-react";
 
 interface PreviewStateToggleProps {
-  state: PreviewState;
-  onChange: (state: PreviewState) => void;
   hasChanges: boolean;
   deploying: boolean;
   onDeploy: () => Promise<void>;
 }
 
-export function PreviewStateToggle({ state, onChange, hasChanges, deploying, onDeploy }: PreviewStateToggleProps) {
+export function PreviewStateToggle({ hasChanges, deploying, onDeploy }: PreviewStateToggleProps) {
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -28,23 +27,17 @@ export function PreviewStateToggle({ state, onChange, hasChanges, deploying, onD
       <div
         className="flex items-center justify-between gap-1 border-8 border-b-0 border-foreground/85 rounded-t-[2rem] bg-background px-2 py-2"
       >
-        <div className="flex shrink-0 rounded-full border border-input p-0.5">
-          {(["draft", "live"] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => onChange(s)}
-              className={`relative rounded-full px-2 py-2 text-xs font-semibold capitalize transition-colors ${
-                state === s ? "bg-foreground text-background" : "text-muted-foreground"
-              }`}
-            >
-              {s}
-              {s === "draft" && hasChanges && state === s && (
-                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-orange-500" />
-              )}
-            </button>
-          ))}
-        </div>
+        {hasChanges ? (
+          <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-orange-500" aria-hidden />
+            <span className="truncate">Draft — not live yet</span>
+          </span>
+        ) : (
+          <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-500">
+            <CheckCircle2 size={12} className="shrink-0" aria-hidden />
+            <span className="truncate">What fans see now</span>
+          </span>
+        )}
         <button
           type="button"
           disabled={deploying || !hasChanges}
@@ -52,7 +45,6 @@ export function PreviewStateToggle({ state, onChange, hasChanges, deploying, onD
             setError(null);
             try {
               await onDeploy();
-              onChange("live");
             } catch {
               setError("Deploy failed — try again.");
             }

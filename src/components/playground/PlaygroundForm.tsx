@@ -1,10 +1,12 @@
 /**
- * PlaygroundForm — the Playground editor (playground.md Parts 1 + 1d).
- * Top-level switch: Fans = phone frame (Draft/Live + the real fan surfaces,
- * never-scroll fit) | Billboard = result-preview + billboard editors
- * (`?view=billboard`, saves immediately). Draft/Live/Deploy chrome renders
- * only in Fans view; `?tab=` deep-links a fan surface inside Fans view
- * (FAN_TAB_IDS validation unchanged).
+ * PlaygroundForm — the Playground editor (playground.md Parts 1 + 1d + 1e).
+ * Top-level switch: Fans = phone frame (always renders the DRAFT + the honest
+ * Draft/Live status beacon + Deploy, never-scroll fit) | Billboard =
+ * result-preview + billboard editors (`?view=billboard`, saves immediately).
+ * The 📌 "Who I am" note (shared identity, Draft + Deploy) sits top-left in
+ * BOTH views. `?tab=` deep-links a fan surface inside Fans view
+ * (FAN_TAB_IDS validation unchanged). 2026-10-15: the Draft|Live preview
+ * pills are GONE (dead control — see PreviewStateToggle).
  */
 "use client";
 
@@ -14,8 +16,9 @@ import type { ContentItem, FanViewId } from "@/types";
 import { FAN_TAB_IDS } from "@/lib/nav-config";
 import { buildPreviewData } from "./previewData";
 import { PhonePreview } from "./PhonePreview";
-import { PreviewStateToggle, type PreviewState } from "./PreviewStateToggle";
+import { PreviewStateToggle } from "./PreviewStateToggle";
 import { BillboardView } from "./BillboardView";
+import { IdentityNote } from "./IdentityNote";
 
 type PlaygroundView = "fans" | "billboard";
 
@@ -36,8 +39,7 @@ const VIEW_OPTIONS: readonly { id: PlaygroundView; label: string }[] = [
 ];
 
 export function PlaygroundForm({ initialTab, initialView }: PlaygroundFormProps) {
-  const { loading, baseCreator, serverItems, draft, hasChanges, deploy, deploying, syncBio } = usePlaygroundForm();
-  const [state, setState] = useState<PreviewState>("live");
+  const { loading, baseCreator, serverItems, draft, hasChanges, patch, deploy, deploying } = usePlaygroundForm();
   const [view, setView] = useState<PlaygroundView>(
     initialView === "billboard" ? "billboard" : "fans"
   );
@@ -89,32 +91,37 @@ export function PlaygroundForm({ initialTab, initialView }: PlaygroundFormProps)
       data-tl="PlaygroundForm"
       className="flex min-h-screen-safe flex-col bg-background py-6 pb-[var(--bottom-nav-height)] md:pb-6"
     >
-      {/* Top-level switch — Fans | Billboard (Part 1d) */}
-      <div className="mx-auto mb-4 flex w-fit shrink-0 rounded-full border border-input bg-muted p-0.5">
-        {VIEW_OPTIONS.map((v) => (
-          <button
-            key={v.id}
-            type="button"
-            onClick={() => switchView(v.id)}
-            aria-pressed={view === v.id}
-            className={`min-h-9 rounded-full px-4 text-sm font-semibold transition-colors ${
-              view === v.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            {v.label}
-          </button>
-        ))}
+      {/* Header row — 📌 note (top-left, Part 1e) · switch (center) · spacer
+          keeps the switch optically centered where the note has no twin. */}
+      <div className="mb-4 flex items-center justify-between gap-2 px-4">
+        {baseCreator && (
+          <IdentityNote draft={draft} patch={patch} baseCreator={baseCreator} dirty={hasChanges} />
+        )}
+        <div className="flex w-fit shrink-0 rounded-full border border-input bg-muted p-0.5">
+          {VIEW_OPTIONS.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => switchView(v.id)}
+              aria-pressed={view === v.id}
+              className={`min-h-9 rounded-full px-4 text-sm font-semibold transition-colors ${
+                view === v.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+              }`}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+        <div className="hidden w-[118px] shrink-0 sm:block" aria-hidden />
       </div>
 
       {view === "billboard" ? (
         <div className="mx-auto w-full max-w-lg px-4">
-          <BillboardView onBioSaved={syncBio} />
+          <BillboardView />
         </div>
       ) : (
         <div className="mx-auto my-auto w-full" style={{ maxWidth: FIT_MAX_WIDTH }}>
           <PreviewStateToggle
-            state={state}
-            onChange={setState}
             hasChanges={hasChanges}
             deploying={deploying}
             onDeploy={deploy}

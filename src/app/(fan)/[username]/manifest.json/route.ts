@@ -42,7 +42,9 @@ export async function GET(
     scope:            `/${username}`,
     display:          "standalone",
     background_color: branding.backgroundColor,
-    theme_color:      branding.accentColor,
+    // The 📌 note's status-bar field (playground.md Part 1e) — falls back to
+    // the accent inside resolveBranding when the creator never picked one.
+    theme_color:      branding.statusBarColor,
     orientation:      "portrait",
     icons: [
       { src: branding.appIconUrl, sizes: "192x192", type: "image/png", purpose: "any maskable" },

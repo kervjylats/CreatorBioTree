@@ -125,6 +125,10 @@ export interface Creator {
   display_name_changed_at: string | null;
   /** When avatar_url last actually CHANGED — its own independent 7-day cooldown (settings.md Part 13). */
   avatar_changed_at: string | null;
+  /** When custom_theme.profile.appName last CHANGED — 7-day lock (playground.md Part 1e). */
+  app_name_changed_at: string | null;
+  /** When custom_theme.profile.appIconUrl last CHANGED — 7-day lock (playground.md Part 1e). */
+  app_icon_changed_at: string | null;
   banner_url:   string | null;
   email:        string | null;
   role:         "creator" | "admin";

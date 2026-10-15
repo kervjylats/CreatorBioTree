@@ -2,7 +2,7 @@
 
 > **Filename + name history:** this file is `playground.md` (in `screens/creator-dashboard/playground/`). The **user-facing name is "Playground"** — the sidebar entry, the route `/dashboard/playground`, and all creator-facing copy. History: born **Playground** → renamed **"My App"** (founder decision 2026-08-05) → **renamed back to "Playground"** (founder decision 2026-10-01, *"I prefer the words playground"*). Type names (`PlaygroundTheme`, `PlaygroundColors`, `PlaygroundProfile`) and component names (`usePlaygroundForm`, `PlaygroundForm`) follow the current name; `src/old-code/` keeps its archived pre-2026-08-05 filenames.
 
-> **⚠️ STATUS 2026-09-24 — PREVIEW-FIRST (temporary direction).** Only the **phone frame** is visible on `/dashboard/playground` right now: the Draft/Live/Deployed bar + the real fan surfaces (Guest/Home/Content/Connect/Settings) in a fluid 390×844 frame (420px wide on desktop). **The editor UI described below (tap-to-edit popovers, editor sheet, Identity/Design/Catalog/Artist Links/Integrations/Email tabs) is deferred to a later design pass** — this file remains the full target spec for when that pass happens. The old editor component files were removed; the generic catalog components (`AddItemPicker`, `ItemEditor`, `PricingEditor`, `FileUploadField`) are kept for reuse.
+> **⚠️ STATUS 2026-09-24 (updated 2026-10-15) — PREVIEW-FIRST with live editors.** Live on `/dashboard/playground` today: the **phone frame** (status-beacon + Deploy bar, Part 1b reversed 2026-10-15 + the real fan surfaces in a fluid 390×844 frame), the **Billboard view** (Part 1d, wired 2026-10-09), and — once Part 1e ships — the **📌 "Who I am" note** (shared identity: name/avatar/bio/banner/app identity). **Still deferred to the editor-sheet design pass:** tap-to-edit popovers + the sheet tabs (Design/Catalog/Artist Links/Integrations/Email). This file remains the full target spec; the generic catalog components (`AddItemPicker`, `ItemEditor`, `PricingEditor`, `FileUploadField`) are kept for reuse.
 
 
 ## Concept
@@ -53,48 +53,31 @@ It opens as a **full-screen phone view** (no cramped 3-panel editor) that shows 
 
 ---
 
-## Part 1b: Preview State Toggle (Draft / Live)
+## Part 1b: Draft status beacon + Deploy (toggle REVERSED 2026-10-15)
 
-A **toggle at the top center** of Playground (above the phone frame) lets the creator compare what they have in the editor right now (Draft) against what fans currently see on the live `/{username}` page (Live). The same toggle also appears at the top of the live page when the owner views their own `/{username}` (per `overview.md` Part 7).
+> **⚠️ FOUNDER REVERSAL (2026-10-15):** the original design below (a Draft | Live pill toggle = two "preview modes") is **DEAD and removed from the build**. It was a **dead control** — `PhonePreview` never received the toggle's state, so the phone *always* rendered the draft, while the two pills read as "which mode am I looking at?" and "what's live vs what's draft" both went to the same place. The founder's ruling: *"the live we can remove it — it will always be draft and deploy… without deployed this isn't what their fans would see."* No fake preview modes; the phone is always the draft, and one honest strip says the truth.
 
-**UI:**
+**What ships instead (wired 2026-10-15):**
 
 ```
-       ┌─────────── Preview state ───────────┐
-       │  [ ● Draft ]  [ Live ]              │   ← toggle, top center
-       └─────────────────────────────────────┘
+       ┌────────────── phone bezel strip ──────────────┐
+       │ 🟠 Draft — not live yet      [ CloudUpload    │   ← status beacon (left)
+       │                                Deploy ]       │      + Deploy button (right)
+       │ 🟢 What fans see now         [ Deployed ]     │   ← clean state (draft == server)
+       └───────────────────────────────────────────────┘
             ┌──────────────────────┐
-            │ 📱  FULL-SCREEN      │   ← the fan shell, full size
+            │ 📱  FULL-SCREEN      │   ← the fan shell, full size — ALWAYS the draft
             │  phone (5 surfaces,  │   (Guest/Home/Content/Connect/Settings)
             │  swipeable)          │
             └──────────────────────┘
-
-   [ Deploy ]   ← deploy button (Part 4c)
 ```
 
-**Behavior:**
+- **Strip = one status beacon + the Deploy button** (component keeps the `PreviewStateToggle` filename; `state`/`onChange` props are gone).
+- **🟠 dirty** (`draft ≠ server snapshot`): *"Draft — not live yet"* + **Deploy** enabled. **🟢 clean**: *"What fans see now"* + **Deployed** (disabled).
+- The phone renders `draftToCreator` at all times — clean state = draft == server == the live page, so "what fans see now" is literally true.
+- Deploy stays the only publish path (Part 4c); the beacon flips 🟢 the moment Deploy succeeds (draft key cleared).
 
-| Scenario | Draft view | Live view | Visual cue |
-|---|---|---|---|
-| **Never deployed, fresh creator** | Empty draft / initial state | Platform default (Minimal theme + empty content) | Both views work; Live shows the fallback (see `features/branding.md` Part 11 Rule 2) |
-| **After first deploy, no edits** | Matches Live (no diff) | The deployed page | Orange dot on "Draft" only if local buffer has anything pending |
-| **Edited, not deployed** | The edits (in the local draft buffer) | The still-live page (old state) | **Orange dot on "Draft" + "Deploy" button pulses** |
-| **After deploy** | Cleared (matches Live) | The deployed page | No dot, no pulse — creator is up to date |
-
-**Data sources:**
-
-- **Draft view** — reads from `localStorage[playground_draft_${creatorId}]` (auto-saved every 3s per Part 4a). For "Live" comparison, also reads from the DB
-- **Live view** — reads from `creators.custom_theme` + `creators.theme_id` + `creators.content_items` (filtered to **published only** per the Three Gates in `fan-shell.md` Part 2). Same `resolveBranding()` resolver as the real `/{username}` page (see `features/branding.md` Part 4)
-
-**Defaults (founder decision, 2026-08-05):**
-
-- **Default to Live** on opening Playground — creators see "what fans see" first
-- **Orange dot on the "Draft" label only** when `localStorage draft ≠ DB deployed state`
-- **No dot on "Live"** — Live is always the source of truth
-- **Same toggle when the owner visits their own live `/{username}`** — a bar at the top shows the same toggle (Draft / Live, default Live, orange dot on Draft when un-deployed). Same data sources + same resolver
-- **Tap-to-edit popovers are always available** — every edit goes to the draft buffer (Live or Draft mode); the toggle only changes what's rendered
-
-**Component name (tentative):** `PreviewStateToggle` — single component reused in both Playground and the owner-view page.
+**Owner live-page banner (new, same day):** when the **owner** opens their own live `/{username}/guest`, a sticky amber strip mounts on top — *"🟡 Unpublished changes — this is your live page; fans don't see these edits yet."* + **[Open Playground]** (`components/fan-pwa/OwnerDraftBanner.tsx`). Owner-only (Screen compares the session id to `data.branding.creatorId`); fans/strangers never see it. Verdict is **content-based** — the localStorage draft is merged over the server snapshot with the *same* helpers the hook uses (`creatorToDraft` + `mergeRestoredDraft`), so a pristine auto-saved draft never cries wolf. It disappears once Deploy clears the key. The never-shipped "same toggle on the owner live page" (see the reversal note above) is superseded by this banner.
 
 ---
 
@@ -135,12 +118,12 @@ A **toggle at the top center** of Playground (above the phone frame) lets the cr
 
 | View | What it is |
 |---|---|
-| **Fans** (default) | Today's phone preview — Draft/Live/Deploy bar (Part 1b) + the 5 fan surfaces (Part 1) |
+| **Fans** (default) | Today's phone preview — status beacon + Deploy bar (Part 1b) + the 5 fan surfaces (Part 1) |
 | **Billboard** | Your billboard **exactly as Discover renders it** (live result-preview) + the billboard editors |
 
-- **The one rule (extends the identity pattern):** *Network = see + toggle visibility · Playground = design.* Name/avatar ✏️ → Settings (`settings.md` Part 13); billboard ✏️ → this screen's Billboard view — **direct jump, no dialog** (founder: no 7-day rule to explain)
+- **The one rule (extends the identity pattern):** *Network = see + toggle visibility · Playground = design.* Name/avatar/bio/app identity → the 📌 "Who I am" note (Part 1e); billboard ✏️ → this screen's Billboard view — **direct jump, no dialog** (founder: no 7-day rule to explain)
 - **URL:** `/dashboard/playground?view=billboard` — `view` ∈ `fans` | `billboard`, default/absent = `fans`. The existing `?tab=` is unrelated: it deep-links a fan surface *inside* Fans view (`FAN_TAB_IDS` validation unchanged)
-- **Chrome split:** the Draft/Live/Deploy bar + phone frame render **only in Fans view** — the billboard has no draft state; it saves immediately
+- **Chrome split:** the beacon + Deploy bar and the phone frame render **only in Fans view** — the billboard has no draft state; it saves immediately
 
 ### Billboard view layout
 
@@ -150,19 +133,65 @@ A **toggle at the top center** of Playground (above the phone frame) lets the cr
   - Tagline: input, max 60 chars with live counter
   - Tags: **pill-adder** (2026-10-13) — input + [+ Add]/Enter → pill with ×, "N left" counter, dup-reject case-insensitive, disables at 3; label **"What do you do?"**, placeholders `e.g. beats/mixing/vocals`; empty values filtered before save (existing)
   - Collab style: textarea (2 rows), free text
-  - **Bio:** textarea, max `BILLBOARD_LIMITS.bio` (600) — **one edit home is here.** The fan page also renders bio, but the deferred fan-side editor must *link here*, never duplicate the field
+  - **Bio — ➡️ edited in the 📌 note (Part 1e, 2026-10-15).** The billboard *displays* it (modal + media kit); this view no longer edits it (one edit home moved with the shared-identity set)
   - **Rate card:** 3 inputs (post / story / video), free-text price labels
   - **Media kit message:** textarea, max `BILLBOARD_LIMITS.mediaKit` (300)
   - **Save button** (not auto-save) + saving/disabled states; loading state while fetching
-  - **NOT here:** the collab switch (Network Discover card — `network.md` §3) · App Name/Icon (Identity tab, deferred) · display name/avatar (Settings → Profile)
-- **Data:** existing `GET/PUT /api/creator/partners/billboard` — covers every field, **no new API**. After a save that changes `bio`, refresh the fan-preview data (`GET /api/creator/playground`) so the Fans view agrees (bio renders on both surfaces)
+  - **NOT here:** the collab switch (Network Discover card — `network.md` §3) · App Name/Icon/Status bar + display name/avatar/**bio**/banner → the 📌 note (Part 1e)
+- **Data:** existing `GET/PUT /api/creator/partners/billboard` — covers every pitch field, **no new API**. Bio no longer saves here, so the old `syncBio` refresh (billboard-save → fan draft) is removed — bio drafts via Part 1e and the fan preview reads the draft directly
 - **Entry points (all land on this view):**
   1. Network My Billboard card-header **✏️** button
   2. Billboard nudge modal **[Design my billboard]** (first Network visit while the billboard is undesigned — `network.md` §3, trigger retargeted 2026-10-09)
   3. Direct: `/dashboard/playground?view=billboard`
 
   (The rail card's pencil beside name/@handle stays the *identity* pencil → Settings. Two pencils, two homes, never stacked on the same spot.)
-- **Why here:** Playground is *"how the world sees me"* — fan app + billboard, two previews one room (Settings stays account-ish: identity, payments). This is also the Playground's **first real editor** — preview-first defers the fan-side editor UI, so "the page IS the editor" applies to the billboard before the phone.
+- **Why here:** Playground is *"how the world sees me"* — fan app + billboard, two previews one room (Settings stays account-ish: account, billing). This is also the Playground's **first real editor** — preview-first defers the fan-side editor UI, so "the page IS the editor" applies to the billboard before the phone.
+
+---
+
+## Part 1e: The 📌 "Who I am" Sticky Note (founder decision 2026-10-15)
+
+**The shared-identity quick editor.** Fields split into two families: **identity** (appears on many surfaces) and **pitch** (billboard-only). Pitch stays in the Billboard view (Part 1d); identity gets ONE visible home in the Playground — a sticky note pinned top-left of **both** views (Fans | Billboard). Rationale (founder): shared fields don't belong in Settings (too many jumps, and you can't *see* the change there) — they belong where the preview is.
+
+### The note (sticky trigger + small modal)
+
+- **Sticky trigger:** small note button pinned **top-left** of the Playground screen — always visible in both views, never covered by the phone frame or Draft bar. Label: **"📌 Who I am"**.
+- **Tap → small corner modal, NOT fullscreen** — the phone (or billboard preview) stays visible behind it so the creator sees edits paint **while making them**. Anchors top-left; stops short of full width (~90%) so the preview peeks through.
+- **Live feedback is free:** every field edits the Playground **draft** (Part 4a), which already feeds the previews — type a new name, see the phone header change instantly.
+
+### Fields — the complete shared set (inventoried 2026-10-15)
+
+| Field | Moved from | Rules |
+|---|---|---|
+| Display name | Settings → Profile (Part 13) | cap 80 · **7-day lock** (existing server law, unchanged) |
+| Avatar | Settings → Profile (Part 13) | upload `type=avatar` · **7-day lock** |
+| Bio | Billboard view (Part 1d) | max 600 · shows on fan Home header + billboard modal + media kit |
+| Banner | *orphaned — had no door* | upload `type=banner` · shows on the fan page header |
+| App name | *never had a door* | `custom_theme.profile.appName` · **7-day lock** (Part 2a law) |
+| App icon | *never had a door* | upload `type=app_icon` · **7-day lock** |
+| Status bar color | *never had a door* | `custom_theme.profile.statusBarColor` · defaults to accent · no lock |
+
+- **"Shows on:" hint line** under each field (founder's visibility map — creators know exactly where each word lands): bio → *"Your fan page, your billboard and your media kit."* Name/avatar → the existing Part 13 helper line. App name → *"On fans' phones after their app updates."* App icon → the same line once a custom icon is uploaded, else *"Fans see the default icon until you upload one; updates land on their phones after an app refresh."* Banner → *"Top of your fan page."*
+- **App-icon preview = the REAL icon (fix 2026-10-15):** the square renders `appIconUrl || /icons/icon-192x192.png` — exactly what fans get. It must **never** show the avatar photo as a stand-in: that read as "the photo upload changed my icon automatically" (founder report). The manifest already fell back to the default icon; only the preview lied.
+- **Locks:** name/avatar already enforced server-side in `PUT /api/creator/playground` (unchanged). App name/app icon get the same pattern — two new stamp columns (`app_name_changed_at`, `app_icon_changed_at`, mock now) + checks in that same PUT. Status bar color = no lock (low-risk).
+- **Save style: Draft + Deploy (founder option A).** Everything in the note edits the draft → orange Draft dot → **Deploy** publishes "who I am" in one deliberate moment. While dirty, the note shows a muted *"Local until you Deploy"* line.
+  - ⚠️ **Draft law change — supersedes the 2026-10-09 "identity never in the draft" rule:** the draft now carries `display_name` + `avatar_url` too (bio/banner/app identity already ride it via `custom_theme`/`bio`/`banner_url`). The old rule guarded a *stale draft paints dead identity* bug; that class is covered now — the Draft dot is honest (there IS a pending change) and the **server-side 409 lock at Deploy** still blocks any bypass of the 7-day rule. Deploy's allow-list gains exactly `display_name` + `avatar_url`, nothing else.
+- **NOT in the note (stays put):** Link Address (permanent, read-only) · pitch fields — tagline / tags / collab style / primary field / rate card / media-kit message → Billboard view · social links + Connect empty text + theme colors + catalog → the deferred editor-sheet session (big pass, parked) · email / password / billing → Settings.
+
+### Ripple effects (one edit home; everywhere else reads)
+
+- **Settings → Profile becomes a pointer stub** (`settings.md` Part 13 — same pattern as its Part 2). Settings keeps Account & Security · Billing · Notifications · Messaging & Privacy · Your Page · Integrations · Danger Zone.
+- **✏️ `ProfileEditDialog`** (sidebar + BillboardPreview gateways): button **[Open Settings] → [Open Playground]** → `/dashboard/playground` (the note is top-left); explainer copy unchanged.
+- **Billboard view loses its bio row** (Part 1d updated) — its preview card never rendered bio anyway; the `syncBio` plumbing (billboard-save → fan draft) becomes dead and is removed. The billboard API keeps accepting/returning `bio` (Discover modal + media kit read it).
+- **Data:** no new API — the draft rides the existing `GET/PUT /api/creator/playground`; uploads ride `POST /api/creator/upload` (avatar/banner/app_icon types all already whitelisted). Only new data = the 2 app-lock stamp columns (mock now, real DB at migration).
+
+### Build phases (after founder approval)
+
+1. Note component (sticky + modal + 7 fields + hint lines) mounted in `PlaygroundForm`
+2. Draft: add `display_name`/`avatar_url` → Deploy allow-list + preview wiring
+3. Retire old homes: Billboard bio row + `syncBio` · Settings `ProfileSection` → pointer · `ProfileEditDialog` repoint
+4. App name/icon 7-day locks (stamps + server checks)
+5. Gates ×3 + smoke → AGENTS build entry
 
 ---
 
@@ -183,7 +212,9 @@ A **toggle at the top center** of Playground (above the phone frame) lets the cr
 
 ### 2a. Identity Tab
 
-> **PWA separation (founder decision 2026-08-05):** App Name, App Icon, and the PWA status bar color are **NOT on-page editable** — they're app-level (install-time) settings, not screen visuals. They live here in the **App sub-section** (below) and in `features/branding.md` Part 8. On-page tap-to-edit (Part 1a) covers only what's visible on screen.
+> **➡️ MOSTLY MOVED → Part 1e 📌 note (founder decision 2026-10-15):** App Name, App Icon, Status bar color, Display Name, and Bio now edit from the Playground's 📌 "Who I am" note — **ships now, not deferred with this sheet.** The 7-day locks on App Name/App Icon still apply (enforced there). This tab keeps only: Link Address (read-only) + the Connect empty-state text. Below is the original spec, retained for the field rules.
+
+> **PWA separation (founder decision 2026-08-05):** App Name, App Icon, and the PWA status bar color are **NOT on-page editable** — they're app-level (install-time) settings, not screen visuals. On-page tap-to-edit (Part 1a) covers only what's visible on screen.
 
 - **Link Address** — *permanent, display-only.* Set once at signup (`onboarding.md`), never editable here. Shown as a read-only row: `creatorbiotree.com/{username}`. The public URL lives here; everything else on this tab is changeable.
   - ⚠️ The Link Address is permanent by founder decision — no change control, no redirects, no exceptions. A hidden backend UUID anchors all data (content, fans, purchases, follows); the Link Address is just the public label. Code/DB column stays `username` (user-facing copy says "Link Address").
@@ -193,9 +224,9 @@ A **toggle at the top center** of Playground (above the phone frame) lets the cr
   - ⚠️ Changeable anytime, with a **7-day lock** between changes (per founder decision — matches TikTok's nickname cadence). Existing installs keep old name until phone refresh.
 - **App Icon** — file upload, shows preview
   - ⚠️ Same 7-day lock as App Name — existing installs keep old icon.
-- **Status bar color** — PWA `theme_color` (from `colors.accent` by default — `features/branding.md` Part 9 #4)
-- **Display Name** — **moved to Settings → Profile** (founder decision 2026-10-09: one edit home + ✏️ gateway buttons; the 7-day cooldown lives there — `settings.md` Part 13). Not editable on this tab.
-- **Bio** — textarea
+- **Status bar color** — PWA `theme_color` = `statusBarColor` (wired 2026-10-15 — `manifest.json` route reads it; falls back to `colors.accent` when unset — `features/branding.md` Part 9 #4). Edited via the 📌 note's status-bar field (Part 1e)
+- **Display Name** — **➡️ moved to the 📌 note (Part 1e, 2026-10-15)** — was Settings → Profile (founder 2026-10-09), now the shared-identity note; 7-day cooldown unchanged (`settings.md` Part 13 law retained). Not editable on this tab.
+- **Bio** — **➡️ moved to the 📌 note (Part 1e, 2026-10-15)** — was the Billboard view.
 - **Connect Tab Empty State** — a single textarea (max 200 chars) for the message shown when the Connect tab is completely empty (no partners, no community, no socials, no followed)
   - Default value: "More to come — check back soon"
   - Helper text: "Shown to fans when your Connect tab has nothing to display yet"
@@ -406,6 +437,7 @@ When a fan visits `/[username]`, they see 3 layers stacked:
 - On mount, restores draft if one exists
 - Deploy clears the draft
 - Survives: browser close, lost connection, crash
+- **Draft field set:** `custom_theme` (colors + **profile = app name/icon/status bar**) · `bio` · `banner_url` · `connect_empty_text` · `social_links` · **+ `display_name` + `avatar_url` (added 2026-10-15 with the 📌 note — Part 1e supersedes the 2026-10-09 "identity never in the draft" rule; server 409 locks still guard Deploy)**
 
 ### 4b. Unsaved Changes Modal
 - Shows when navigating away with unsaved changes
@@ -487,7 +519,7 @@ When a fan visits `/[username]`, they see 3 layers stacked:
 |---|---|---|
 | PhonePreview | `PhonePreview.tsx` | Old phone mockup + mini strip — **becomes the full-screen Playground shell** (Part 1) |
 | ElementPopover | *(new — no old code)* | Tap-to-edit popovers (Part 1a) |
-| PreviewStateToggle | *(new — see branding.md Part 1b)* | Draft/Live toggle (Part 1b) |
+| PreviewStateToggle | `components/playground/` | Status beacon + Deploy (Part 1b — Draft/Live pills removed 2026-10-15) |
 | AppIdentityEditor | `AppIdentityEditor.tsx` | Link Address (read-only), app name, icon, bio |
 | GlobalSettingsEditor | `GlobalSettingsEditor.tsx` | Colors, fonts, AI palette |
 | BottomEditor | `BottomEditor.tsx` | Tab wrapper |

@@ -12,12 +12,13 @@ import type { FanIdentity, FanShellData } from "@/components/fan-pwa/fanData";
 import type { PlaygroundDraft } from "@/hooks/usePlaygroundForm";
 
 /** Patch a creator row with draft values → branding resolves over the draft.
- * Identity (display_name/avatar_url) is NOT draftable — it comes from base
- * (Settings → Profile owns it; settings.md Part 13). */
+ * Identity drafts too (Part 1e, 2026-10-15): display_name/avatar_url render
+ * from the draft so note edits paint live on the preview. */
 export function draftToCreator(draft: PlaygroundDraft, base: Creator): Creator {
   return {
     ...base,
-    display_name: base.display_name ?? base.username,
+    display_name: draft.display_name ?? base.username,
+    avatar_url: draft.avatar_url,
     bio: draft.bio,
     banner_url: draft.banner_url,
     connect_empty_text: draft.connect_empty_text,

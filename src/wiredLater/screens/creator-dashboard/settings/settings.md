@@ -28,7 +28,7 @@ Designed from competitor research (Stan Store Settings, Gumroad Settings, Beacon
 > **This section moved to the Earnings screen** — `screens/creator-dashboard/earnings/earnings.md` **§3** (founder decision 2026-10-10: one dedicated money screen). PayPal.me handle editing, the honest Connect-PayPal card, payout method/schedule, and the settlement ledger all live there now. **Part numbering is kept** (this stub stays Part 2) so cross-references never break.
 >
 > - `PaymentsPanel` → `git mv` → `components/earnings/` (renders inside Earnings §3)
-> - Settings keeps: Profile (Part 13) · Account & Security · Billing · Notifications · Messaging & Privacy · Your Page · Integrations stub · Danger Zone
+> - Settings keeps: Account & Security · Profile moved to Playground 📌 note (Part 13 stub) · Billing · Notifications · Messaging & Privacy · Your Page · Integrations stub · Danger Zone
 > - Money-related *toggles* (e.g., "New sale" email) stay in Notifications (Part 4) — they're preferences, not balances
 
 ---
@@ -145,10 +145,10 @@ No UI beyond a placeholder card: "Integrations — pixels, email tools, and more
 | #3 Billing & Plan | ✅ Decided — UI shell, no-op in mock |
 | #4 Notifications (5 toggles) | ✅ Decided |
 | #5 Messaging & Privacy (allow-anyone toggle, partner toggle, requests folder) | ✅ Decided — messaging is free for everyone (`messaging.md`) |
-| #6 Your Page (custom domain + link, NO Link Address editing) | ✅ Decided — Link Address permanent at signup; link shown read-only; **display name + avatar editable in Settings → Profile (Part 13)** (moved out of "Playground Identity" by founder decision 2026-10-09); app name/icon stay in Playground Identity |
+| #6 Your Page (custom domain + link, NO Link Address editing) | ✅ Decided — Link Address permanent at signup; link shown read-only; **display name + avatar moved 2026-10-15 → Playground 📌 note** (`playground.md` Part 1e; was Settings → Profile, was originally Playground Identity — three homes, final = the note); app name/icon also in the note |
 | #7 Integrations stub | ✅ Decided — points to `integrations.md`, nothing wired |
 | #8 Danger Zone (delete account) | ✅ Decided |
-| #9 Profile (display name + avatar — cooldown + ✏️ gateways) | ✅ Decided 2026-10-09 — **(A) cooldown:** each field locks itself for 7 days after a real change (`display_name_changed_at` / `avatar_changed_at`; identical-value saves never lock) · **(B) ✏️ gateways:** sidebar identity block + BillboardPreview → `ProfileEditDialog` → Settings · **both fields** covered |
+| #9 Profile (display name + avatar — cooldown + ✏️ gateways) | ✅ Decided 2026-10-09 → **home moved 2026-10-15 to the Playground 📌 note** (`playground.md` Part 1e; this Part 13 = pointer stub). **(A) cooldown:** each field locks itself for 7 days after a real change (`display_name_changed_at` / `avatar_changed_at`; identical-value saves never lock; server law unchanged) · **(B) ✏️ gateways:** sidebar identity block + BillboardPreview → `ProfileEditDialog` → **[Open Playground]** · **both fields** covered |
 
 ---
 
@@ -167,30 +167,16 @@ No UI beyond a placeholder card: "Integrations — pixels, email tools, and more
 
 ---
 
-## Part 13: Profile — display name & avatar
+## Part 13: Profile — display name & avatar — ➡️ MOVED (2026-10-15)
 
-> **Renders FIRST on the settings screen** (top card, above Account & Security). The **one and only** place a creator edits their display name and photo (founder decisions 2026-10-09). Everything else that shows identity — fan page, Discover, landing, messages, sidebar — only *reads* it.
-
-| Piece | Behavior |
-|---|---|
-| Avatar | Circular preview (photo, or initials fallback). **Upload photo** → file picker → `POST /api/creator/upload` (`type=avatar` → public URL) → saves `avatar_url`. **Remove** → back to initials. Both save **instantly** (no Save button) |
-| Display name | Text input (cap 80) + **Save changes** button |
-| Rule helper | Static line under the fields: *"Your name & photo appear on your fan page, Discover, landing and messages — changes show everywhere immediately. Each can be changed once every 7 days."* |
-| Locked state | Per field, independent: changed within the last 7 days → that field's input/buttons disabled + *"You can change this again on {date}."* |
-
-**7-day cooldown (founder decision 2026-10-09 — option A: cooldown, not deadline):**
-- A real change stamps `display_name_changed_at` / `avatar_changed_at` on the creator row → that field locks for `IDENTITY_COOLDOWN_DAYS` (7) — shared constant in `lib/limits.ts`.
-- **The lock fires only when the value actually CHANGES** — an identical-value save passes without locking (otherwise Playground Deploy, which PUTs these fields in the same payload, would trip locks).
-- Enforced **server-side** in `PUT /api/creator/playground` → `409 { error, retry_at }`; `GET /api/creator/playground` returns both timestamps so the UI renders lock state.
-
-**One row → every screen (propagation):** fan page + guest header · Network Discover cards + billboard modal · your billboard preview · landing marquee + returning-fan row · sidebar profile block · partner/staff lists + message conversation titles · admin Creators table. Save once → every surface shows the new value on next load. No per-surface editors (the billboard *displays* identity; it never edits it).
-
-**✏️ gateway buttons (founder decision 2026-10-09 — option B):** exactly two spots where a creator sees their OWN identity carry a small ✏️:
-1. **Dashboard sidebar identity block** (desktop only — the phone bottom bar has no identity block; phones reach editing via Settings nav)
-2. **BillboardPreview card** on the Network rail — the name/photo pencil, *distinct* from the existing ✏️ Edit billboard header button (that one focuses the rail editor)
-
-Press → **`ProfileEditDialog`**: *"Your display name and photo appear on your fan page, Discover, landing and messages — changes show everywhere immediately. ⚠️ You can change each once every 7 days."* → **[Open Settings]** → `/dashboard/settings` · [Not now]. The dialog shows on **every** press — it is the explainer + gateway, not a one-time tip.
-
-**Data model:** 2 nullable timestamp columns on `creators` — `display_name_changed_at`, `avatar_changed_at` (mock now; real-DB migration at the migration pass).
-
-**Out of scope:** banner image · App Name / App Icon (their 7-day locks stay specced in `playground.md` Part 2a — same dialog pattern when the Identity tab ships) · Link Address (permanent, no editor) · bio (lives in the Billboard).
+> **This section moved to the Playground's 📌 "Who I am" note** — `screens/creator-dashboard/playground/playground.md` **Part 1e** (founder decision 2026-10-15: shared identity lives where the preview is — edit and *watch it paint*, no jumping between screens; App Name/Icon/Status bar + bio + banner moved there too). **Part numbering is kept** (this stub stays Part 13) so cross-references never break.
+>
+> - `ProfileSection` → the note's Display name + Avatar fields. **The 7-day lock law is unchanged** — enforcement already lives server-side in `PUT /api/creator/playground` (identical-value saves never lock; `409 { error, retry_at }` on a locked change; `display_name_changed_at` / `avatar_changed_at` stamps are the data model)
+> - ✏️ `ProfileEditDialog` gateways (sidebar identity block + BillboardPreview): **[Open Settings] → [Open Playground]** → `/dashboard/playground` (note is top-left); explainer copy unchanged
+> - Settings keeps: Account & Security · Billing · Notifications · Messaging & Privacy · Your Page · Integrations stub · Danger Zone — no Profile card renders here anymore (pointer line only)
+>
+> **Retained laws (still live, edited in the note):**
+> - **Rule helper line (the note reuses this copy):** *"Your name & photo appear on your fan page, Discover, landing and messages — changes show everywhere immediately. Each can be changed once every 7 days."*
+> - **Locked state:** per field, independent — changed within 7 days → that field's input/buttons disabled + *"You can change this again on {date}."*
+> - **One row → every screen (propagation):** fan page + guest header · Network Discover cards + billboard modal · your billboard preview · landing marquee + returning-fan row · sidebar profile block · partner/staff lists + message conversation titles · admin Creators table. Save once → every surface shows the new value on next load. No per-surface editors (everywhere *displays* identity; only the note edits it).
+> - **✏️ gateway spots (2):** dashboard sidebar identity block (desktop) + BillboardPreview card name/photo pencil (Network rail) — each press opens `ProfileEditDialog` (explainer + gateway, shows every press).

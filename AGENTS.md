@@ -82,6 +82,18 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 
 ## Impromptu Fix Log
 
+### 2026-10-15 — Status-bar color wired to the manifest + Draft|Live pills killed → honest beacon + owner live-page banner (uncommitted)
+
+**Founder "ok yes go ahead" (2 plans approved in conversation). Gates green at the end: typecheck 0 · lint 0 · check-docs PASS (430 files — +1 `OwnerDraftBanner`).**
+
+- **🪲 Status bar color was dead (founder report):** the 📌 note's status-bar field stored `custom_theme.profile.statusBarColor`, but `manifest.json/route.ts` hardcoded `theme_color: branding.accentColor` → the choice never reached the phone. One line → `branding.statusBarColor` (resolveBranding falls back to the accent when unset). Proven live: deploy `#123456` → manifest `theme_color = #123456` → revert → `#6366f1`.
+- **Draft|Live toggle REMOVED (founder reversal — dead control):** `PhonePreview` never received the toggle's state, so the phone ALWAYS rendered the draft while two pills read as two preview modes. `PreviewStateToggle` rewritten (same filename): one honest strip — 🟠 *"Draft — not live yet"* + Deploy when `draft ≠ server` / 🟢 *"What fans see now"* + Deployed when clean. `state`/`onChange`/`PreviewState` plumbing deleted from `PlaygroundForm`.
+- **NEW `components/fan-pwa/OwnerDraftBanner.tsx` (owner-only, live guest page):** sticky amber *"🟡 Unpublished changes — this is your live page…"* + [Open Playground], mounted by the guest Screen when `getSessionUserId()` (new helper in `lib/guards.ts`) === `branding.creatorId`. **Content-based verdict** — reads the localStorage draft, merges over the server snapshot with the hook's own exported `creatorToDraft` + `mergeRestoredDraft` (extracted from `usePlaygroundForm` — one copy each, hook + banner can't drift), so a pristine auto-saved key never cries wolf. Fans/strangers never see it; Deploy clears it. Home screen excluded (owners are bounced to /guest by `redirectIfNotFan`).
+- **Specs synced:** `playground.md` Part 1b fully rewritten (reversal note + beacon + banner, old toggle table replaced) + status/component-table rows · `branding.md` decision #11 → ⛔ REVERSED + `theme_color` rows ×2 · `screens.md` Fans-switch line · `responsive.md` chrome-token comments.
+- **Smoke:** manifest ladder (baseline → set → revert) · deploy 200 with **no false stamps** · `custom_theme: null` revert accepted · 4 pages 200 (playground · `?view=billboard` · guest as owner · guest anon). Beacon + banner are client-render only (PlaygroundForm's SSR = loading gate) — **founder browser-pass** to see the strip flip 🟠→🟢 and the banner on his live page.
+- Gotcha re-hit: 10-line docstring rule — `OwnerDraftBanner`'s `*/` landed on line 11 → compress (check-docs PASSED after).
+- Commits still blocked (founder hasn't said commit) — round-10 + icon fix + this pass all uncommitted.
+
 ### 2026-10-14 — Media-kit door + View-my-page SPEC PASS (NOT built)
 
 **Founder "go" → spec phase only (phase gate — build awaits explicit approval).**
@@ -89,6 +101,37 @@ If a user asks to "implement the real version" of a mocked service, your job is 
 - **Media-kit v1 door (`playground.md` Part 2g addendum):** sponsors = readers (no accounts, no checkout/ad units; money off-platform, 0%). V1 = Copy-link button in Billboard view → public read-only `GET /[username]/media-kit` (bio + rates + message + gated hero); PDF/iframe/contact deferred.
 - **Overview "View my page →" (`overview.md` Part 7 + decision #12):** new tab, guest eyes; Overview-only home (screens render everywhere, chrome doesn't); QrCard keeps copy-link.
 - **Also:** `search.md` Concept softened ("no public creator name-search"; Linktree = category browse only) · WIRING_PLAN round-9 addendum (SPEC ONLY) · AGENTS working rule ("History informs, code decides" — read live code for *what is*, diary for *why*).
+- Gates: typecheck 0 · lint 0 · check-docs PASS (docs-only).
+- **Spec phase only — stopping at the boundary.**
+
+### 2026-10-15 — App-icon preview illusion fixed: photo stand-in → the REAL icon
+
+**Founder report after the round-10 build: *"the app icon automatically upload[ed] the photo"* — looked like a photo upload changed the app icon by itself.**
+
+- **Investigation (read-only first):** a photo upload only ever writes `avatar_url` — nothing sets `appIconUrl` automatically, and the manifest already fell back to `/icons/icon-192x192.png` (never the photo). The lie was **my preview**: `IdentityNote`'s App-icon square rendered `<Avatar src={photo}>` as a stand-in when no custom icon existed — upload a photo → the box instantly showed it → "the icon changed itself."
+- **Fix (founder picked Option A — WYSIWYG):** the square now always renders `profile.appIconUrl || "/icons/icon-192x192.png"` (exactly what fans get). Hint swaps by state: custom → *"Your custom icon — on fans' phones after their app updates."* · none → *"Fans see the default icon until you upload one; updates land on their phones after an app refresh."*
+- **Spec synced:** `playground.md` Part 1e hint map updated + new "App-icon preview = the REAL icon" rule (never the avatar stand-in).
+- Gates: typecheck 0 · lint 0 · check-docs PASS (429) · smoke: playground 200 + default icon asset 200. Uncommitted.
+
+### 2026-10-15 — Round-10 BUILT: the 📌 "Who I am" sticky note (spec approved → built; uncommitted)
+
+**Founder "go" → built. Gates green at the end: typecheck 0 · lint 0 · check-docs PASS (429 files — +1 `IdentityNote`).**
+
+- **The note (NEW `src/components/playground/IdentityNote.tsx`):** sticky trigger "📌 Who I am" top-left in BOTH Playground views (header row = note · Fans|Billboard switch · spacer keeps the switch centered) → small corner modal (`self-start mr-auto`, light `bg-background/40` backdrop via a new `overlayClassName` prop on the shared `DialogContent` — the phone stays visible behind). Fields: display name · photo (upload/replace/remove) · bio (600, moved from Billboard) · banner (was orphaned) · app name · app icon · status bar color (native color input, defaults to accent). Each shows a "↳ Shows on:" hint line + the retained Part 13 rule-helper; locks render the dated "again on Oct 22" line from `baseCreator`'s stamps. **Everything edits the DRAFT — "Local until you Deploy / All saved & deployed" honesty line.**
+- **Draft law change (`usePlaygroundForm`):** `PlaygroundDraft` gains `display_name` + `avatar_url` (supersedes the 2026-10-09 "never in draft" rule) · restore merges them too · Deploy allow-list gains exactly those 2 + blanks coerce to `null` (zod `min(1)` guard) · `syncBio` dies, replaced by `refreshCreator` (stamp re-read after a 409) · `previewData.draftToCreator` paints name/avatar from the draft (live feedback).
+- **Old homes retired:** `BillboardEditor` loses the bio row (`bio` out of `BillboardSettings`) · `BillboardView` loses bio round-trip + `onBioSaved` · `ProfileSection` → pointer card (laws kept: helper line + 7-day rule + [Open Playground]) · `ProfileEditDialog` [Open Settings] → [Open Playground] (+ points at the 📌 note).
+- **App locks (7-day, Part 2a finally enforced):** 2 new stamps `app_name_changed_at`/`app_icon_changed_at` (`Creator` type + 3 mock row builders) · `PUT /api/creator/playground` refactored to one `lockOnRealChange` helper — top-level fields (`topLock`) + `custom_theme.profile` fields (`appLock`); GET/PUT select + response carry all 4 stamps.
+- **🪲 Found by smoke + fixed:** ① first-ever save with `custom_theme: null` stamped `app_icon_changed_at` off a false `"" vs null` diff → `norm()` treats empty ≡ null in the lock rule (re-proven fresh: icon stamp stays null, name stamps + locks) ② Deploy could send `display_name: ""` → zod 400 → coerced to `null` in the allow-list.
+- **Smoke (all green, fresh store after dev restart):** ladder ×2 — change 200+stamp · identical 200 (never stamps) · real change 409 dated "You can change your display name / app name again on Oct 22, 2026." · full shared payload (locked fields present, unchanged) 200 · pages 200 (playground · `?view=billboard` · settings) · settings HTML carries "Open Playground" + no upload UI · billboard API round-trips untouched.
+- Commits still blocked (founder hasn't said commit).
+
+### 2026-10-15 — 📌 "Who I am" sticky note SPEC PASS (NOT built)
+
+**Founder design (Playground tour follow-up) → spec phase only (phase gate — build awaits explicit approval).**
+
+- **The note (`playground.md` new Part 1e):** shared identity = sticky note top-left of Playground (both views) → small corner modal, phone visible behind (edit + watch it paint). Fields = full 2026-10-15 inventory: display name · avatar (from Settings → Profile) · bio (from Billboard view) · banner (was orphaned — zero doors) · app name · app icon · status bar color (Part 2a, never had a door). "Shows on:" hint lines (visibility map). **Save = Draft + Deploy (founder option A)** — draft law change: `display_name`/`avatar_url` join the draft, superseding the 2026-10-09 "identity never in draft" rule (server 409 locks still guard Deploy; allow-list gains exactly those 2 fields).
+- **Ripples:** `settings.md` Part 13 → pointer stub (laws retained: helper line, propagation, cooldown, ✏️ gateways) · ✏️ `ProfileEditDialog` [Open Settings] → [Open Playground] · Billboard view loses its bio row + `syncBio` dies · app name/icon 7-day locks = 2 new stamp columns + checks in `PUT /api/creator/playground` · **social links → catalog big session (founder: not in the note; big Playground/catalog session stays PARKED for last)**.
+- **Tour note:** Stop 06 (Playground) covered 2026-10-15 — 8 stops done, 9 left; **no "next stop?" prompts** (founder rule — he drives).
 - Gates: typecheck 0 · lint 0 · check-docs PASS (docs-only).
 - **Spec phase only — stopping at the boundary.**
 

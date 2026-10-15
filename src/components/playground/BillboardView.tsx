@@ -2,9 +2,9 @@
  * BillboardView — Playground's Billboard view (playground.md Part 1d): the
  * result-preview card (how Discover renders you — no actions, no pencils, no
  * visibility pill) above the billboard DESIGN editors moved from the Network
- * rail. Owns GET/PUT /api/creator/partners/billboard; after a save that
- * changes bio it calls onBioSaved so the Fans view's playground data can be
- * synced (bio renders on both surfaces). Visibility switches stay in Network.
+ * rail. Owns GET/PUT /api/creator/partners/billboard. Bio moved to the 📌
+ * Who I am note (Part 1e, 2026-10-15) — no bio round-trip here anymore, so
+ * the old syncBio plumbing is gone. Visibility switches stay in Network.
  */
 "use client";
 
@@ -36,18 +36,12 @@ const EMPTY_SETTINGS: ViewSettings = {
   tagline: "",
   tags: [],
   collab_style: "",
-  bio: "",
   rate_card: { post: "", story: "", video: "" },
   media_kit_message: "",
   featured_item: null,
 };
 
-interface BillboardViewProps {
-  /** Fired after a save where bio actually changed — parent syncs the fan preview. */
-  onBioSaved?: (bio: string) => void;
-}
-
-export function BillboardView({ onBioSaved }: BillboardViewProps) {
+export function BillboardView() {
   const [settings, setSettings] = useState<ViewSettings>(EMPTY_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -78,7 +72,6 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
           collab_style: d.collab_style ?? "",
           primary_field: (d as Partial<BillboardSettings>).primary_field ?? "",
           featured_item: d.featured_item ?? null,
-          bio: d.bio ?? "",
           rate_card: d.rate_card ?? { post: "", story: "", video: "" },
           media_kit_message: d.media_kit_message ?? "",
         });
@@ -99,7 +92,6 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      const prevBio = settings.bio;
       const d = await fetchJson<Partial<BillboardSettings>>("/api/creator/partners/billboard", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -108,24 +100,20 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
           tags: settings.tags,
           collab_style: settings.collab_style,
           primary_field: settings.primary_field,
-          bio: settings.bio,
           rate_card: settings.rate_card,
           media_kit_message: settings.media_kit_message,
         }),
       }).catch(() => null);
       if (d) {
-        const nextBio = d.bio ?? "";
         setSettings((prev) => ({
           ...prev,
           tagline: d.tagline ?? "",
           tags: d.tags ?? [],
           collab_style: d.collab_style ?? "",
           primary_field: (d as Partial<BillboardSettings>).primary_field ?? "",
-          bio: nextBio,
           rate_card: d.rate_card ?? prev.rate_card,
           media_kit_message: d.media_kit_message ?? "",
         }));
-        if (prevBio !== nextBio) onBioSaved?.(nextBio);
         toast.success("Billboard saved");
       } else {
         // Silently returning the button to "Save" used to read as success
@@ -135,7 +123,7 @@ export function BillboardView({ onBioSaved }: BillboardViewProps) {
     } finally {
       setSaving(false);
     }
-  }, [settings, onBioSaved]);
+  }, [settings]);
 
   if (loading) {
     return (

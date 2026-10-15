@@ -2,6 +2,7 @@
  * guards.ts — shared server-component guards (duplication audit 2026-09-29
  * trivial sweep). `hasCreatorSession()` = the already-logged-in check written
  * verbatim in the login + onboarding Screens (redirect target differs);
+ * `getSessionUserId()` = WHO is signed in (owner-live-page banner);
  * `redirectIfNotFan()` = the no-password render rule written in all 4 fan
  * tab Screens (fan-shell.md Part 5: Follower/visitor → /guest).
  */
@@ -21,6 +22,20 @@ export async function hasCreatorSession(): Promise<boolean> {
     data: { user },
   } = await supabase.auth.getUser();
   return Boolean(user);
+}
+
+/** The signed-in creator's user id (mock cookie or Supabase auth) — null when
+ *  anonymous. Lets a fan page ask "is the viewer the page's owner?". */
+export async function getSessionUserId(): Promise<string | null> {
+  if (USE_MOCKS) {
+    const cookieStore = await cookies();
+    return cookieStore.get("mock_auth_uid")?.value ?? null;
+  }
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id ?? null;
 }
 
 /** Fan-only render rule: bounce sessions without a password (visitors/followers) to /guest. */

@@ -148,7 +148,7 @@ the available space on any device with pure CSS (`min()`/`max()`):
 --phone-ratio-h: 844;
 --phone-max-w:   420px;           /* largest usable frame on desktop */
 --phone-min-w:   220px;           /* extreme-viewport floor (landscape/short) */
---preview-chrome: 172px;          /* py-6 top + Draft/Live bar + bottom pad */
+--preview-chrome: 172px;          /* py-6 top + beacon/Deploy bar + bottom pad */
 @media (min-width: 768px) { :root { --preview-chrome: 116px; } }  /* pb-6 */
 ```
 
@@ -171,7 +171,7 @@ Resulting frame widths (fit = available height × 390/844, capped both ends):
 inside `FanBottomNav` use `@max-[299px]:text-[9px]` so the 5 preview tabs stay
 separated at ~229px, plus a hard `truncate` + `min-w-0` guarantee — labels
 elide cleanly, never merge into each other. The real fan shell has no narrow
-container, so it always keeps 10px labels. Draft/Live/Deploy paddings are
+container, so it always keeps 10px labels. Beacon/Deploy paddings are
 tuned to fit one row at the 229px worst case.
 
 `aspect-ratio` ONLY accepts a unitless number pair — writing `390px / 844px`

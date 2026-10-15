@@ -1,8 +1,9 @@
 /**
  * BillboardEditor — controlled form for the billboard DESIGN fields (primary
- * field, tagline, tags, collab style) + Media Kit fields (bio, rate card,
- * custom message) in Playground's Billboard view (playground.md Part 1d —
- * moved from the Network rail 2026-10-09). Visibility switches stay in
+ * field, tagline, tags, collab style) + Media Kit fields (rate card, custom
+ * message) in Playground's Billboard view (playground.md Part 1d —
+ * moved from the Network rail 2026-10-09). Bio moved to the 📌 Who I am note
+ * (Part 1e, 2026-10-15 — one edit home). Visibility switches stay in
  * Network (the Discover heading row in NetworkPage). State is lifted to the
  * parent (BillboardView) so the result-preview updates live. No data fetching.
  */
@@ -33,8 +34,7 @@ export interface BillboardSettings {
   tagline: string;
   tags: string[];
   collab_style: string;
-  // Media Kit
-  bio: string;
+  // Media Kit (bio moved to the 📌 note — Part 1e)
   rate_card: { post: string; story: string; video: string };
   media_kit_message: string;
 }
@@ -209,18 +209,6 @@ export function BillboardEditor({ settings, onFieldChange, onSave, saving }: Bil
       {/* Media Kit — expandable */}
       <Section title="Media Kit" badge="for sponsors">
         <div className="space-y-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Bio for sponsors</label>
-            <Textarea
-              value={settings.bio}
-              onChange={(e) => onFieldChange({ bio: e.target.value })}
-              placeholder="A short bio about you and your audience..."
-              rows={2}
-              className="mt-1"
-              maxLength={BILLBOARD_LIMITS.bio}
-            />
-          </div>
-
           <div>
             <label className="text-xs font-medium text-muted-foreground">Rate card</label>
             <div className="mt-1 grid grid-cols-3 gap-2">

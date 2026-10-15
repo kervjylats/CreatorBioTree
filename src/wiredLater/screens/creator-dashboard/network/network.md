@@ -89,7 +89,7 @@ Each creator can write a mini billboard:
   - **Where the hero renders:** CreatorBillboardModal top + Playground result-preview (mirror of the modal top). **Where it does NOT:** Discover feed cards (clean — 24 flashing billboards = Times Square, scannability dies) · rail mirror `BillboardPreview` (compact facts only) · landing marquee (tiny cards).
   - **Choosing the hero = featuring a catalog item** (`is_featured` flag — set in the catalog editor when it lands, Sheet 19; until then via API). NOT a billboard-editor field (one-edit-home rule).
 
-Billboard appears on the search result card and as a mirror in the creator's own Network rail. **Editing home moved to Playground → Billboard view (founder decision 2026-10-09 — `playground.md` Part 1d)** — the full field set (tagline, tags, collab style, **bio, rate card, media kit**) is edited there; Network shows the result (rail mirror) + the collab switch (inside the Discover section) only.
+Billboard appears on the search result card and as a mirror in the creator's own Network rail. **Editing home moved to Playground → Billboard view (founder decision 2026-10-09 — `playground.md` Part 1d)** — the pitch field set (tagline, tags, collab style, rate card, media kit) is edited there, **bio moved again 2026-10-15 → the Playground 📌 "Who I am" note (`playground.md` Part 1e — shared identity, one edit home)**; the billboard still *displays* bio (modal + media kit). Network shows the result (rail mirror) + the collab switch (inside the Discover section) only.
 
 ### 3. Collab Switch (Discover section, instant-save — one switch since 2026-10-09)
 - **2026-10-09 (two rounds):** morning — extracted from `BillboardEditor` (design fields moved to Playground → Billboard view, `playground.md` Part 1d) and moved rail → its own card **inside the Discover section** (under the heading, above the results). Afternoon — founder simplified to the **FB model: `show_in_search` is REMOVED** (search always on, no greying, everyone findable by name); the one switch that remains is **Accept collab requests**
@@ -174,7 +174,7 @@ Collabs can optionally promote each other's products under ANY deal the two crea
 - **Sits in the DISCOVER heading row since 2026-10-13** (founder compact fix — was its own card under the heading 2026-10-09→2026-10-12: extracted from `BillboardEditor` when the design fields moved to Playground; same switch, same instant-save, no box; caption line underneath; label click toggles via `htmlFor`, `min-h-11` hit area)
 
 ### BillboardEditor *(moved — 2026-10-09)*
-- **Editing now lives in Playground → Billboard view** (`playground.md` Part 1d, founder decision 2026-10-09): result-preview + full field set (tagline, tags, collab style, bio, rate card, media kit) + Save-button states — all specced there; component home becomes `components/playground/`
+- **Editing now lives in Playground → Billboard view** (`playground.md` Part 1d, founder decision 2026-10-09): result-preview + pitch field set (tagline, tags, collab style, rate card, media kit) + Save-button states — all specced there; component home becomes `components/playground/`. **Bio edits moved 2026-10-15 → the 📌 note** (`playground.md` Part 1e) — the billboard displays it, never edits it
 - Network keeps only the collab switch (§3, in the Discover heading row since 2026-10-13)
 
 ### BillboardCard

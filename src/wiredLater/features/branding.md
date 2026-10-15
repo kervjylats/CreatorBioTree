@@ -207,7 +207,7 @@ These extend the brand system with new creator-controlled surfaces. All safe to 
 | 1 | **Branded 404 / offline page** | When a fan follows a dead link or goes offline | Renders the creator's theme + their custom "page not found" / "you went offline" copy. Empty `custom_404` falls back to platform default copy with the creator's theme applied. Spec: a new `custom_404` field in `PlaygroundTheme` (title + body + button label + button URL) |
 | 2 | **Branded share card (OG meta + image)** | When a fan shares the page in WhatsApp / iMessage / Twitter | The `<meta property="og:title">`, `og:description`, `og:image` use the creator's name, bio, and avatar. Optional `custom_share_card` field lets the creator upload a 1200×630 image. Empty = auto-generated from avatar + bio |
 | 3 | **Branded loading skeletons** | Every loading state in the fan shell | Skeleton bars use `colors.card` + `colors.accent` (low-opacity) instead of generic grey. No new fields — just the resolver outputs already |
-| 4 | **Custom status bar color (PWA)** | Phone status bar when the app is open | `manifest.json` `theme_color` = `colors.accent`. iOS + Android respect this. No new field — uses `colors.accent` |
+| 4 | **Custom status bar color (PWA)** | Phone status bar when the app is open | `manifest.json` `theme_color` = `statusBarColor` (**wired 2026-10-15** — was hardcoded `colors.accent`). iOS + Android respect this. Falls back to the accent when the creator never picked one |
 | 5 | **Branded empty states** | "No items yet" / "No partners yet" / "No posts yet" / "No messages yet" / "No community channels" / "No notifications" | The empty illustration background + accent + text color use the creator's theme. No new fields — resolver outputs. Empty-state copy stays platform default unless overridden. **Creator-overridable empty copy:** the Connect tab's all-empty message is a new field `connect_empty_text` (max 200 chars, editable anytime — spec in `playground.md` Part 2a; shown per `fan-shell.md` Part 4c) |
 | 6 | **Font pair 1-click presets** | A new section in the Design tab: "Font pairs" with 5 named pairs | One tap applies both font + accent + bg combinations curated for that style. New field: `PlaygroundColors.fontPair?: string` (one of `editorial` / `bold` / `soft` / `tech` / `classic`) |
 | 7 | **Creator-saved color palettes** | A "My palettes" section in the Design tab | Creator can save 2-3 of their own palettes and switch between them. New field: `PlaygroundTheme.savedPalettes?: PlaygroundColors[]` (array of color sets, 2-3 entries) |
@@ -340,7 +340,7 @@ The brand powers the **installed PWA** on the fan's phone (and the creator's own
 | `name` | `custom_theme.profile.appName` ?? `display_name` ?? `"Creator App"` | Home-screen title |
 | `short_name` | `display_name` (truncated to 12 chars) | Home-screen title (short) |
 | `icons[].src` | `custom_theme.profile.appIconUrl` ?? `/icons/icon-192x192.png` | Home-screen icon |
-| `theme_color` | `colors.accent` | Phone status bar color (iOS + Android) |
+| `theme_color` | `statusBarColor` (accent fallback) | Phone status bar color (iOS + Android) — **wired 2026-10-15**: reads the 📌 note's status-bar field instead of the accent |
 | `background_color` | `colors.background` | Splash screen background |
 | `start_url` | `/{username}` | Where the app opens |
 | `scope` | `/{username}/` | What URLs the app controls |
@@ -393,7 +393,7 @@ The brand powers the **installed PWA** on the fan's phone (and the creator's own
 | 8 | Skipped for v1: cursor, hover, click sounds, favicon, music, video backgrounds (mobile/PWA-first) | ✅ Decided 2026-08-05 |
 | 9 | 4 safety rules: validation, fallback, performance, accessibility — enforced globally | ✅ Decided 2026-08-05 |
 | 10 | 7-day lock on App Name + Icon + Display Name (per identity decision) | ✅ Decided (earlier) |
-| 11 | Preview state toggle (Draft / Live) in Playground (full-screen editor) + on the owner's live `/{username}` view | ✅ Decided 2026-08-05 (orange dot on Draft only when un-deployed; default to Live). **Updated 2026-08-05:** Playground + the "View my fan page" action merged into ONE surface — Playground (`playground.md` Part 1b); the toggle renders at the top of the full-screen page and (same component) on the live page when the owner visits it |
+| 11 | Preview state toggle (Draft / Live) in Playground (full-screen editor) + on the owner's live `/{username}` view | ⛔ **REVERSED 2026-10-15** (founder: the pills were a dead control — the phone always rendered the draft yet two pills read as two preview modes). Replaced by the **status beacon + Deploy** strip in Playground and the **owner-only unpublished-changes banner** on the live page (`playground.md` Part 1b); the owner-view toggle never shipped. Original decision 2026-08-05: orange dot on Draft only when un-deployed, default to Live |
 | 12 | Font pair 1-click presets (5 pairs: editorial / bold / soft / tech / classic) | ✅ Decided 2026-08-05 |
 | 13 | Saved palette limit: 3 per creator | ✅ Decided 2026-08-05 |
 | 14 | Empty states: 6 surfaces (catalog / no partners / no posts / no messages / no community / no notifications) | ✅ Decided 2026-08-05 |
